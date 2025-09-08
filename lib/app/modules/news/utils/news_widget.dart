@@ -180,7 +180,23 @@ class _NewsWidgetState extends State<NewsWidget> {
                           // Ícone de editar (lápis)
                           GestureDetector(
                             onTap: () {
-                              _showDevelopmentPopup("Editar");
+                              // Navega para página de edição com dados da notícia
+                              Get.toNamed(
+                                Routes.EDIT_NEWS, // ← Nova rota
+                                arguments: {
+                                  "newsId": news.id,
+                                  "titulo": news.title,
+                                  "subtitulo": news.subtitle,
+                                  "cidade": news.cities,
+                                  "categoria": news.categories,
+                                  "corpo": news.body,
+                                  "imgurl": news.urlImages.isNotEmpty ? news.urlImages[0] : '',
+                                  "autor": news.author,
+                                  "dataCriacao": news.createdAt.toString(),
+                                  "type": news.type,
+                                  "status": news.status,
+                                },
+                              );
                             },
                             child: Container(
                               padding: const EdgeInsets.all(8.0),

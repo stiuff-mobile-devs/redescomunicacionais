@@ -51,16 +51,27 @@ class NewsProvider  {
     }
   }
 
-Future<String> hideNews(String newsId, String status, String userEmail) async {
-  try {
-    await _firestore.collection(collectionPath).doc(newsId).update({
-      'status': status,
-      'excluedAt': DateTime.now().toIso8601String(),
-      'excluedBy': userEmail,
-    });
-    return "success";
-  } catch (e) {
-    return "Error hiding news status: $e";
+  Future<String> hideNews(String newsId, String status, String userEmail) async {
+    try {
+      await _firestore.collection(collectionPath).doc(newsId).update({
+        'status': status,
+        'excluedAt': DateTime.now().toIso8601String(),
+        'excluedBy': userEmail,
+      });
+      return "success";
+    } catch (e) {
+      return "Error hiding news status: $e";
+    }
   }
-}
+
+  Future<void> updateNews(String newsId, Map<String, dynamic> updatedData) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('news')
+          .doc(newsId)
+          .update(updatedData);
+    } catch (e) {
+      throw Exception("Erro ao atualizar notícia no Firebase: $e");
+    }
+  }
 }

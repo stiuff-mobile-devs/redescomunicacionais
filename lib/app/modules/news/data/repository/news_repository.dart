@@ -22,4 +22,12 @@ Future<void> saveNewsToHive(NewsModel news) async {
 Future<String> hideNews(String newsId, String status, String userEmail) async {
   return await newsProvider.hideNews(newsId, status, userEmail);
 }
+Future<String> updateNews(String newsId, Map<String, dynamic> updatedData) async {
+  try {
+    await newsProvider.updateNews(newsId, updatedData);
+    return "success";
+  } catch (e) {
+    return "Erro ao atualizar notícia: $e";
+  }
+}
 }
