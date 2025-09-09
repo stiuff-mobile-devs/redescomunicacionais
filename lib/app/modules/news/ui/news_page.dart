@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart'; // Adicione este import
 import 'package:intl/intl.dart';
+import 'package:redescomunicacionais/app/services/youtube_service.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 
 class NewsPage extends StatefulWidget {
@@ -424,6 +425,7 @@ class _NewsPageState extends State<NewsPage> {
           ],
         ),
         SizedBox(height: isTablet ? 25 : 20),
+        //Título
         Text(
           titulo,
           style: TextStyle(
@@ -434,6 +436,7 @@ class _NewsPageState extends State<NewsPage> {
           textAlign: TextAlign.center,
         ),
         SizedBox(height: isTablet ? 12 : 10),
+        //Subtítulo
         Text(
           subtitulo,
           style: TextStyle(
@@ -510,8 +513,23 @@ class _NewsPageState extends State<NewsPage> {
           ),
         ),
         SizedBox(height: isTablet ? 25 : 20),
+        
+        // Mini player do YouTube
+        Container(
+          padding: EdgeInsets.all(isTablet ? 16 : 12),
+          child: YouTubeMiniPlayer(
+            videoUrl: "https://www.youtube.com/watch?v=vCeCb-evJOc",
+            width: screenWidth * 0.9, // 90% da largura da tela
+            height: isTablet ? 220 : 180,
+            autoPlay: true,
+            mute: false,
+            enableCaption: true,
+            captionLanguage: 'pt',
+          ),
+        ),
+        SizedBox(height: isTablet ? 25 : 20),
 
-        // SUBSTITUÍDO: MarkdownBody por QuillEditor somente leitura
+        // Container com o conteúdo da notícia
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.white24),
