@@ -37,7 +37,6 @@ class _EditNewsPageState extends State<EditNewsPage> {
   final RxBool showCityError = false.obs;
   final RxBool showTypeError = false.obs;
 
-  // LISTAS CORRETAS (copiadas do CreateNewsFormController):
   final List<String> categories = [
     'Política',
     'Segurança',
