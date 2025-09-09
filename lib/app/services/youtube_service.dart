@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:flutter/services.dart';
 
 class YouTubeController extends GetxController {
   late YoutubePlayerController _controller;
@@ -38,6 +39,8 @@ class YouTubeController extends GetxController {
           mute: mute ?? false,
           enableCaption: enableCaption ?? false,
           captionLanguage: captionLanguage ?? 'pt',
+          loop: true,
+          useHybridComposition: true,
         ),
       );
     }
@@ -59,6 +62,13 @@ class YouTubeController extends GetxController {
     if (videoId != null) {
       _controller.dispose();
     }
+    // Restaura as orientações permitidas
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     super.onClose();
   }
 }
@@ -141,6 +151,13 @@ class YouTubeMiniPlayer extends StatelessWidget {
               ),
               onReady: controller.onPlayerReady,
               onEnded: controller.onVideoEnded,
+              // Desativa botão de tela cheia
+              bottomActions: [
+                CurrentPosition(),
+                ProgressBar(isExpanded: true),
+                RemainingDuration(),
+                PlaybackSpeedButton(),
+              ],
             ),
           ),
         );
