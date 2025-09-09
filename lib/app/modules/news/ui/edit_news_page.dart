@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_quill/flutter_quill.dart'; // ← ADICIONE ESTE IMPORT
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:redescomunicacionais/app/controller/image_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_ontroller.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
@@ -21,7 +21,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
   // Controllers para os campos
   late TextEditingController _titleController;
   late TextEditingController _subtitleController;
-  late QuillController _bodyController; // ← MUDANÇA AQUI: QuillController em vez de TextEditingController
+  late QuillController _bodyController;
   
   // Dados da notícia
   late String newsId;
@@ -37,18 +37,38 @@ class _EditNewsPageState extends State<EditNewsPage> {
   final RxBool showCityError = false.obs;
   final RxBool showTypeError = false.obs;
 
-  // Opções disponíveis
+  // LISTAS CORRETAS (copiadas do CreateNewsFormController):
   final List<String> categories = [
-    'Política', 'Economia', 'Esportes', 'Tecnologia', 'Saúde',
-    'Educação', 'Cultura', 'Entretenimento', 'Ciência', 'Meio Ambiente'
+    'Política',
+    'Segurança',
+    'Educação',
+    'Saúde',
+    'Transporte público e trânsito',
+    'Economia',
+    'Emprego e oportunidades',
+    'Cultura',
+    'Turismo e lazer',
+    'Esportes',
+    'Meio Ambiente',
+    'Infraestrutura da cidade',
+    'Habitação',
+    'Tecnologia',
+    'Ação comunitária'
   ];
   
   final List<String> cities = [
-    'São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Brasília', 'Salvador',
-    'Fortaleza', 'Curitiba', 'Manaus', 'Recife', 'Porto Alegre'
+    'São Sebastião do Alto',
+    'Macuco',
+    'Rio das Flores',
+    'Comendador Levy Gasparian',
+    'Laje do Muriaé',
+    'São José de Ubá',
   ];
   
-  final List<String> types = ['Notícia', 'Artigo', 'Reportagem', 'Editorial'];
+  final List<String> types = [
+    'Notícia',
+    'Opnião',
+  ];
 
   @override
   void initState() {
@@ -67,7 +87,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
     _titleController = TextEditingController(text: args['titulo'] ?? '');
     _subtitleController = TextEditingController(text: args['subtitulo'] ?? '');
     
-    // ← MUDANÇA AQUI: Inicializa QuillController com conteúdo existente
+    // Inicializa QuillController com conteúdo existente
     _bodyController = QuillController.basic();
     if (args['corpo'] != null && args['corpo'].isNotEmpty) {
       try {
@@ -98,7 +118,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
   void dispose() {
     _titleController.dispose();
     _subtitleController.dispose();
-    _bodyController.dispose(); // ← QuillController também tem dispose
+    _bodyController.dispose();
     super.dispose();
   }
 
@@ -127,36 +147,31 @@ class _EditNewsPageState extends State<EditNewsPage> {
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTitleField(),
-                      const SizedBox(height: 16),
-                      _buildSubtitleField(),
-                      const SizedBox(height: 16),
-                      _buildCategorySelection(),
-                      const SizedBox(height: 16),
-                      _buildCitySelection(),
-                      const SizedBox(height: 16),
-                      _buildTypeSelection(),
-                      const SizedBox(height: 16),
-                      _buildMarkdownEditor(),
-                      const SizedBox(height: 16),
-                      _buildImagePicker(),
-                      const SizedBox(height: 16),
-                      _buildImageInfo(),
-                      _buildImagePreview(),
-                      const SizedBox(height: 16),
-                      _buildImageMessage(),
-                      const SizedBox(height: 16),
-                      _buildUpdateButton(),
-                    ],
-                  ),
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTitleField(),
+                  const SizedBox(height: 16),
+                  _buildSubtitleField(),
+                  const SizedBox(height: 16),
+                  _buildCategorySelection(),
+                  const SizedBox(height: 16),
+                  _buildCitySelection(),
+                  const SizedBox(height: 16),
+                  _buildTypeSelection(),
+                  const SizedBox(height: 16),
+                  _buildMarkdownEditor(),
+                  const SizedBox(height: 16),
+                  _buildImagePicker(),
+                  const SizedBox(height: 16),
+                  _buildImageInfo(),
+                  _buildImagePreview(),
+                  const SizedBox(height: 16),
+                  _buildImageMessage(),
+                  const SizedBox(height: 16),
+                  _buildUpdateButton(),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
           ),
@@ -226,23 +241,29 @@ class _EditNewsPageState extends State<EditNewsPage> {
             iconColor: Colors.white,
             collapsedIconColor: Colors.white,
             children: [
-              Column(
-                children: categories.map((category) {
-                  return CheckboxListTile(
-                    title: Text(
-                      category,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    value: selectedCategories.contains(category),
-                    onChanged: (bool? isChecked) {
-                      toggleCategory(category);
-                    },
-                    activeColor: Colors.blue,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    checkColor: Colors.white,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
+              Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return CheckboxListTile(
+                      title: Text(
+                        category,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      value: selectedCategories.contains(category),
+                      onChanged: (bool? isChecked) {
+                        toggleCategory(category);
+                      },
+                      activeColor: Colors.blue,
+                      side: const BorderSide(color: Colors.white, width: 2),
+                      checkColor: Colors.white,
+                      controlAffinity: ListTileControlAffinity.leading,
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -276,23 +297,29 @@ class _EditNewsPageState extends State<EditNewsPage> {
             iconColor: Colors.white,
             collapsedIconColor: Colors.white,
             children: [
-              Column(
-                children: cities.map((city) {
-                  return CheckboxListTile(
-                    title: Text(
-                      city,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    value: selectedCities.contains(city),
-                    onChanged: (bool? isChecked) {
-                      toggleCity(city);
-                    },
-                    activeColor: Colors.blue,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    checkColor: Colors.white,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
+              Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: cities.length,
+                  itemBuilder: (context, index) {
+                    final city = cities[index];
+                    return CheckboxListTile(
+                      title: Text(
+                        city,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      value: selectedCities.contains(city),
+                      onChanged: (bool? isChecked) {
+                        toggleCity(city);
+                      },
+                      activeColor: Colors.blue,
+                      side: const BorderSide(color: Colors.white, width: 2),
+                      checkColor: Colors.white,
+                      controlAffinity: ListTileControlAffinity.leading,
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -360,8 +387,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
   }
 
   Widget _buildMarkdownEditor() {
-    return Expanded(
-      child: MarkdownEditor(controller: _bodyController), // ← Agora funciona corretamente
+    return SizedBox(
+      height: 300,
+      child: MarkdownEditor(controller: _bodyController),
     );
   }
 
@@ -515,7 +543,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       final updatedData = {
         'title': _titleController.text.trim(),
         'subtitle': _subtitleController.text.trim(),
-        'body': jsonEncode(_bodyController.document.toDelta().toJson()), // ← MUDANÇA AQUI: Converte Delta para JSON
+        'body': jsonEncode(_bodyController.document.toDelta().toJson()),
         'cities': selectedCities.toList(),
         'categories': selectedCategories.toList(),
         'type': selectedType.value,
