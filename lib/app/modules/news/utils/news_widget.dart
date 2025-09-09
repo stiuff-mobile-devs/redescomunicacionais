@@ -16,13 +16,23 @@ class NewsWidget extends StatefulWidget {
 
 class _NewsWidgetState extends State<NewsWidget> {
   final NewsController newsController = Get.find<NewsController>();
-  final UserModel user = Get.arguments;
+  late String userEmail;
   int? selectedCardIndex;
-  late String userEmail = user.email;
 
   @override
   void initState() {
     super.initState();
+    
+    // Verifica o tipo dos argumentos e extrai o email
+    final arguments = Get.arguments;
+    if (arguments is UserModel) {
+      userEmail = arguments.email;
+    } else if (arguments is Map<String, dynamic>) {
+      userEmail = arguments['email'] ?? '';
+    } else {
+      userEmail = '';
+    }
+    
     // Busca as notícias apenas uma vez quando o widget é inicializado
     newsController.getNewsFromFirebase();
   }
@@ -106,6 +116,7 @@ class _NewsWidgetState extends State<NewsWidget> {
                             "autor": news.author,
                             "dataCriacao": news.createdAt.toString(),
                             "type": news.type,
+                            "videoUrl": news.videoUrl,
                           },
                         );
                       },
@@ -232,6 +243,7 @@ class _NewsWidgetState extends State<NewsWidget> {
                           "autor": news.author,
                           "dataCriacao": news.createdAt.toString(),
                           "type": news.type,
+                          "videoUrl": news.videoUrl,
                         },
                       );
                     },

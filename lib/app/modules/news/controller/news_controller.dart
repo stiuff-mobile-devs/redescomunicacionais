@@ -22,6 +22,7 @@ class NewsController extends GetxController {
     String createdAt,
     String type,
     String status,
+    String videoUrl,
   ) async {
     try {
       isLoading(true);
@@ -47,6 +48,7 @@ class NewsController extends GetxController {
         editedObservation: null,
         validatedObservation: null,
         excludedObservation: null,
+        videoUrl: videoUrl,
       );
 
       // Save to both Hive and Firebase simultaneously

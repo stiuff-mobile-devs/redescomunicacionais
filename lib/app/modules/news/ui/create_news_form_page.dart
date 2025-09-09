@@ -51,6 +51,8 @@ class CreateNewsPage extends StatelessWidget {
                       const SizedBox(height: 16),
                       _buildTypeSelection(controller),
                       const SizedBox(height: 16),
+                      _buildYouTubeUrlField(controller),
+                      const SizedBox(height: 16),
                       _buildMarkdownEditor(controller),
                       const SizedBox(height: 16),
                       _buildImagePicker(controller),
@@ -264,6 +266,50 @@ class CreateNewsPage extends StatelessWidget {
           ),
       ],
     ));
+  }
+
+  Widget _buildYouTubeUrlField(CreateNewsFormController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: controller.videoUrlController,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: "URL do YouTube (opcional)",
+            labelStyle: const TextStyle(color: Colors.white),
+            hintText: "https://www.youtube.com/watch?v=...",
+            hintStyle: const TextStyle(color: Colors.white54),
+            prefixIcon: const Icon(Icons.video_library, color: Colors.white),
+            enabledBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.white),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.white, width: 2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.red),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "Cole aqui um link do vídeo do YouTube",
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildMarkdownEditor(CreateNewsFormController controller) {

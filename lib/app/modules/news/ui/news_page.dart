@@ -47,6 +47,7 @@ class _NewsPageState extends State<NewsPage> {
     final String cidade = Get.arguments["cidade"] ?? "";
     final String corpo = Get.arguments["corpo"] ?? "";
     final String type = Get.arguments["type"] ?? "";
+    final String videoUrl = Get.arguments["videoUrl"] ?? "https://www.youtube.com/shorts/vCeCb-evJOc";
 
     // Carrega o conteúdo Delta no controller
     try {
@@ -116,6 +117,7 @@ class _NewsPageState extends State<NewsPage> {
               hasMoreThanTwoCategories,
               type,
               context,
+              videoUrl,
               formatData)
           : _buildMobileLayout(
               screenWidth,
@@ -132,6 +134,7 @@ class _NewsPageState extends State<NewsPage> {
               hasMoreThanTwoCategories,
               type,
               context,
+              videoUrl,
               formatData),
     );
   }
@@ -152,6 +155,7 @@ class _NewsPageState extends State<NewsPage> {
     bool hasMoreThanTwoCategories,
     String type,
     BuildContext context,
+    String videoUrl,
     String Function(String) formatData,
   ) {
     return Row(
@@ -302,20 +306,20 @@ class _NewsPageState extends State<NewsPage> {
                   ),
                   SizedBox(height: isTablet ? 20 : 16),
 
-                  // Mini player do YouTube
-                  Container(
-                    margin: EdgeInsets.only(bottom: isTablet ? 20 : 16),
-                    child: YouTubeMiniPlayer(
-                      videoUrl: "https://www.youtube.com/watch?v=vCeCb-evJOc",
-                      width: double.infinity, // Usa toda a largura disponível
-                      height: isTablet ? 200 : 160,
-                      autoPlay: false,
-                      mute: false,
-                      enableCaption: true,
-                      captionLanguage: 'pt',
+                  if(videoUrl.isNotEmpty)
+                    // Mini player do YouTube
+                    Container(
+                      margin: EdgeInsets.only(bottom: isTablet ? 20 : 16),
+                      child: YouTubeMiniPlayer(
+                        videoUrl: videoUrl,
+                        width: double.infinity,
+                        height: isTablet ? 200 : 160,
+                        autoPlay: false,
+                        mute: false,
+                        enableCaption: true,
+                        captionLanguage: 'pt',
+                      ),
                     ),
-                  ),
-
                   // Container com o conteúdo da notícia
                   Container(
                     constraints: BoxConstraints(
@@ -420,6 +424,7 @@ class _NewsPageState extends State<NewsPage> {
     bool hasMoreThanTwoCategories,
     String type,
     BuildContext context,
+    String videoUrl,
     String Function(String) formatData,
   ) {
     return ListView(
@@ -531,19 +536,20 @@ class _NewsPageState extends State<NewsPage> {
         ),
         SizedBox(height: isTablet ? 25 : 20),
         
+        if(videoUrl.isNotEmpty)
         // Mini player do YouTube
-        Container(
-          padding: EdgeInsets.all(isTablet ? 16 : 12),
-          child: YouTubeMiniPlayer(
-            videoUrl: "https://www.youtube.com/watch?v=vCeCb-evJOc",
-            width: screenWidth * 0.9, // 90% da largura da tela
-            height: isTablet ? 220 : 180,
-            autoPlay: false,
-            mute: false,
-            enableCaption: true,
-            captionLanguage: 'pt',
+          Container(
+            padding: EdgeInsets.all(isTablet ? 16 : 12),
+            child: YouTubeMiniPlayer(
+              videoUrl: videoUrl,
+              width: screenWidth * 0.9, // 90% da largura da tela
+              height: isTablet ? 220 : 180,
+              autoPlay: false,
+              mute: false,
+              enableCaption: true,
+              captionLanguage: 'pt',
+            ),
           ),
-        ),
         SizedBox(height: isTablet ? 25 : 20),
 
         // Container com o conteúdo da notícia

@@ -16,11 +16,13 @@ class CreateNewsFormController extends GetxController {
   final _titleController = TextEditingController();
   final _subtitleController = TextEditingController();
   late QuillController _bodyController;
+  final _videoUrlController = TextEditingController();
 
   // Getters para acessar os controllers
   TextEditingController get titleController => _titleController;
   TextEditingController get subtitleController => _subtitleController;
   QuillController get bodyController => _bodyController;
+  TextEditingController get videoUrlController => _videoUrlController;
 
   // Observáveis
   final _selectedCategories = <String>[].obs;
@@ -143,7 +145,7 @@ class CreateNewsFormController extends GetxController {
     final String author = _homeController.user.name!;
     final String email = _homeController.user.email;
     final String createdAt = DateTime.now().toString();
-
+    final String videoUrl = _videoUrlController.text;
     // Adicionar notícia/FireStore
     _newsController.addNews(
       title,
@@ -157,6 +159,7 @@ class CreateNewsFormController extends GetxController {
       createdAt,
       _type.value ?? '',
       NewsStates.publicado,
+      videoUrl,
     );
 
     // Limpar formulário

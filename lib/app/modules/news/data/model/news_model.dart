@@ -66,6 +66,9 @@ class NewsModel {
   @HiveField(20)
   String? excludedObservation;
 
+  @HiveField(21)
+  String? videoUrl;
+
   NewsModel({
     required this.id,
     required this.title,
@@ -88,6 +91,7 @@ class NewsModel {
     this.editedObservation,
     this.validatedObservation,
     this.excludedObservation,
+    this.videoUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -113,6 +117,7 @@ class NewsModel {
       'editedObservation': editedObservation,
       'validatedObservation': validatedObservation,
       'excludedObservation': excludedObservation,
+      'videoUrl': videoUrl,
     };
   }
 
@@ -146,6 +151,7 @@ class NewsModel {
       editedObservation: data['editedObservation'],
       validatedObservation: data['validatedObservation'],
       excludedObservation: data['excludedObservation'],
+      videoUrl: data['videoUrl'],
     );
   }
 }
