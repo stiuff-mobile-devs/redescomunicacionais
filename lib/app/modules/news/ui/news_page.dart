@@ -156,62 +156,62 @@ class _NewsPageState extends State<NewsPage> {
   ) {
     return Row(
       children: [
-        // Lado esquerdo com scroll independente
-        Container(
-          width: screenWidth * 0.4, // 40% da largura da tela
+        // Lado esquerdo - Informações da notícia
+        SizedBox(
+          width: screenWidth * 0.4,
           height: screenHeight,
           child: SingleChildScrollView(
             padding: EdgeInsets.all(isTablet ? 20 : 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Imagem
+                // Container da imagem
                 ClipRRect(
                   borderRadius: BorderRadius.circular(
-                      ResponsiveUtils.calculateResponsiveBorderRadius(
-                          isTablet)),
+                      ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.8),
                   child: Image.memory(
                     base64Decode(imgurl),
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    height: isTablet ? 300 : 250, // Altura fixa para a imagem
+                    height: isTablet ? 300 : 250,
                   ),
                 ),
-                SizedBox(height: isTablet ? 20 : 16),
+                SizedBox(height: isTablet ? 25 : 20),
 
-                // Título
+                // Container do título
                 Text(
                   titulo,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: isTablet ? 28 : 24,
+                    fontSize: isTablet ? 32 : 28,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: isTablet ? 12 : 8),
+                SizedBox(height: isTablet ? 12 : 10),
 
-                // Subtítulo
+                // Container do subtítulo
                 Text(
                   subtitulo,
                   style: TextStyle(
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
-                    fontSize: isTablet ? 18 : 16,
+                    fontSize: isTablet ? 20 : 18,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: isTablet ? 20 : 16),
+                SizedBox(height: isTablet ? 25 : 20),
 
                 // Container com informações da notícia
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.white24, width: 1),
                     borderRadius: BorderRadius.circular(
-                        ResponsiveUtils.calculateResponsiveBorderRadius(
-                                isTablet) *
-                            0.8),
+                        ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.8),
                     color: Colors.white.withOpacity(0.05),
                   ),
                   padding: EdgeInsets.all(isTablet ? 16 : 12),
+                  
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -266,8 +266,7 @@ class _NewsPageState extends State<NewsPage> {
                     ],
                   ),
                 ),
-
-                // Espaçamento extra no final para garantir scroll adequado
+                // Espaçamento extra no final
                 SizedBox(height: isTablet ? 40 : 32),
               ],
             ),
@@ -281,105 +280,123 @@ class _NewsPageState extends State<NewsPage> {
           color: Colors.white24,
         ),
 
-        // Lado direito rolável (conteúdo da notícia)
+        // Lado direito 
         Expanded(
           child: Container(
             height: screenHeight,
             padding: EdgeInsets.all(isTablet ? 24 : 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Conteúdo da Notícia",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isTablet ? 24 : 20,
-                    fontWeight: FontWeight.bold,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título da seção do conteúdo
+                  Container(
+                    child: Text(
+                      "Conteúdo da Notícia",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isTablet ? 24 : 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-                SizedBox(height: isTablet ? 20 : 16),
+                  SizedBox(height: isTablet ? 20 : 16),
 
-                // Container com o conteúdo da notícia
-                Expanded(
-                  child: Container(
+                  // Mini player do YouTube
+                  Container(
+                    margin: EdgeInsets.only(bottom: isTablet ? 20 : 16),
+                    child: YouTubeMiniPlayer(
+                      videoUrl: "https://www.youtube.com/watch?v=vCeCb-evJOc",
+                      width: double.infinity, // Usa toda a largura disponível
+                      height: isTablet ? 200 : 160,
+                      autoPlay: false,
+                      mute: false,
+                      enableCaption: true,
+                      captionLanguage: 'pt',
+                    ),
+                  ),
+
+                  // Container com o conteúdo da notícia
+                  Container(
+                    constraints: BoxConstraints(
+                      minHeight: 400, // Altura mínima para o conteúdo
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.white24),
                       borderRadius: BorderRadius.circular(
-                          ResponsiveUtils.calculateResponsiveBorderRadius(
-                                  isTablet) *
-                              0.5),
+                          ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.5),
                     ),
-                    padding: EdgeInsets.all(isTablet ? 20 : 16),
-                    child: QuillEditor.basic(
-                      controller: _quillController,
-                      focusNode: FocusNode(),
-                      scrollController: ScrollController(),
-                      config: QuillEditorConfig(
-                        padding: EdgeInsets.zero,
-                        autoFocus: false,
-                        expands: true,
-                        enableInteractiveSelection:
-                            false, // Desabilita seleção de texto
-                        customStyles: DefaultStyles(
-                          paragraph: DefaultTextBlockStyle(
-                            TextStyle(
+                    child: AbsorbPointer(
+                      child: QuillEditor.basic(
+                        controller: _quillController,
+                        focusNode: FocusNode(),
+                        scrollController: ScrollController(),
+                        config: QuillEditorConfig(
+                          padding: EdgeInsets.all(isTablet ? 20 : 16),
+                          autoFocus: false,
+                          expands: false,
+                          enableInteractiveSelection: false,
+                          customStyles: DefaultStyles(
+                            paragraph: DefaultTextBlockStyle(
+                              TextStyle(
+                                color: Colors.white,
+                                fontSize: isTablet ? 18 : 16,
+                              ),
+                              HorizontalSpacing.zero,
+                              const VerticalSpacing(6, 0),
+                              const VerticalSpacing(0, 0),
+                              null,
+                            ),
+                            bold: TextStyle(
                               color: Colors.white,
+                              fontWeight: FontWeight.bold,
                               fontSize: isTablet ? 18 : 16,
                             ),
-                            HorizontalSpacing.zero,
-                            const VerticalSpacing(6, 0),
-                            const VerticalSpacing(0, 0),
-                            null,
-                          ),
-                          bold: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: isTablet ? 18 : 16,
-                          ),
-                          italic: TextStyle(
-                            color: Colors.white,
-                            fontStyle: FontStyle.italic,
-                            fontSize: isTablet ? 18 : 16,
-                          ),
-                          underline: TextStyle(
-                            color: Colors.white,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.white,
-                            fontSize: isTablet ? 18 : 16,
-                          ),
-                          quote: DefaultTextBlockStyle(
-                            TextStyle(
-                              color: Colors.white70,
+                            italic: TextStyle(
+                              color: Colors.white,
+                              fontStyle: FontStyle.italic,
                               fontSize: isTablet ? 18 : 16,
                             ),
-                            HorizontalSpacing.zero,
-                            const VerticalSpacing(6, 6),
-                            const VerticalSpacing(0, 0),
-                            BoxDecoration(
-                              border: Border(
-                                left: BorderSide(color: Colors.white, width: 4),
+                            underline: TextStyle(
+                              color: Colors.white,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.white,
+                              fontSize: isTablet ? 18 : 16,
+                            ),
+                            quote: DefaultTextBlockStyle(
+                              TextStyle(
+                                color: Colors.white70,
+                                fontSize: isTablet ? 18 : 16,
+                              ),
+                              HorizontalSpacing.zero,
+                              const VerticalSpacing(6, 6),
+                              const VerticalSpacing(0, 0),
+                              BoxDecoration(
+                                border: Border(
+                                  left: BorderSide(color: Colors.white, width: 4),
+                                ),
                               ),
                             ),
-                          ),
-                          lists: DefaultListBlockStyle(
-                            TextStyle(
-                              color: Colors.white,
-                              fontSize: isTablet ? 18 : 16,
+                            lists: DefaultListBlockStyle(
+                              TextStyle(
+                                color: Colors.white,
+                                fontSize: isTablet ? 18 : 16,
+                              ),
+                              HorizontalSpacing.zero,
+                              const VerticalSpacing(6, 0),
+                              const VerticalSpacing(0, 0),
+                              const BoxDecoration(
+                                color: Colors.transparent,
+                              ),
+                              null,
                             ),
-                            HorizontalSpacing.zero,
-                            const VerticalSpacing(6, 0),
-                            const VerticalSpacing(0, 0),
-                            const BoxDecoration(
-                              color: Colors.transparent,
-                            ),
-                            null,
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -521,7 +538,7 @@ class _NewsPageState extends State<NewsPage> {
             videoUrl: "https://www.youtube.com/watch?v=vCeCb-evJOc",
             width: screenWidth * 0.9, // 90% da largura da tela
             height: isTablet ? 220 : 180,
-            autoPlay: true,
+            autoPlay: false,
             mute: false,
             enableCaption: true,
             captionLanguage: 'pt',
