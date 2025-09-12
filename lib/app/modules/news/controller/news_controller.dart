@@ -83,8 +83,8 @@ class NewsController extends GetxController {
     try {
       isLoading(true);
       newss.value = await _repository.getNewsFromFirebase();
-      newss.sort((a, b) => DateTime.parse(b.createdAt as String)
-          .compareTo(DateTime.parse(a.createdAt as String)));
+      newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
+          .compareTo(DateTime.parse(a.createdAt.toString())));
     } catch (e) {
       /*Get.snackbar('Erro', 'Não foi possível carregar as notícias.',
           snackPosition: SnackPosition.BOTTOM);*/
@@ -109,39 +109,40 @@ class NewsController extends GetxController {
     }
   }
 
-Future<String> hideNews(String newsId, String status, String userEmail, String authorEmail) async {
-  
-  if (userEmail == authorEmail) {
-    String result = "";
-    try {
-      isLoading(true);
+  Future<String> hideNews(String newsId, String status, String userEmail,
+      String authorEmail) async {
+    if (userEmail == authorEmail) {
+      String result = "";
+      try {
+        isLoading(true);
 
-      result = await _repository.hideNews(newsId, status, userEmail);
+        result = await _repository.hideNews(newsId, status, userEmail);
 
-      if (result == "success") {
-        newss.removeWhere((news) => news.id == newsId); // Remove da lista local (interface)
+        if (result == "success") {
+          newss.removeWhere(
+              (news) => news.id == newsId); // Remove da lista local (interface)
+          Get.snackbar(
+            'Sucesso',
+            'Notícia excluída com sucesso!',
+            snackPosition: SnackPosition.BOTTOM,
+            colorText: Colors.white,
+            backgroundColor: Colors.green,
+          );
+        }
+      } catch (e) {
         Get.snackbar(
-          'Sucesso',
-          'Notícia excluída com sucesso!',
+          'Erro',
+          'Não foi possível excluir a notícia.',
           snackPosition: SnackPosition.BOTTOM,
           colorText: Colors.white,
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.red,
         );
+      } finally {
+        isLoading(false);
       }
-    } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível excluir a notícia.',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
-      );
-    } finally {
-      isLoading(false);
+      return result;
+    } else {
+      return "Você não tem permissão para excluir esta notícia.";
     }
-    return result;
-  } else {
-    return "Você não tem permissão para excluir esta notícia.";
   }
-}
 }

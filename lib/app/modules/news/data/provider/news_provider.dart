@@ -2,15 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 
-class NewsProvider  {
-
+class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String collectionPath = "news";
 
   // Add news to Firebase
   Future<void> saveNewsToFirebase(NewsModel news) async {
     try {
-      await _firestore.collection(collectionPath).add(news.toMap());
+      await _firestore
+          .collection(collectionPath)
+          .doc(news.id)
+          .set(news.toMap());
     } catch (e) {
       throw Exception("Erro ao salvar notícia no firebase: $e");
     }
@@ -51,16 +53,17 @@ class NewsProvider  {
     }
   }
 
-Future<String> hideNews(String newsId, String status, String userEmail) async {
-  try {
-    await _firestore.collection(collectionPath).doc(newsId).update({
-      'status': status,
-      'excluedAt': DateTime.now().toIso8601String(),
-      'excluedBy': userEmail,
-    });
-    return "success";
-  } catch (e) {
-    return "Error hiding news status: $e";
+  Future<String> hideNews(
+      String newsId, String status, String userEmail) async {
+    try {
+      await _firestore.collection(collectionPath).doc(newsId).update({
+        'status': status,
+        'excluedAt': DateTime.now().toIso8601String(),
+        'excluedBy': userEmail,
+      });
+      return "success";
+    } catch (e) {
+      return "Error hiding news status: $e";
+    }
   }
-}
 }

@@ -22,7 +22,7 @@ class _NewsWidgetState extends State<NewsWidget> {
   @override
   void initState() {
     super.initState();
-    
+
     // Verifica o tipo dos argumentos e extrai o email
     final arguments = Get.arguments;
     if (arguments is UserModel) {
@@ -32,7 +32,7 @@ class _NewsWidgetState extends State<NewsWidget> {
     } else {
       userEmail = '';
     }
-    
+
     // Busca as notícias apenas uma vez quando o widget é inicializado
     newsController.getNewsFromFirebase();
   }
@@ -45,17 +45,21 @@ class _NewsWidgetState extends State<NewsWidget> {
       }
 
       if (newsController.newss.isEmpty) {
-        return const Center(child: Text("Nenhuma notícia encontrada", selectionColor: Colors.white,));
+        return const Center(
+            child: Text(
+          "Nenhuma notícia encontrada",
+          selectionColor: Colors.white,
+        ));
       }
 
       // Filtra notícias com imagens válidas e status "publicado"
       final validNews = newsController.newss.where((news) {
         // Verifica se o status é "publicado"
         if (news.status != "publicado") return false;
-        
+
         // Verifica se tem imagens
         if (news.urlImages.isEmpty) return false;
-        
+
         // Verifica se a imagem base64 é válida
         try {
           base64Decode(news.urlImages[0]);
@@ -206,7 +210,8 @@ class _NewsWidgetState extends State<NewsWidget> {
                           // Ícone de excluir (lixeira)
                           GestureDetector(
                             onTap: () {
-                              hideNewsPopup(news.id, NewsStates.deletado, userEmail, news.createdBy);
+                              hideNewsPopup(news.id, NewsStates.deletado,
+                                  userEmail, news.createdBy);
                             },
                             child: Container(
                               padding: const EdgeInsets.all(8.0),
@@ -364,7 +369,8 @@ class _NewsWidgetState extends State<NewsWidget> {
     });
   }
 
-  void hideNewsPopup(String newsId, String status, String userEmail, String authorEmail) {
+  void hideNewsPopup(
+      String newsId, String status, String userEmail, String authorEmail) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -391,37 +397,22 @@ class _NewsWidgetState extends State<NewsWidget> {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop(); // Fecha o dialog primeiro
-                
+
                 try {
-                  String result = await newsController.hideNews(newsId, status, userEmail, authorEmail);
-                  
-                  // Mostra SnackBar com o resultado
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        result == "sucess" 
-                          ? "Notícia excluída com sucesso" 
-                          : result,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      backgroundColor: result == "sucess" 
-                        ? Colors.green 
-                        : Colors.red,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                  
+                  String result = await newsController.hideNews(
+                      newsId, status, userEmail, authorEmail);
+
                   // Se foi sucesso, atualiza a lista
                   if (result == "sucess") {
                     setState(() {
                       selectedCardIndex = null; // Remove seleção
                     });
-                    newsController.getNewsFromFirebase(); // Recarrega as notícias
+                    newsController
+                        .getNewsFromFirebase(); // Recarrega as notícias
                   }
-                  
-                // ignore: empty_catches
-                } catch (e) {
-                }
+
+                  // ignore: empty_catches
+                } catch (e) {}
               },
               child: const Text(
                 "Excluir",
