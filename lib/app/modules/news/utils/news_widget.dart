@@ -47,7 +47,7 @@ class _NewsWidgetState extends State<NewsWidget> {
       if (newsController.newss.isEmpty) {
         return const Center(
             child: Text(
-          "Nenhuma notícia encontrada",
+          "Nenhuma Matéria encontrada",
           selectionColor: Colors.white,
         ));
       }
@@ -72,7 +72,7 @@ class _NewsWidgetState extends State<NewsWidget> {
       if (validNews.isEmpty) {
         return const Center(
           child: Text(
-            "Nenhuma notícia com imagem válida encontrada",
+            "Nenhuma matéria com imagem válida encontrada",
             style: TextStyle(color: Colors.white),
             textAlign: TextAlign.center,
           ),
@@ -211,7 +211,7 @@ class _NewsWidgetState extends State<NewsWidget> {
                           GestureDetector(
                             onTap: () {
                               hideNewsPopup(news.id, NewsStates.deletado,
-                                  userEmail, news.createdBy);
+                                  userEmail, news.createdBy, news.type);
                             },
                             child: Container(
                               padding: const EdgeInsets.all(8.0),
@@ -369,19 +369,19 @@ class _NewsWidgetState extends State<NewsWidget> {
     });
   }
 
-  void hideNewsPopup(
-      String newsId, String status, String userEmail, String authorEmail) {
+  void hideNewsPopup(String newsId, String status, String userEmail,
+      String authorEmail, String type) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: const Text(
-            "Excluir Notícia",
+          title: Text(
+            "Excluir $type",
             style: TextStyle(color: Colors.white),
           ),
-          content: const Text(
-            "Tem certeza que deseja excluir esta notícia?",
+          content: Text(
+            "Tem certeza que deseja excluir esta $type?",
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
@@ -400,7 +400,7 @@ class _NewsWidgetState extends State<NewsWidget> {
 
                 try {
                   String result = await newsController.hideNews(
-                      newsId, status, userEmail, authorEmail);
+                      newsId, status, userEmail, authorEmail, type);
 
                   // Se foi sucesso, atualiza a lista
                   if (result == "sucess") {

@@ -14,7 +14,7 @@ class NewsProvider {
           .doc(news.id)
           .set(news.toMap());
     } catch (e) {
-      throw Exception("Erro ao salvar notícia no firebase: $e");
+      throw Exception("Erro ao salvar a matéria no firebase: $e");
     }
   }
 
@@ -24,7 +24,7 @@ class NewsProvider {
       var box = await Hive.openBox<NewsModel>(collectionPath);
       await box.put(news.id, news);
     } catch (e) {
-      throw Exception("Erro ao salvar notícia no Hive: $e");
+      throw Exception("Erro ao salvar a matéria no Hive: $e");
     }
   }
 
@@ -34,7 +34,7 @@ class NewsProvider {
       var box = await Hive.openBox<NewsModel>(collectionPath);
       return box.values.toList();
     } catch (e) {
-      throw Exception("Erro ao buscar notícias do Hive: $e");
+      throw Exception("Erro ao buscar as matérias do Hive: $e");
     }
   }
 
@@ -49,7 +49,7 @@ class NewsProvider {
               NewsModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      throw Exception("Erro ao buscar notícias: $e");
+      throw Exception("Erro ao buscar as matérias: $e");
     }
   }
 

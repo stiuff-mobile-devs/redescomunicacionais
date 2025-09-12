@@ -60,7 +60,7 @@ class NewsController extends GetxController {
       newss.insert(0, news); // Insert at the beginning of the list
       Get.snackbar(
         'Sucesso',
-        'Notícia cadastrada com sucesso!',
+        'Matéria cadastrada com sucesso!',
         snackPosition: SnackPosition.BOTTOM,
         colorText: Colors.white,
         backgroundColor: Colors.green,
@@ -68,7 +68,7 @@ class NewsController extends GetxController {
     } catch (e) {
       Get.snackbar(
         'Erro',
-        'Não foi possível cadastrar a notícia.',
+        'Não foi possível cadastrar a matéria.',
         snackPosition: SnackPosition.BOTTOM,
         colorText: Colors.white,
         backgroundColor: Colors.red,
@@ -102,7 +102,7 @@ class NewsController extends GetxController {
           .compareTo(DateTime.parse(a.createdAt as String)));
     } catch (e) {
       Get.snackbar(
-          'Erro', 'Não foi possível carregar as notícias do cache local.',
+          'Erro', 'Não foi possível carregar as matérias do cache local.',
           snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading(false);
@@ -110,7 +110,7 @@ class NewsController extends GetxController {
   }
 
   Future<String> hideNews(String newsId, String status, String userEmail,
-      String authorEmail) async {
+      String authorEmail, String type) async {
     if (userEmail == authorEmail) {
       String result = "";
       try {
@@ -123,7 +123,7 @@ class NewsController extends GetxController {
               (news) => news.id == newsId); // Remove da lista local (interface)
           Get.snackbar(
             'Sucesso',
-            'Notícia excluída com sucesso!',
+            '$type excluída com sucesso!',
             snackPosition: SnackPosition.BOTTOM,
             colorText: Colors.white,
             backgroundColor: Colors.green,
@@ -132,7 +132,7 @@ class NewsController extends GetxController {
       } catch (e) {
         Get.snackbar(
           'Erro',
-          'Não foi possível excluir a notícia.',
+          'Não foi possível excluir essa $type.',
           snackPosition: SnackPosition.BOTTOM,
           colorText: Colors.white,
           backgroundColor: Colors.red,
@@ -142,7 +142,14 @@ class NewsController extends GetxController {
       }
       return result;
     } else {
-      return "Você não tem permissão para excluir esta notícia.";
+      Get.snackbar(
+        'Erro',
+        'Você não tem permissão para excluir esta $type.',
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+      return "Você não tem permissão para excluir esta $type.";
     }
   }
 }

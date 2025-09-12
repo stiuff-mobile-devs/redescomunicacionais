@@ -73,7 +73,7 @@ class MenuPage extends StatelessWidget {
                 leading:
                     const Icon(Icons.article_outlined, color: Colors.white),
                 title: const Text(
-                  'Criar Notícia',
+                  'Criar Matéria',
                   style: TextStyle(color: Colors.white),
                 ),
                 onTap: () {
@@ -85,7 +85,7 @@ class MenuPage extends StatelessWidget {
               return const ListTile(
                 leading: Icon(Icons.lock_outline, color: Colors.red),
                 title: Text(
-                  'Criar Notícia',
+                  'Criar Matéria',
                   style: TextStyle(color: Colors.white),
                 ),
               );

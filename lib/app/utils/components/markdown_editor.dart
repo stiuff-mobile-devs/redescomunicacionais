@@ -76,15 +76,15 @@ class _MarkdownEditorState extends State<MarkdownEditor> {
           child: Theme(
             data: Theme.of(context).copyWith(
               textTheme: Theme.of(context).textTheme.apply(
-                bodyColor: Colors.white,
-                displayColor: Colors.white,
-              ),
+                    bodyColor: Colors.white,
+                    displayColor: Colors.white,
+                  ),
               iconTheme: const IconThemeData(color: Colors.white),
               colorScheme: Theme.of(context).colorScheme.copyWith(
-                onSurface: Colors.white,
-                primary: Colors.white,
-                outline: Colors.white,
-              ),
+                    onSurface: Colors.white,
+                    primary: Colors.white,
+                    outline: Colors.white,
+                  ),
             ),
             child: QuillEditor.basic(
               controller: _controller,
@@ -92,13 +92,13 @@ class _MarkdownEditorState extends State<MarkdownEditor> {
               scrollController: ScrollController(),
               config: QuillEditorConfig(
                 padding: const EdgeInsets.all(12),
-                placeholder: 'Digite o corpo da notícia...',
+                placeholder: 'Digite o corpo da matéria...',
                 autoFocus: false,
                 expands: false,
                 customStyles: DefaultStyles(
                   paragraph: DefaultTextBlockStyle(
                     const TextStyle(
-                      color: Colors.white, 
+                      color: Colors.white,
                       fontSize: 16,
                     ),
                     HorizontalSpacing.zero,

@@ -9,11 +9,12 @@ class CreateNewsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CreateNewsFormController controller = Get.put(CreateNewsFormController());
+    final CreateNewsFormController controller =
+        Get.put(CreateNewsFormController());
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Adicionar Notícia"),
+        title: const Text("Adicionar Matéria"),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -120,152 +121,152 @@ class CreateNewsPage extends StatelessWidget {
 
   Widget _buildCategorySelection(CreateNewsFormController controller) {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ExpansionTile(
-            title: const Text(
-              "Selecione as Categorias",
-              style: TextStyle(color: Colors.white),
-            ),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            children: [
-              Column(
-                children: controller.categories.map((category) {
-                  return CheckboxListTile(
-                    title: Text(
-                      category,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    value: controller.selectedCategories.contains(category),
-                    onChanged: (bool? isChecked) {
-                      controller.toggleCategory(category);
-                    },
-                    activeColor: Colors.blue,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    checkColor: Colors.white,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
-          ),
-        ),
-        if (controller.showCategoryError)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "Selecione pelo menos uma categoria.",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              child: ExpansionTile(
+                title: const Text(
+                  "Selecione as Categorias",
+                  style: TextStyle(color: Colors.white),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                children: [
+                  Column(
+                    children: controller.categories.map((category) {
+                      return CheckboxListTile(
+                        title: Text(
+                          category,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        value: controller.selectedCategories.contains(category),
+                        onChanged: (bool? isChecked) {
+                          controller.toggleCategory(category);
+                        },
+                        activeColor: Colors.blue,
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        checkColor: Colors.white,
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
-    ));
+            if (controller.showCategoryError)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Selecione pelo menos uma categoria.",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        ));
   }
 
   Widget _buildCitySelection(CreateNewsFormController controller) {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ExpansionTile(
-            title: const Text(
-              "Selecione a Cidade",
-              style: TextStyle(color: Colors.white),
-            ),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            children: [
-              Column(
-                children: controller.cities.map((city) {
-                  return CheckboxListTile(
-                    title: Text(
-                      city,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    value: controller.selectedCities.contains(city),
-                    onChanged: (bool? isChecked) {
-                      controller.toggleCity(city);
-                    },
-                    activeColor: Colors.blue,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    checkColor: Colors.white,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
-          ),
-        ),
-        if (controller.showCityError)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "Selecione pelo menos uma cidade.",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              child: ExpansionTile(
+                title: const Text(
+                  "Selecione a Cidade",
+                  style: TextStyle(color: Colors.white),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                children: [
+                  Column(
+                    children: controller.cities.map((city) {
+                      return CheckboxListTile(
+                        title: Text(
+                          city,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        value: controller.selectedCities.contains(city),
+                        onChanged: (bool? isChecked) {
+                          controller.toggleCity(city);
+                        },
+                        activeColor: Colors.blue,
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        checkColor: Colors.white,
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
-    ));
+            if (controller.showCityError)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Selecione pelo menos uma cidade.",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        ));
   }
 
   Widget _buildTypeSelection(CreateNewsFormController controller) {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ExpansionTile(
-            title: const Text(
-              "Selecione o Tipo",
-              style: TextStyle(color: Colors.white),
-            ),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            children: [
-              Column(
-                children: controller.types.map((selectedType) {
-                  return CheckboxListTile(
-                    title: Text(
-                      selectedType,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    value: controller.type == selectedType,
-                    onChanged: (bool? isChecked) {
-                      controller.toggleType(selectedType);
-                    },
-                    activeColor: Colors.blue,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    checkColor: Colors.white,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
-          ),
-        ),
-        if (controller.showTypeError)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "Selecione pelo menos um tipo.",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              child: ExpansionTile(
+                title: const Text(
+                  "Selecione o Tipo",
+                  style: TextStyle(color: Colors.white),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                children: [
+                  Column(
+                    children: controller.types.map((selectedType) {
+                      return CheckboxListTile(
+                        title: Text(
+                          selectedType,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        value: controller.type == selectedType,
+                        onChanged: (bool? isChecked) {
+                          controller.toggleType(selectedType);
+                        },
+                        activeColor: Colors.blue,
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        checkColor: Colors.white,
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
-    ));
+            if (controller.showTypeError)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Selecione pelo menos um tipo.",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        ));
   }
 
   Widget _buildYouTubeUrlField(CreateNewsFormController controller) {
@@ -298,7 +299,6 @@ class CreateNewsPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          
         ),
         const SizedBox(height: 8),
         const Text(
@@ -362,13 +362,13 @@ class CreateNewsPage extends StatelessWidget {
 
   Widget _buildImageMessage(CreateNewsFormController controller) {
     return Obx(() => Text(
-      controller.imageController.message,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.yellow,
-      ),
-    ));
+          controller.imageController.message,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.yellow,
+          ),
+        ));
   }
 
   Widget _buildPublishButton(CreateNewsFormController controller) {
@@ -379,7 +379,7 @@ class CreateNewsPage extends StatelessWidget {
         backgroundColor: Colors.blue,
       ),
       child: const Text(
-        "Publicar Notícia",
+        "Publicar Matéria",
         style: TextStyle(color: Colors.white),
       ),
     );

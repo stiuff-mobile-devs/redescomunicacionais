@@ -390,7 +390,7 @@ class _HomePageState extends State<HomePage> {
                                     _userController.isEditor.value
                                 ? Icons.article_outlined
                                 : Icons.lock_outline,
-                            title: "Criar Notícia",
+                            title: "Criar Matéria",
                             onTap: (_userController.isAdmin.value ||
                                     _userController.isEditor.value)
                                 ? () => Navigator.pushNamed(

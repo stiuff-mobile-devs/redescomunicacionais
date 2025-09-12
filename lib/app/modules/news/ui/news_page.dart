@@ -47,7 +47,8 @@ class _NewsPageState extends State<NewsPage> {
     final String cidade = Get.arguments["cidade"] ?? "";
     final String corpo = Get.arguments["corpo"] ?? "";
     final String type = Get.arguments["type"] ?? "";
-    final String videoUrl = Get.arguments["videoUrl"] ?? "https://www.youtube.com/shorts/vCeCb-evJOc";
+    final String videoUrl = Get.arguments["videoUrl"] ??
+        "https://www.youtube.com/shorts/vCeCb-evJOc";
 
     // Carrega o conteúdo Delta no controller
     try {
@@ -87,7 +88,7 @@ class _NewsPageState extends State<NewsPage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          "Noticia completa",
+          "$type completa",
           style: TextStyle(
             color: Colors.white,
             fontSize: ResponsiveUtils.calculateAppBarTitleSize(
@@ -172,7 +173,9 @@ class _NewsPageState extends State<NewsPage> {
                 // Container da imagem
                 ClipRRect(
                   borderRadius: BorderRadius.circular(
-                      ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.8),
+                      ResponsiveUtils.calculateResponsiveBorderRadius(
+                              isTablet) *
+                          0.8),
                   child: Image.memory(
                     base64Decode(imgurl),
                     fit: BoxFit.cover,
@@ -211,11 +214,12 @@ class _NewsPageState extends State<NewsPage> {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.white24, width: 1),
                     borderRadius: BorderRadius.circular(
-                        ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.8),
+                        ResponsiveUtils.calculateResponsiveBorderRadius(
+                                isTablet) *
+                            0.8),
                     color: Colors.white.withOpacity(0.05),
                   ),
                   padding: EdgeInsets.all(isTablet ? 16 : 12),
-                  
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -229,7 +233,7 @@ class _NewsPageState extends State<NewsPage> {
                           ),
                           SizedBox(width: isTablet ? 8 : 6),
                           Text(
-                            "Informações da Notícia",
+                            "Informações da $type",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: isTablet ? 16 : 14,
@@ -284,7 +288,7 @@ class _NewsPageState extends State<NewsPage> {
           color: Colors.white24,
         ),
 
-        // Lado direito 
+        // Lado direito
         Expanded(
           child: Container(
             height: screenHeight,
@@ -296,7 +300,7 @@ class _NewsPageState extends State<NewsPage> {
                   // Título da seção do conteúdo
                   Container(
                     child: Text(
-                      "Conteúdo da Notícia",
+                      "Conteúdo da $type",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: isTablet ? 24 : 20,
@@ -306,7 +310,7 @@ class _NewsPageState extends State<NewsPage> {
                   ),
                   SizedBox(height: isTablet ? 20 : 16),
 
-                  if(videoUrl.isNotEmpty)
+                  if (videoUrl.isNotEmpty)
                     // Mini player do YouTube
                     Container(
                       margin: EdgeInsets.only(bottom: isTablet ? 20 : 16),
@@ -328,7 +332,9 @@ class _NewsPageState extends State<NewsPage> {
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.white24),
                       borderRadius: BorderRadius.circular(
-                          ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.5),
+                          ResponsiveUtils.calculateResponsiveBorderRadius(
+                                  isTablet) *
+                              0.5),
                     ),
                     child: AbsorbPointer(
                       child: QuillEditor.basic(
@@ -377,7 +383,8 @@ class _NewsPageState extends State<NewsPage> {
                               const VerticalSpacing(0, 0),
                               BoxDecoration(
                                 border: Border(
-                                  left: BorderSide(color: Colors.white, width: 4),
+                                  left:
+                                      BorderSide(color: Colors.white, width: 4),
                                 ),
                               ),
                             ),
@@ -493,7 +500,7 @@ class _NewsPageState extends State<NewsPage> {
                   ),
                   SizedBox(width: isTablet ? 8 : 6),
                   Text(
-                    "Informações da Notícia",
+                    "Informações da $type",
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: isTablet ? 16 : 14,
@@ -535,9 +542,9 @@ class _NewsPageState extends State<NewsPage> {
           ),
         ),
         SizedBox(height: isTablet ? 25 : 20),
-        
-        if(videoUrl.isNotEmpty)
-        // Mini player do YouTube
+
+        if (videoUrl.isNotEmpty)
+          // Mini player do YouTube
           Container(
             padding: EdgeInsets.all(isTablet ? 16 : 12),
             child: YouTubeMiniPlayer(
