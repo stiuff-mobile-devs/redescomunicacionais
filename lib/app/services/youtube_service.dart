@@ -1,3 +1,4 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -6,7 +7,7 @@ import 'package:flutter/services.dart';
 class YouTubeController extends GetxController {
   late YoutubePlayerController _controller;
   String? videoId;
-  
+
   final String videoUrl;
   final bool? autoPlay;
   final bool? mute;
@@ -30,7 +31,7 @@ class YouTubeController extends GetxController {
   void _initializePlayer() {
     // Extrai o ID do vídeo da URL do YouTube
     videoId = YoutubePlayer.convertUrlToId(videoUrl);
-    
+
     if (videoId != null) {
       _controller = YoutubePlayerController(
         initialVideoId: videoId!,
@@ -43,6 +44,8 @@ class YouTubeController extends GetxController {
           useHybridComposition: true,
         ),
       );
+      // Inicia com volume máximo
+      _controller.setVolume(100);
     }
   }
 
@@ -126,40 +129,64 @@ class YouTubeMiniPlayer extends StatelessWidget {
           );
         }
 
-        return Container(
-          width: width ?? 320,
-          height: height ?? 180,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: width ?? 320,
+              height: height ?? 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: YoutubePlayer(
-              controller: controller.controller,
-              showVideoProgressIndicator: true,
-              progressIndicatorColor: Colors.red,
-              progressColors: const ProgressBarColors(
-                playedColor: Colors.red,
-                handleColor: Colors.redAccent,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: YoutubePlayer(
+                  controller: controller.controller,
+                  showVideoProgressIndicator: true,
+                  progressIndicatorColor: Colors.red,
+                  progressColors: const ProgressBarColors(
+                    playedColor: Colors.red,
+                    handleColor: Colors.redAccent,
+                  ),
+                  onReady: controller.onPlayerReady,
+                  onEnded: controller.onVideoEnded,
+                  bottomActions: [
+                    CurrentPosition(),
+                    ProgressBar(isExpanded: true),
+                    RemainingDuration(),
+                    PlaybackSpeedButton(),
+                  ],
+                ),
               ),
-              onReady: controller.onPlayerReady,
-              onEnded: controller.onVideoEnded,
-              // Desativa botão de tela cheia
-              bottomActions: [
-                CurrentPosition(),
-                ProgressBar(isExpanded: true),
-                RemainingDuration(),
-                PlaybackSpeedButton(),
-              ],
             ),
-          ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Assistir no YouTube'),
+              onPressed: () async {
+                final url =
+                    'https://www.youtube.com/watch?v=${controller.videoId}';
+                if (await canLaunchUrl(Uri.parse(url))) {
+                  await launchUrl(Uri.parse(url),
+                      mode: LaunchMode.externalApplication);
+                }
+              },
+            ),
+          ],
         );
       },
     );
