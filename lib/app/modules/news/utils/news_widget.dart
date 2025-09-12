@@ -195,7 +195,55 @@ class _NewsWidgetState extends State<NewsWidget> {
                           // Ícone de editar (lápis)
                           GestureDetector(
                             onTap: () {
-                              _showDevelopmentPopup("Editar");
+                             
+                              if (userEmail == news.createdBy) {
+                                // Usuário é o autor - permite editar
+                                Get.toNamed(
+                                  Routes.EDIT_NEWS,
+                                  arguments: {
+                                    "newsId": news.id,
+                                    "titulo": news.title,
+                                    "subtitulo": news.subtitle,
+                                    "cidade": news.cities,
+                                    "categoria": news.categories,
+                                    "corpo": news.body,
+                                    "imgurl": news.urlImages.isNotEmpty ? news.urlImages[0] : '',
+                                    "autor": news.author,
+                                    "dataCriacao": news.createdAt.toString(),
+                                    "type": news.type,
+                                    "status": news.status,
+                                  },
+                                );
+                              } else {
+                                // Usuário NÃO é o autor - mostra alerta
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      backgroundColor: Colors.grey[900],
+                                      title: const Text(
+                                        "Acesso Negado",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      content: const Text(
+                                        "Você não pode editar esta notícia porque não é o autor. Apenas o autor original pode fazer alterações.",
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text(
+                                            "OK",
+                                            style: TextStyle(color: Colors.blue),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.all(8.0),
