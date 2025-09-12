@@ -14,78 +14,66 @@
       },
       "oauth_client": [
         {
-          "client_id": "792922518433-tk5k4cforsr5l2r1bsi2n9mfftn8njlj.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBO5t2GpdYhX_fQPbHc4YNOK--d6a3qekk"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "792922518433-tk5k4cforsr5l2r1bsi2n9mfftn8njlj.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "792922518433-qjp00cfou7jadhop1j8qqseq0q83eu4l.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.redescomunicacionais"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:792922518433:android:22a21920187fe4b1c891e0",
-        "android_client_info": {
-          "package_name": "com.example.redescomunicacionais"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "792922518433-0tul09c6dofgcsmp6fs6a8unq93l2g5u.apps.googleusercontent.com",
+          "client_id": "792922518433-0v2fpcupnek0o92b98elacajcrm1cqkd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.redescomunicacionais",
-            "certificate_hash": "e58718e9bac00432c0def6c506b0743f5ce43c11"
-          }
-        },
-        {
-          "client_id": "792922518433-115dua0vbddf6mfp5qt8cu5hmmgql0cf.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.redescomunicacionais",
+            "package_name": "br.uff.redescomunicacionais",
             "certificate_hash": "e169aa159f7ce3ca914526aa1720bf0f5721d629"
           }
         },
         {
-          "client_id": "792922518433-c222dvh31et7cj43bcjf8e0oon6pqdvv.apps.googleusercontent.com",
+          "client_id": "792922518433-2t8st80ltr1vp7gsk89elldvr8g9rajh.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.redescomunicacionais",
-            "certificate_hash": "29f639f8d9e5674bbdb7c9ba1c27892d7c3b3379"
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "bc9b2716ee808f5f635d972b6327a8ba03bd7995"
           }
         },
         {
-          "client_id": "792922518433-i4i52sind0bsmphc09laru4phge4l0aj.apps.googleusercontent.com",
+          "client_id": "792922518433-ap32j7d2jcip828c1411nfmm3dru5cir.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.redescomunicacionais",
+            "package_name": "br.uff.redescomunicacionais",
             "certificate_hash": "27e0f45efaa96258f66534cf16602132cbe35575"
           }
         },
         {
-          "client_id": "792922518433-kj94ek3bm52s39a6a6m99pkehds5abel.apps.googleusercontent.com",
+          "client_id": "792922518433-c04en6q3711j33hepj082ju9v2ejpckf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.redescomunicacionais",
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "fd7b4b2f260f371180a67e8251ca3605e556c1b6"
+          }
+        },
+        {
+          "client_id": "792922518433-jnblb1gkah70suip1fda7sed0sn5mt29.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "29f639f8d9e5674bbdb7c9ba1c27892d7c3b3379"
+          }
+        },
+        {
+          "client_id": "792922518433-lpf5bpdgffiprfrt3mjomsukhm8eajor.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "e58718e9bac00432c0def6c506b0743f5ce43c11"
+          }
+        },
+        {
+          "client_id": "792922518433-s17te7i8molsp1ol0nk69t1imikanlsi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "f3e3dc6f0728061d4f3b9263c6636d04aeaf414c"
+          }
+        },
+        {
+          "client_id": "792922518433-sgtvhn6dasgdkbrg3ng4nejrevn6bpg8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
             "certificate_hash": "3445f52ab39d33104dde42c0bf6d30cc634129da"
           }
         },

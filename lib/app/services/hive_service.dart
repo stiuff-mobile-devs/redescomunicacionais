@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:redescomunicacionais/app/data/model/user_model.dart';
-import 'package:redescomunicacionais/app/data/model/news_model.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 
 class HiveInitializer {
   static Future<void> initialize() async {
