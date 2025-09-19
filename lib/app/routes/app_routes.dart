@@ -8,4 +8,5 @@ abstract class Routes {
   static const CREATE_NEWS = '/createNews';
   static const ADMIN = '/admin';
   static const WEB_VIEW = '/web_view';
+  static const EDIT_NEWS = '/edit-news';
 }

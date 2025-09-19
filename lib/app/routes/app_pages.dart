@@ -13,6 +13,7 @@ import 'package:redescomunicacionais/app/modules/login/ui/login_page.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_widget.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
 import 'package:redescomunicacionais/app/modules/web/ui/webview_page.dart';
+import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
 
 class AppPages {
   static final routes = [
@@ -44,5 +45,10 @@ class AppPages {
         page: () => const CreateNewsPage(),
         bindings: [NewsBinding(), HomeBinding(), ImageBinding()]),
     GetPage(name: Routes.WEB_VIEW, page: () => const WebViewPage()),
+    GetPage(
+      name: Routes.EDIT_NEWS,
+      page: () => const EditNewsPage(),
+      binding: NewsBinding(), // Usando o mesmo binding do módulo news
+    ),
   ];
 }

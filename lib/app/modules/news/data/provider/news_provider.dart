@@ -53,8 +53,8 @@ class NewsProvider {
     }
   }
 
-  Future<String> hideNews(
-      String newsId, String status, String userEmail) async {
+  // Método hideNews (mantém a versão mais limpa)
+  Future<String> hideNews(String newsId, String status, String userEmail) async {
     try {
       await _firestore.collection(collectionPath).doc(newsId).update({
         'status': status,
@@ -64,6 +64,18 @@ class NewsProvider {
       return "success";
     } catch (e) {
       return "Error hiding news status: $e";
+    }
+  }
+
+  // Método updateNews (da branch vitorviana/update-news)
+  Future<void> updateNews(String newsId, Map<String, dynamic> updatedData) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('news')
+          .doc(newsId)
+          .update(updatedData);
+    } catch (e) {
+      throw Exception("Erro ao atualizar notícia no Firebase: $e");
     }
   }
 }
