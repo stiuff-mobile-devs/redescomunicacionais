@@ -116,6 +116,16 @@ class MenuPage extends StatelessWidget {
             }
           }),
           ListTile(
+            leading: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+            title: const Text(
+              'Central de Comnunicação',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO);
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.info_outline, color: Colors.white),
             title: const Text(
               'Sobre',

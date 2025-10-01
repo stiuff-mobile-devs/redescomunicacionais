@@ -9,4 +9,5 @@ abstract class Routes {
   static const ADMIN = '/admin';
   static const WEB_VIEW = '/web_view';
   static const EDIT_NEWS = '/edit-news';
+  static const CENTRAL_DE_COMUNICACAO = '/central-de-comunicacao';
 }

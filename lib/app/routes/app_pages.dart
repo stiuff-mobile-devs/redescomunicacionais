@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
+import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
 import 'package:redescomunicacionais/app/bindings/image_bindings.dart';
 import 'package:redescomunicacionais/app/modules/login/bindings/login_bindings.dart';
@@ -21,10 +23,11 @@ class AppPages {
       name: Routes.INITIAL,
       page: () => const InitialPage(),
     ),
-    GetPage(name: Routes.LOGIN, page: () => const LoginPage(), binding: LoginBinding()),
-    
+    GetPage(
+        name: Routes.LOGIN,
+        page: () => const LoginPage(),
+        binding: LoginBinding()),
     GetPage(name: Routes.ADMIN, page: () => AdminPage()),
-    
     GetPage(
       name: Routes.HOME,
       page: () => HomePage(),
@@ -49,6 +52,11 @@ class AppPages {
       name: Routes.EDIT_NEWS,
       page: () => const EditNewsPage(),
       binding: NewsBinding(), // Usando o mesmo binding do módulo news
+    ),
+    GetPage(
+      name: Routes.CENTRAL_DE_COMUNICACAO,
+      page: () => CentralDeComunicacaoPage(),
+      binding: CentralDeComunicacaoBinding(),
     ),
   ];
 }
