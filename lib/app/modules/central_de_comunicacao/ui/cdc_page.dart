@@ -31,24 +31,78 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                 decoration: BoxDecoration(
                   gradient: AppColors.darkBlueToBlackGradient(),
                 ),
-                margin: const EdgeInsets.symmetric(horizontal: 0),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      const url = 'https://chat.google.com/room/AAQAbsILxpE';
-                      if (await canLaunchUrl(Uri.parse(url))) {
-                        await launchUrl(Uri.parse(url),
-                            mode: LaunchMode.externalApplication);
-                      } else {
-                        Get.snackbar(
-                          'Erro',
-                          'Não foi possível abrir o Google Chat.',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      }
-                    },
-                    child: const Text('Clique aqui'),
-                  ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text(
+                        'Chats',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GridView.builder(
+                        itemCount: controller.chats.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 1,
+                        ),
+                        itemBuilder: (context, index) {
+                          final chat = controller.chats[index];
+                          return GestureDetector(
+                            onTap: () async {
+                              final url = chat['url']!;
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                await launchUrl(Uri.parse(url),
+                                    mode: LaunchMode.externalApplication);
+                              } else {
+                                Get.snackbar(
+                                  'Erro',
+                                  'Não foi possível abrir o chat.',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundImage: AssetImage(chat['image']!),
+                                    radius: 32,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    chat['name']!,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
       ),
