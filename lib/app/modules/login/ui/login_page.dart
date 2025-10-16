@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
-import 'package:redescomunicacionais/app/controller/version_controller.dart';
-import 'package:redescomunicacionais/app/services/device_detector_service.dart';
+import 'package:redescomunicacionais/app/data/services/version_service.dart';
+import 'package:redescomunicacionais/app/data/services/device_detector_service.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
@@ -16,7 +16,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final LoginController _loginController = Get.find<LoginController>();
-  final versionController = Get.find<VersionController>();
   final DeviceDetectorService deviceDetector = DeviceDetectorService.instance;
 
   @override
@@ -166,7 +165,9 @@ class _LoginPageState extends State<LoginPage> {
 
                     // Versão
                     Text(
-                      versionController.version,
+                      //TODO: Implementar controle de versão
+                      "Versão: 1.0.0",
+                      // versionController.version,
                       style: TextStyle(
                         fontSize: versionFontSize,
                         color: Colors.white.withOpacity(0.8),
@@ -379,7 +380,9 @@ class _LoginPageState extends State<LoginPage> {
                       bottom: verticalSpacing * 0.4,
                     ),
                     child: Text(
-                      versionController.version,
+                      //TODO: Implementar controle de versão
+                      "Versão: 1.0.0",
+                      // versionController.version,
                       style: TextStyle(
                         fontSize: versionFontSize,
                         color: Colors.white.withOpacity(0.8),

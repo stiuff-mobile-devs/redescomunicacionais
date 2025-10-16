@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:redescomunicacionais/app/controller/image_controller.dart';
+import 'package:redescomunicacionais/app/data/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_ontroller.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
 
@@ -15,23 +15,24 @@ class EditNewsPage extends StatefulWidget {
 
 class _EditNewsPageState extends State<EditNewsPage> {
   final _formKey = GlobalKey<FormState>();
-  final UpdateNewsController _updateNewsController = Get.put(UpdateNewsController());
-  final ImageController _imageController = Get.put(ImageController());
-  
+  final UpdateNewsController _updateNewsController =
+      Get.put(UpdateNewsController());
+  final ImageBase64Service _imageController = Get.put(ImageBase64Service());
+
   // Controllers para os campos
   late TextEditingController _titleController;
   late TextEditingController _subtitleController;
   late QuillController _bodyController;
-  
+
   // Dados da notícia
   late String newsId;
   late String originalImageUrl;
-  
+
   // Estado das seleções
   final RxList<String> selectedCategories = <String>[].obs;
   final RxList<String> selectedCities = <String>[].obs;
   final RxString selectedType = ''.obs;
-  
+
   // Estado dos erros
   final RxBool showCategoryError = false.obs;
   final RxBool showCityError = false.obs;
@@ -54,7 +55,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
     'Tecnologia',
     'Ação comunitária'
   ];
-  
+
   final List<String> cities = [
     'São Sebastião do Alto',
     'Macuco',
@@ -63,7 +64,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
     'Laje do Muriaé',
     'São José de Ubá',
   ];
-  
+
   final List<String> types = [
     'Notícia',
     'Opnião',
@@ -78,14 +79,14 @@ class _EditNewsPageState extends State<EditNewsPage> {
   void _loadNewsData() {
     // Recebe os dados via Get.arguments
     final args = Get.arguments as Map<String, dynamic>;
-    
+
     newsId = args['newsId'] ?? '';
     originalImageUrl = args['imgurl'] ?? '';
-    
+
     // Inicializa controllers com dados existentes
     _titleController = TextEditingController(text: args['titulo'] ?? '');
     _subtitleController = TextEditingController(text: args['subtitulo'] ?? '');
-    
+
     // Inicializa QuillController com conteúdo existente
     _bodyController = QuillController.basic();
     if (args['corpo'] != null && args['corpo'].isNotEmpty) {
@@ -102,13 +103,13 @@ class _EditNewsPageState extends State<EditNewsPage> {
         _bodyController.document.insert(0, args['corpo']);
       }
     }
-    
+
     // Carrega listas
-    selectedCities.value = List<String>.from(args['cidade'] is String 
-        ? args['cidade'].split(', ') 
+    selectedCities.value = List<String>.from(args['cidade'] is String
+        ? args['cidade'].split(', ')
         : args['cidade'] ?? []);
-    selectedCategories.value = List<String>.from(args['categoria'] is String 
-        ? args['categoria'].split(', ') 
+    selectedCategories.value = List<String>.from(args['categoria'] is String
+        ? args['categoria'].split(', ')
         : args['categoria'] ?? []);
     selectedType.value = args['type'] ?? '';
   }
@@ -225,164 +226,164 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
   Widget _buildCategorySelection() {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ExpansionTile(
-            title: const Text(
-              "Selecione as Categorias",
-              style: TextStyle(color: Colors.white),
-            ),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            children: [
-              Container(
-                constraints: const BoxConstraints(maxHeight: 200),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return CheckboxListTile(
-                      title: Text(
-                        category,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      value: selectedCategories.contains(category),
-                      onChanged: (bool? isChecked) {
-                        toggleCategory(category);
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ExpansionTile(
+                title: const Text(
+                  "Selecione as Categorias",
+                  style: TextStyle(color: Colors.white),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return CheckboxListTile(
+                          title: Text(
+                            category,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          value: selectedCategories.contains(category),
+                          onChanged: (bool? isChecked) {
+                            toggleCategory(category);
+                          },
+                          activeColor: Colors.blue,
+                          side: const BorderSide(color: Colors.white, width: 2),
+                          checkColor: Colors.white,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        );
                       },
-                      activeColor: Colors.blue,
-                      side: const BorderSide(color: Colors.white, width: 2),
-                      checkColor: Colors.white,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    );
-                  },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (showCategoryError.value)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Selecione pelo menos uma categoria.",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
-            ],
-          ),
-        ),
-        if (showCategoryError.value)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "Selecione pelo menos uma categoria.",
-              style: TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ),
-      ],
-    ));
+          ],
+        ));
   }
 
   Widget _buildCitySelection() {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ExpansionTile(
-            title: const Text(
-              "Selecione a Cidade",
-              style: TextStyle(color: Colors.white),
-            ),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            children: [
-              Container(
-                constraints: const BoxConstraints(maxHeight: 200),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: cities.length,
-                  itemBuilder: (context, index) {
-                    final city = cities[index];
-                    return CheckboxListTile(
-                      title: Text(
-                        city,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      value: selectedCities.contains(city),
-                      onChanged: (bool? isChecked) {
-                        toggleCity(city);
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ExpansionTile(
+                title: const Text(
+                  "Selecione a Cidade",
+                  style: TextStyle(color: Colors.white),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: cities.length,
+                      itemBuilder: (context, index) {
+                        final city = cities[index];
+                        return CheckboxListTile(
+                          title: Text(
+                            city,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          value: selectedCities.contains(city),
+                          onChanged: (bool? isChecked) {
+                            toggleCity(city);
+                          },
+                          activeColor: Colors.blue,
+                          side: const BorderSide(color: Colors.white, width: 2),
+                          checkColor: Colors.white,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        );
                       },
-                      activeColor: Colors.blue,
-                      side: const BorderSide(color: Colors.white, width: 2),
-                      checkColor: Colors.white,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    );
-                  },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (showCityError.value)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Selecione pelo menos uma cidade.",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
-            ],
-          ),
-        ),
-        if (showCityError.value)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "Selecione pelo menos uma cidade.",
-              style: TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ),
-      ],
-    ));
+          ],
+        ));
   }
 
   Widget _buildTypeSelection() {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ExpansionTile(
-            title: const Text(
-              "Selecione o Tipo",
-              style: TextStyle(color: Colors.white),
-            ),
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            children: [
-              Column(
-                children: types.map((type) {
-                  return CheckboxListTile(
-                    title: Text(
-                      type,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    value: selectedType.value == type,
-                    onChanged: (bool? isChecked) {
-                      toggleType(type);
-                    },
-                    activeColor: Colors.blue,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    checkColor: Colors.white,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
-          ),
-        ),
-        if (showTypeError.value)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text(
-              "Selecione pelo menos um tipo.",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              child: ExpansionTile(
+                title: const Text(
+                  "Selecione o Tipo",
+                  style: TextStyle(color: Colors.white),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                children: [
+                  Column(
+                    children: types.map((type) {
+                      return CheckboxListTile(
+                        title: Text(
+                          type,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        value: selectedType.value == type,
+                        onChanged: (bool? isChecked) {
+                          toggleType(type);
+                        },
+                        activeColor: Colors.blue,
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        checkColor: Colors.white,
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
-    ));
+            if (showTypeError.value)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  "Selecione pelo menos um tipo.",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        ));
   }
 
   Widget _buildMarkdownEditor() {
@@ -452,29 +453,32 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
   Widget _buildImageMessage() {
     return Obx(() => Text(
-      _imageController.message,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.yellow,
-      ),
-    ));
+          _imageController.message,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.yellow,
+          ),
+        ));
   }
 
   Widget _buildUpdateButton() {
     return Obx(() => ElevatedButton(
-      onPressed: _updateNewsController.isLoading.value ? null : _validateAndUpdate,
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
-        backgroundColor: _updateNewsController.isLoading.value ? Colors.grey : Colors.blue,
-      ),
-      child: _updateNewsController.isLoading.value
-          ? const CircularProgressIndicator(color: Colors.white)
-          : const Text(
-              "Atualizar Notícia",
-              style: TextStyle(color: Colors.white),
-            ),
-    ));
+          onPressed:
+              _updateNewsController.isLoading.value ? null : _validateAndUpdate,
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50),
+            backgroundColor: _updateNewsController.isLoading.value
+                ? Colors.grey
+                : Colors.blue,
+          ),
+          child: _updateNewsController.isLoading.value
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text(
+                  "Atualizar Notícia",
+                  style: TextStyle(color: Colors.white),
+                ),
+        ));
   }
 
   // Métodos de toggle
@@ -510,18 +514,18 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
     // Validação do formulário
     bool isFormValid = _formKey.currentState?.validate() ?? false;
-    
+
     // Validação das seleções
     if (selectedCategories.isEmpty) {
       showCategoryError.value = true;
       isFormValid = false;
     }
-    
+
     if (selectedCities.isEmpty) {
       showCityError.value = true;
       isFormValid = false;
     }
-    
+
     if (selectedType.value.isEmpty) {
       showTypeError.value = true;
       isFormValid = false;
@@ -556,7 +560,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
       }
 
       // Chama o método do controller para atualizar
-      String result = await _updateNewsController.updateNews(newsId, updatedData);
+      String result =
+          await _updateNewsController.updateNews(newsId, updatedData);
 
       if (result == "success") {
         Get.snackbar(
@@ -565,7 +570,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-        
+
         // Volta para a página anterior
         Get.back();
       } else {

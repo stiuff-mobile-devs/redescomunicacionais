@@ -1,9 +1,17 @@
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/data/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class LoginController extends GetxController {
   final LoginRepository repository = LoginRepository();
+  late final VersionService versionService;
+
+  @override
+  void onInit() {
+    versionService = VersionService();
+    super.onInit();
+  }
 
   void loginGoogle() async {
     try {

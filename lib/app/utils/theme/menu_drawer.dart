@@ -3,13 +3,13 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
-import 'package:redescomunicacionais/app/controller/version_controller.dart';
+import 'package:redescomunicacionais/app/data/services/version_service.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class MenuPage extends StatelessWidget {
   final HomeController _homeController = Get.find<HomeController>();
   final UserController _userController = Get.find<UserController>();
-  final VersionController _versionController = Get.find<VersionController>();
+  final VersionService _versionController = Get.find<VersionService>();
 
   @override
   Widget build(BuildContext context) {

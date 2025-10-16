@@ -4,7 +4,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'dart:convert';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/controller/image_controller.dart';
+import 'package:redescomunicacionais/app/data/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/utils/components/icon_base64.dart';
 
@@ -43,7 +43,7 @@ class CreateNewsFormController extends GetxController {
   // Dependências
   final HomeController _homeController = Get.find<HomeController>();
   final NewsController _newsController = Get.find<NewsController>();
-  final ImageController _imageController = Get.find<ImageController>();
+  final ImageBase64Service _imageController = Get.find<ImageBase64Service>();
 
   // Listas de dados
   final List<String> categories = [
@@ -129,9 +129,9 @@ class CreateNewsFormController extends GetxController {
     _showCityError.value = _selectedCities.isEmpty;
     _showTypeError.value = _type.value == null;
 
-    if (_formKey.currentState!.validate() && 
-        _selectedCategories.isNotEmpty && 
-        _selectedCities.isNotEmpty && 
+    if (_formKey.currentState!.validate() &&
+        _selectedCategories.isNotEmpty &&
+        _selectedCities.isNotEmpty &&
         _type.value != null) {
       _publishNews();
     }
@@ -164,7 +164,7 @@ class CreateNewsFormController extends GetxController {
 
     // Limpar formulário
     _clearForm();
-    
+
     // Voltar para a tela anterior
     Get.back();
   }
@@ -186,5 +186,5 @@ class CreateNewsFormController extends GetxController {
   }
 
   // Getter para acessar o ImageController externamente
-  ImageController get imageController => _imageController;
+  ImageBase64Service get imageController => _imageController;
 }

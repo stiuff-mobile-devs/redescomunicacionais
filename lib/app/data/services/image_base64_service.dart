@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
-class ImageController extends GetxController {
+class ImageBase64Service extends GetxController {
   final RxnString _base64String = RxnString();
   final RxString _message = "".obs;
 
@@ -14,7 +14,8 @@ class ImageController extends GetxController {
   Future<void> pickImage() async {
     const int maxSizeBytes = 500000; // 500KB
     final ImagePicker picker = ImagePicker();
-    final XFile? imageFile = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? imageFile =
+        await picker.pickImage(source: ImageSource.gallery);
 
     if (imageFile == null) {
       _message.value = "Nenhuma imagem selecionada.";
@@ -22,7 +23,8 @@ class ImageController extends GetxController {
     }
 
     _base64String.value = null;
-    _message.value = "Processando sua imagem... Isso pode levar alguns segundos.";
+    _message.value =
+        "Processando sua imagem... Isso pode levar alguns segundos.";
 
     // MUDANÇA: Verificar tipo MIME em vez da extensão do arquivo
     String? mimeType = imageFile.mimeType;
@@ -54,13 +56,15 @@ class ImageController extends GetxController {
       return;
     }
 
-    Uint8List compressedImage = Uint8List.fromList(img.encodeJpg(image, quality: 10));
-    
+    Uint8List compressedImage =
+        Uint8List.fromList(img.encodeJpg(image, quality: 10));
+
     if (compressedImage.lengthInBytes > maxSizeBytes) {
       _message.value = "A imagem ainda é muito grande!";
     } else {
       _base64String.value = base64Encode(compressedImage);
-      _message.value = "A imagem ultrapassou o limite de 500KB e foi comprimida. Esse processo pode resultar em perda de qualidade na imagem.";
+      _message.value =
+          "A imagem ultrapassou o limite de 500KB e foi comprimida. Esse processo pode resultar em perda de qualidade na imagem.";
     }
   }
 }

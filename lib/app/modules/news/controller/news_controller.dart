@@ -4,8 +4,8 @@ import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 
 class NewsController extends GetxController {
-  final NewsRepository _repository;
-  NewsController(this._repository);
+  final NewsRepository _repository = NewsRepository();
+
   var newss = <NewsModel>[].obs;
   var isLoading = false.obs;
 

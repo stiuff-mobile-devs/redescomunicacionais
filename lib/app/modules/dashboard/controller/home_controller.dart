@@ -1,14 +1,24 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/controller/location_controller.dart';
+import 'package:redescomunicacionais/app/data/services/location_service.dart';
+import 'package:redescomunicacionais/app/data/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class HomeController extends GetxController {
   final UserModel user = Get.arguments;
-  final LocationController locationController = Get.put(LocationController());
+
+  late final VersionService versionService;
+  late final LocationService locationService;
+
+  RxBool isLoadingLocation = false.obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
+    versionService = Get.find<VersionService>();
+    locationService = Get.find<LocationService>();
+    isLoadingLocation.value = true;
+    await locationService.requestLocation();
+    isLoadingLocation.value = false;
     super.onInit();
   }
 

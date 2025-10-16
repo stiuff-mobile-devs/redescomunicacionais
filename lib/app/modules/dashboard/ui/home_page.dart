@@ -2,45 +2,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/controller/location_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
-import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
-import 'package:redescomunicacionais/app/controller/version_controller.dart';
-import 'package:redescomunicacionais/app/services/device_detector_service.dart';
-import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_widget.dart';
+import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
+import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/theme/menu_drawer.dart';
-import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final HomeController _homeController = Get.put(HomeController());
-  final LocationController _locationController = Get.put(LocationController());
-  final UserController _userController = Get.put(UserController());
-  final VersionController _versionController = Get.put(VersionController());
-  final DeviceDetectorService deviceDetector = DeviceDetectorService.instance;
-  int timeRefresh = 30; // Intervalo de refresh automático em minutos
-
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
-
-  Timer? _refreshTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _startAutoRefresh();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Logicas de responsividade
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
@@ -48,7 +21,6 @@ class _HomePageState extends State<HomePage> {
     final bool useHorizontalLayout =
         ResponsiveUtils.shouldUseHorizontalLayout(screenWidth, screenHeight);
 
-    // Calcula tamanhos responsivos usando a classe utilitária
     double appBarTitleSize = ResponsiveUtils.calculateAppBarTitleSize(
         screenWidth, isTablet, useHorizontalLayout);
     double iconSize = ResponsiveUtils.calculateIconSize(screenWidth, isTablet);
@@ -61,6 +33,9 @@ class _HomePageState extends State<HomePage> {
       appBar: useHorizontalLayout
           ? null
           : AppBar(
+              centerTitle: true,
+              elevation: isTablet ? 8.0 : 4.0,
+              foregroundColor: Colors.white,
               title: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
@@ -74,45 +49,56 @@ class _HomePageState extends State<HomePage> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              shape: const RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(10)),
+              ),
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: AppColors.appBarTopGradient(),
+                ),
+              ),
               iconTheme: IconThemeData(
                 color: Colors.white,
                 size: iconSize,
               ),
-              centerTitle: true,
-              elevation: isTablet ? 8.0 : 4.0,
               toolbarHeight: isTablet ? 70.0 : 56.0,
               actions: [
                 IconButton(
                   iconSize: iconSize,
-                  icon: const Icon(Icons.cloud_queue),
-                  onPressed: () {
-                    _showSyncDialog(context);
-                  },
-                ),
-                IconButton(
-                  iconSize: iconSize,
                   icon: const Icon(Icons.help_outline),
                   onPressed: () {
-                    _homeController.goUserGuide();
+                    controller.goUserGuide();
                   },
                 ),
               ],
             ),
       drawer: useHorizontalLayout ? null : MenuPage(),
-      body: useHorizontalLayout
-          ? _buildHorizontalLayout(
-              context,
-              screenWidth,
-              screenHeight,
-              isTablet,
-              appBarTitleSize,
-              iconSize,
-            )
-          : _buildVerticalLayout(
-              context,
-              screenHeight,
-              isTablet,
-            ),
+      body: Obx(
+        () => controller.isLoadingLocation.value
+            ? Container(
+                decoration: BoxDecoration(
+                  gradient: AppColors.darkBlueToBlackGradient(),
+                ),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : useHorizontalLayout
+                ? _buildHorizontalLayout(
+                    context,
+                    screenWidth,
+                    screenHeight,
+                    isTablet,
+                    appBarTitleSize,
+                    iconSize,
+                  )
+                : _buildVerticalLayout(
+                    context,
+                    screenHeight,
+                    isTablet,
+                  ),
+      ),
       bottomNavigationBar: useHorizontalLayout
           ? null
           : Container(
@@ -123,10 +109,10 @@ class _HomePageState extends State<HomePage> {
                 vertical: isTablet ? 8.0 : 4.0,
               ),
               child: Center(
-                child: Obx(() => FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        _locationController.city.value,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Obx(() => Text(
+                        controller.locationService.city.value,
                         style: TextStyle(
                           fontSize: bottomBarFontSize,
                           color: Colors.white,
@@ -134,97 +120,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                    )),
+                      )),
+                ),
               ),
             ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
-
-  void _startAutoRefresh() {
-    _refreshTimer = Timer.periodic(Duration(minutes: timeRefresh), (timer) {
-      _onRefreshSilent();
-    });
-  }
-
-  Future<void> _onRefreshSilent() async {
-    try {
-      await _locationController.getUserLocation();
-
-      try {
-        final newsController = Get.find<NewsController>();
-        await newsController.getNewsFromFirebase();
-      } catch (e) {
-        // NewsController ainda não foi inicializado, ignore
-      }
-
-      if (mounted) {
-        setState(() {});
-      }
-    } catch (e) {
-      // Falha silenciosa para não incomodar o usuário
-      print("Erro no refresh automático: $e");
-    }
-  }
-
-  Future<void> _onRefresh() async {
-    try {
-      // Sempre atualiza a localização no refresh manual
-      // Se a localização não está disponível, chama requestLocation que mostrará o popup
-      if (_locationController.city.value.isEmpty ||
-          _locationController.city.value == "Permissão negada" ||
-          _locationController.city.value == "Erro ao obter localização") {
-        bool locationResult = await _locationController.requestLocation();
-
-        // Se o usuário escolheu "Sair", não continua com a atualização
-        if (!locationResult) {
-          return;
-        }
-      } else {
-        // Se já tem localização, atualiza silenciosamente
-        await _locationController.getUserLocation();
-      }
-
-      // Recarrega as notícias se o controller existir
-      try {
-        final newsController = Get.find<NewsController>();
-        await newsController.getNewsFromFirebase();
-      } catch (e) {
-        // NewsController ainda não foi inicializado, ignore
-      }
-
-      // Força a reconstrução da interface
-      setState(() {});
-    } catch (e) {
-      // Tratamento de erro geral
-      Get.snackbar(
-        'Erro',
-        'Erro ao atualizar dados',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  void _showSyncDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return ResponsiveUtils.createResponsiveDialog(
-          context: context,
-          title: "Sincronismo",
-          content: "Módulo em desenvolvimento, em breve teremos novidades.",
-          onConfirm: () => Navigator.of(context).pop(),
-          confirmText: "Fechar",
-        );
-      },
     );
   }
 
@@ -238,15 +137,8 @@ class _HomePageState extends State<HomePage> {
     double iconSize,
   ) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [
-            Colors.blue,
-            Colors.black,
-          ],
-        ),
+      decoration: BoxDecoration(
+        gradient: AppColors.darkBlueToBlackGradient(),
       ),
       child: Row(
         children: [
@@ -304,8 +196,8 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           CircleAvatar(
                             radius: isTablet ? 25 : 20,
-                            backgroundImage: NetworkImage(_homeController
-                                    .user.urlImage ??
+                            //TODO: Substituir pela foto do usuário quando disponível
+                            backgroundImage: NetworkImage(
                                 'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png'),
                           ),
                           SizedBox(width: isTablet ? 12.0 : 8.0),
@@ -314,7 +206,9 @@ class _HomePageState extends State<HomePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _homeController.user.name ?? '',
+                                  //TODO: Substituir pelo nome do usuário quando disponível
+                                  'Usuário',
+                                  //_homeController.user.name ?? '',
                                   style: TextStyle(
                                     fontSize: isTablet ? 12.0 : 10.0,
                                     color: Colors.white,
@@ -324,7 +218,9 @@ class _HomePageState extends State<HomePage> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  _homeController.user.email,
+                                  //TODO: Substituir pelo email do usuário quando disponível
+                                  'user@example.com',
+                                  //_homeController.user.email,
                                   style: TextStyle(
                                     fontSize: isTablet ? 10.0 : 8.0,
                                     color: Colors.white70,
@@ -356,21 +252,11 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       children: [
                         SizedBox(height: isTablet ? 10.0 : 8.0),
-
-                        // Sincronismo
-                        _buildMenuTile(
-                          icon: Icons.cloud_queue,
-                          title: "Sincronismo",
-                          onTap: () => _showSyncDialog(context),
-                          iconSize: iconSize,
-                          isTablet: isTablet,
-                        ),
-
                         // Ajuda
                         _buildMenuTile(
                           icon: Icons.help_outline,
                           title: "Ajuda",
-                          onTap: () => _homeController.goUserGuide(),
+                          onTap: () => controller.goUserGuide(),
                           iconSize: iconSize,
                           isTablet: isTablet,
                         ),
@@ -382,7 +268,7 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(height: isTablet ? 15.0 : 10.0),
 
                         // Criar Notícia (com verificação de permissão)
-                        Obx(() {
+                        /*Obx(() {
                           _userController
                               .loadUserRole(_homeController.user.email);
                           return _buildMenuTile(
@@ -425,7 +311,7 @@ class _HomePageState extends State<HomePage> {
                                 : Colors.red,
                           );
                         }),
-
+*/
                         SizedBox(height: isTablet ? 15.0 : 10.0),
                         Divider(
                             color: Colors.white.withOpacity(0.2),
@@ -469,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       SizedBox(height: isTablet ? 8.0 : 6.0),
                       Obx(() => Text(
-                            _locationController.city.value,
+                            controller.locationService.city.value,
                             style: TextStyle(
                               fontSize: isTablet ? 12.0 : 10.0,
                               color: Colors.white.withOpacity(0.8),
@@ -478,7 +364,7 @@ class _HomePageState extends State<HomePage> {
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                          )),
+                          ))
                     ],
                   ),
                 ),
@@ -488,27 +374,7 @@ class _HomePageState extends State<HomePage> {
 
           // Lado direito - Conteúdo principal
           Expanded(
-            child: RefreshIndicator(
-              key: _refreshIndicatorKey,
-              onRefresh: _onRefresh,
-              child: FutureBuilder(
-                future: _locationController.requestLocation(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: isTablet ? 6.0 : 4.0,
-                        color: Colors.white,
-                      ),
-                    );
-                  } else if (snapshot.hasData && snapshot.data == true) {
-                    return NewsWidget();
-                  } else {
-                    return _buildErrorState(context, screenHeight, isTablet);
-                  }
-                },
-              ),
-            ),
+            child: NewsWidget(),
           ),
         ],
       ),
@@ -521,42 +387,11 @@ class _HomePageState extends State<HomePage> {
     double screenHeight,
     bool isTablet,
   ) {
-    return RefreshIndicator(
-      key: _refreshIndicatorKey,
-      onRefresh: _onRefresh,
-      child: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [
-                  Colors.blue,
-                  Colors.black,
-                ],
-              ),
-            ),
-          ),
-          FutureBuilder(
-            future: _locationController.requestLocation(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: isTablet ? 6.0 : 4.0,
-                    color: Colors.white,
-                  ),
-                );
-              } else if (snapshot.hasData && snapshot.data == true) {
-                return NewsWidget();
-              } else {
-                return _buildErrorState(context, screenHeight, isTablet);
-              }
-            },
-          ),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.darkBlueToBlackGradient(),
       ),
+      child: NewsWidget(),
     );
   }
 
@@ -616,7 +451,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  _homeController.goAboutUs();
+                  controller.goAboutUs();
                 },
               ),
               ListTile(
@@ -627,7 +462,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  _homeController.goUserGuide();
+                  controller.goUserGuide();
                 },
               ),
               ListTile(
@@ -638,13 +473,13 @@ class _HomePageState extends State<HomePage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  _homeController.goFAQ();
+                  controller.goFAQ();
                 },
               ),
               const SizedBox(height: 16),
               Center(
                 child: Text(
-                  'Versão: ${_versionController.version}',
+                  'Versão: ${controller.versionService.version}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -656,53 +491,6 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildErrorState(
-      BuildContext context, double screenHeight, bool isTablet) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Container(
-        height: screenHeight - (isTablet ? 250 : 200),
-        padding: ResponsiveUtils.calculateResponsivePadding(
-          MediaQuery.of(context).size.width,
-          screenHeight,
-          isTablet,
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.location_off,
-                size: isTablet ? 80.0 : 60.0,
-                color: Colors.white.withOpacity(0.7),
-              ),
-              SizedBox(height: isTablet ? 30.0 : 20.0),
-              Text(
-                "Localização não disponível",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isTablet ? 24.0 : 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: isTablet ? 16.0 : 12.0),
-              Text(
-                "Verifique as permissões e tente novamente.\n\nArraste para baixo para tentar novamente.",
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: isTablet ? 16.0 : 14.0,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

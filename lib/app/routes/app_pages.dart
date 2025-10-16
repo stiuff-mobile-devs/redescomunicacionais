@@ -2,15 +2,16 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
-import 'package:redescomunicacionais/app/bindings/image_bindings.dart';
+import 'package:redescomunicacionais/app/data/bindings/image_bindings.dart';
 import 'package:redescomunicacionais/app/modules/login/bindings/login_bindings.dart';
 import 'package:redescomunicacionais/app/modules/news/bindings/news_bindings.dart';
+import 'package:redescomunicacionais/app/modules/splash/bindings/splash_bindings.dart';
 import 'package:redescomunicacionais/app/modules/user/bindings/user_bindings.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/create_news_form_page.dart';
 import 'package:redescomunicacionais/app/modules/admin/ui/admin_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/ui/home_page.dart';
-import 'package:redescomunicacionais/app/modules/inital/ui/initial_page.dart';
+import 'package:redescomunicacionais/app/modules/splash/ui/splash_page.dart';
 import 'package:redescomunicacionais/app/modules/login/ui/login_page.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_widget.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
@@ -20,9 +21,9 @@ import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
 class AppPages {
   static final routes = [
     GetPage(
-      name: Routes.INITIAL,
-      page: () => const InitialPage(),
-    ),
+        name: Routes.INITIAL,
+        page: () => const InitialPage(),
+        binding: SplashBindings()),
     GetPage(
         name: Routes.LOGIN,
         page: () => const LoginPage(),
