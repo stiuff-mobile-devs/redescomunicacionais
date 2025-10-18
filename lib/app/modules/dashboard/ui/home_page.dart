@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_widget.dart';
+import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/theme/menu_drawer.dart';
@@ -196,9 +197,10 @@ class HomePage extends GetView<HomeController> {
                         children: [
                           CircleAvatar(
                             radius: isTablet ? 25 : 20,
-                            //TODO: Substituir pela foto do usuário quando disponível
-                            backgroundImage: NetworkImage(
-                                'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png'),
+                            backgroundImage: controller.user.urlImage != null
+                                ? NetworkImage(controller.user.urlImage!)
+                                : NetworkImage(
+                                    'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png'),
                           ),
                           SizedBox(width: isTablet ? 12.0 : 8.0),
                           Expanded(
@@ -206,9 +208,7 @@ class HomePage extends GetView<HomeController> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  //TODO: Substituir pelo nome do usuário quando disponível
-                                  'Usuário',
-                                  //_homeController.user.name ?? '',
+                                  controller.user.name ?? 'Usuário RCL',
                                   style: TextStyle(
                                     fontSize: isTablet ? 12.0 : 10.0,
                                     color: Colors.white,
@@ -218,9 +218,7 @@ class HomePage extends GetView<HomeController> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  //TODO: Substituir pelo email do usuário quando disponível
-                                  'user@example.com',
-                                  //_homeController.user.email,
+                                  controller.user.email,
                                   style: TextStyle(
                                     fontSize: isTablet ? 10.0 : 8.0,
                                     color: Colors.white70,
@@ -268,24 +266,24 @@ class HomePage extends GetView<HomeController> {
                         SizedBox(height: isTablet ? 15.0 : 10.0),
 
                         // Criar Notícia (com verificação de permissão)
-                        /*Obx(() {
-                          _userController
-                              .loadUserRole(_homeController.user.email);
+                        Obx(() {
+                          controller.userController
+                              .loadUserRole(controller.user.email);
                           return _buildMenuTile(
-                            icon: _userController.isAdmin.value ||
-                                    _userController.isEditor.value
+                            icon: controller.userController.isAdmin.value ||
+                                    controller.userController.isEditor.value
                                 ? Icons.article_outlined
                                 : Icons.lock_outline,
                             title: "Criar Matéria",
-                            onTap: (_userController.isAdmin.value ||
-                                    _userController.isEditor.value)
-                                ? () => Navigator.pushNamed(
-                                    context, Routes.CREATE_NEWS)
+                            onTap: (controller.userController.isAdmin.value ||
+                                    controller.userController.isEditor.value)
+                                ? () => Get.toNamed(Routes.CREATE_NEWS)
                                 : null,
                             iconSize: iconSize,
                             isTablet: isTablet,
-                            iconColor: (_userController.isAdmin.value ||
-                                    _userController.isEditor.value)
+                            iconColor: (controller
+                                        .userController.isAdmin.value ||
+                                    controller.userController.isEditor.value)
                                 ? Colors.white
                                 : Colors.red,
                           );
@@ -293,25 +291,24 @@ class HomePage extends GetView<HomeController> {
 
                         // Admin (com verificação de permissão)
                         Obx(() {
-                          _userController
-                              .loadUserRole(_homeController.user.email);
+                          controller.userController
+                              .loadUserRole(controller.user.email);
                           return _buildMenuTile(
-                            icon: _userController.isAdmin.value
+                            icon: controller.userController.isAdmin.value
                                 ? Icons.person_outline
                                 : Icons.lock_outline,
                             title: "Admin",
-                            onTap: _userController.isAdmin.value
-                                ? () =>
-                                    Navigator.pushNamed(context, Routes.ADMIN)
+                            onTap: controller.userController.isAdmin.value
+                                ? () => Get.toNamed(Routes.ADMIN)
                                 : null,
                             iconSize: iconSize,
                             isTablet: isTablet,
-                            iconColor: _userController.isAdmin.value
+                            iconColor: controller.userController.isAdmin.value
                                 ? Colors.white
                                 : Colors.red,
                           );
                         }),
-*/
+
                         SizedBox(height: isTablet ? 15.0 : 10.0),
                         Divider(
                             color: Colors.white.withOpacity(0.2),

@@ -1,14 +1,16 @@
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/data/services/location_service.dart';
 import 'package:redescomunicacionais/app/data/services/version_service.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class HomeController extends GetxController {
-  final UserModel user = Get.arguments;
+  late final UserModel user;
 
   late final VersionService versionService;
   late final LocationService locationService;
+  late final UserController userController;
 
   RxBool isLoadingLocation = false.obs;
 
@@ -16,6 +18,9 @@ class HomeController extends GetxController {
   Future<void> onInit() async {
     versionService = Get.find<VersionService>();
     locationService = Get.find<LocationService>();
+    userController = Get.find<UserController>();
+    user = await userController.getCurrentUser() ??
+        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
     isLoadingLocation.value = true;
     await locationService.requestLocation();
     isLoadingLocation.value = false;

@@ -5,11 +5,12 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class LoginController extends GetxController {
   final LoginRepository repository = LoginRepository();
-  late final VersionService versionService;
 
+  late final VersionService versionService;
+  //final DeviceDetectorService deviceDetector = DeviceDetectorService.instance;
   @override
   void onInit() {
-    versionService = VersionService();
+    versionService = Get.find<VersionService>();
     super.onInit();
   }
 

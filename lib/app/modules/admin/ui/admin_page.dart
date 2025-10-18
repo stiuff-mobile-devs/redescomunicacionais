@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({Key? key}) : super(key: key);
@@ -11,11 +12,14 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   final UserController _userController = Get.find<UserController>();
+  late final UserModel _user;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
     // Carrega a lista de usuários ao iniciar a página
+    _user = await _userController.getCurrentUser() ??
+        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
     _userController.loadAllUsers();
   }
 
@@ -96,10 +100,10 @@ class _AdminPageState extends State<AdminPage> {
   Widget _buildUserCard(Map<String, dynamic> user) {
     String email = user['email'] ?? '';
     String currentRole = user['role'] ?? 'user';
-    
+
     // Gera iniciais do email
     String initials = email.isNotEmpty ? email[0].toUpperCase() : 'U';
-    
+
     // Cor baseada na role
     Color roleColor = _getRoleColor(currentRole);
 
@@ -148,8 +152,8 @@ class _AdminPageState extends State<AdminPage> {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: roleColor.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(12),
@@ -189,10 +193,11 @@ class _AdminPageState extends State<AdminPage> {
                 onChanged: (newRole) async {
                   if (newRole != null && newRole != currentRole) {
                     // Confirma a alteração
-                    bool? confirm = await _showConfirmDialog(
-                        email, currentRole, newRole);
+                    bool? confirm =
+                        await _showConfirmDialog(email, currentRole, newRole);
                     if (confirm == true) {
-                      await _userController.addProfile(email, newRole);
+                      await _userController.addProfile(
+                          email, newRole, _user.email);
                       // Recarrega a lista
                       _userController.loadAllUsers();
                     }
@@ -256,13 +261,14 @@ class _AdminPageState extends State<AdminPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar',
-                style: TextStyle(color: Colors.white70)),
+            child:
+                const Text('Cancelar', style: TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-            child: const Text('Confirmar', style: TextStyle(color: Colors.black)),
+            child:
+                const Text('Confirmar', style: TextStyle(color: Colors.black)),
           ),
         ],
       ),

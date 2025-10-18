@@ -2,21 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
-import 'package:redescomunicacionais/app/data/services/version_service.dart';
 import 'package:redescomunicacionais/app/data/services/device_detector_service.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
+import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends GetView<LoginController> {
   const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final LoginController _loginController = Get.find<LoginController>();
-  final DeviceDetectorService deviceDetector = DeviceDetectorService.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +41,8 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Colors.blue,
-              Colors.black,
-            ],
-          ),
+        decoration: BoxDecoration(
+          gradient: AppColors.appBarTopGradient(),
         ),
         child: SafeArea(
           child: Padding(
@@ -165,9 +150,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     // Versão
                     Text(
-                      //TODO: Implementar controle de versão
-                      "Versão: 1.0.0",
-                      // versionController.version,
+                      "Versão: ${controller.versionService.version}",
                       style: TextStyle(
                         fontSize: versionFontSize,
                         color: Colors.white.withOpacity(0.8),
@@ -208,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                           vertical: isTablet ? 20.0 : 18.0,
                           horizontal: 20.0,
                         ),
-                        onPressed: _loginController.loginGoogle,
+                        onPressed: controller.loginGoogle,
                       ),
                     ),
 
@@ -230,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                           vertical: isTablet ? 24.0 : 22.0,
                           horizontal: 20.0,
                         ),
-                        onPressed: _loginController.loginMicrosoft,
+                        onPressed: controller.loginMicrosoft,
                       ),
                     ),
                   ],
@@ -339,7 +322,7 @@ class _LoginPageState extends State<LoginPage> {
                             vertical: isTablet ? 20.0 : 16.0,
                             horizontal: 16.0,
                           ),
-                          onPressed: _loginController.loginGoogle,
+                          onPressed: controller.loginGoogle,
                         ),
                       ),
 
@@ -361,7 +344,7 @@ class _LoginPageState extends State<LoginPage> {
                             vertical: isTablet ? 24.0 : 22.0,
                             horizontal: 16.0,
                           ),
-                          onPressed: _loginController.loginMicrosoft,
+                          onPressed: controller.loginMicrosoft,
                         ),
                       ),
                     ],
@@ -380,9 +363,7 @@ class _LoginPageState extends State<LoginPage> {
                       bottom: verticalSpacing * 0.4,
                     ),
                     child: Text(
-                      //TODO: Implementar controle de versão
-                      "Versão: 1.0.0",
-                      // versionController.version,
+                      "Versão: ${controller.versionService.version}",
                       style: TextStyle(
                         fontSize: versionFontSize,
                         color: Colors.white.withOpacity(0.8),

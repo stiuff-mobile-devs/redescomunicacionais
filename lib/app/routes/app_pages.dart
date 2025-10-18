@@ -21,9 +21,10 @@ import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
 class AppPages {
   static final routes = [
     GetPage(
-        name: Routes.INITIAL,
-        page: () => const InitialPage(),
-        binding: SplashBindings()),
+      name: Routes.INITIAL,
+      page: () => const InitialPage(),
+      binding: SplashBindings(),
+    ),
     GetPage(
         name: Routes.LOGIN,
         page: () => const LoginPage(),
