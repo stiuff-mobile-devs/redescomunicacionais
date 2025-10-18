@@ -14,7 +14,7 @@ import 'package:redescomunicacionais/app/modules/admin/ui/admin_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/ui/home_page.dart';
 import 'package:redescomunicacionais/app/modules/splash/ui/splash_page.dart';
 import 'package:redescomunicacionais/app/modules/login/ui/login_page.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_widget.dart';
+import 'package:redescomunicacionais/app/modules/news/ui/news_windows.page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
 import 'package:redescomunicacionais/app/modules/web/ui/webview_page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
@@ -38,7 +38,7 @@ class AppPages {
     ),
     GetPage(
       name: Routes.NEWS,
-      page: () => NewsWidget(),
+      page: () => NewsWindowsPage(),
       binding: NewsBinding(),
     ),
     GetPage(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_widget.dart';
+import 'package:redescomunicacionais/app/modules/news/ui/news_windows.page.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
@@ -371,7 +371,7 @@ class HomePage extends GetView<HomeController> {
 
           // Lado direito - Conteúdo principal
           Expanded(
-            child: NewsWidget(),
+            child: NewsWindowsPage(),
           ),
         ],
       ),
@@ -388,7 +388,7 @@ class HomePage extends GetView<HomeController> {
       decoration: BoxDecoration(
         gradient: AppColors.darkBlueToBlackGradient(),
       ),
-      child: NewsWidget(),
+      child: NewsWindowsPage(),
     );
   }
 

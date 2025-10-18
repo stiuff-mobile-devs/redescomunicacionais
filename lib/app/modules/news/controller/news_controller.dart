@@ -1,13 +1,29 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart' show Colors;
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
+  late final UserController userController;
+  late final UserModel user;
 
   var newss = <NewsModel>[].obs;
-  var isLoading = false.obs;
+  RxBool isLoading = false.obs;
+  RxnInt selectedCardIndex = RxnInt();
+
+  @override
+  onInit() async {
+    super.onInit();
+    userController = Get.find<UserController>();
+    user = await userController.getCurrentUser() ??
+        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
+    getNewsFromFirebase();
+  }
 
   // Add news - save to both Hive and Firebase
   Future<void> addNews(
@@ -152,4 +168,71 @@ class NewsController extends GetxController {
       return "Você não tem permissão para excluir esta $type.";
     }
   }
+
+  List<dynamic> getValidNews() {
+    return newss.where((news) {
+      if (news.status != 'publicado') return false;
+      if (news.urlImages == null || news.urlImages.isEmpty) return false;
+      try {
+        base64Decode(news.urlImages[0]);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }).toList();
+  }
+
+  // Prepara o map de argumentos usado nas rotas de detalhe
+  Map<String, dynamic> toNewsArguments(NewsModel news) {
+    return {
+      "titulo": news.title,
+      "subtitulo": news.subtitle,
+      "cidade": news.cities.isNotEmpty ? news.cities.join(', ') : '',
+      "categoria": news.categories.isNotEmpty ? news.categories.join(', ') : '',
+      "corpo": news.body,
+      "imgurl": news.urlImages.isNotEmpty ? news.urlImages[0] : '',
+      "autor": news.author,
+      "dataCriacao": news.createdAt.toString(),
+      "type": news.type,
+      "videoUrl": news.videoUrl,
+    };
+  }
+
+  // Abre a página de detalhe
+  void openNews(NewsModel news) {
+    Get.toNamed(Routes.NEWS_PAGE, arguments: toNewsArguments(news));
+  }
+
+  // Abre a página de edição (usada quando o usuário pode editar)
+  void openEditNews(NewsModel news) {
+    Get.toNamed(Routes.EDIT_NEWS, arguments: {
+      "newsId": news.id,
+      "titulo": news.title,
+      "subtitulo": news.subtitle,
+      "cidade": news.cities,
+      "categoria": news.categories,
+      "corpo": news.body,
+      "imgurl": news.urlImages.isNotEmpty ? news.urlImages[0] : '',
+      "autor": news.author,
+      "dataCriacao": news.createdAt.toString(),
+      "type": news.type,
+      "status": news.status,
+    });
+  }
+
+  // Verifica se o usuário atual é o autor (p/ habilitar editar/excluir)
+  bool canEdit(NewsModel news) {
+    return user.email == news.createdBy;
+  }
+
+  // Controla seleção de cards (toggle)
+  void toggleSelected(int index) {
+    if (selectedCardIndex.value == index) {
+      selectedCardIndex.value = null;
+    } else {
+      selectedCardIndex.value = index;
+    }
+  }
+
+  bool isSelected(int index) => selectedCardIndex.value == index;
 }

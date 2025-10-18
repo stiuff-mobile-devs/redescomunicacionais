@@ -6,7 +6,6 @@ class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String collectionPath = "news";
 
-  // Add news to Firebase
   Future<void> saveNewsToFirebase(NewsModel news) async {
     try {
       await _firestore
@@ -18,7 +17,6 @@ class NewsProvider {
     }
   }
 
-  // Save news to Hive (local storage)
   Future<void> saveNewsToHive(NewsModel news) async {
     try {
       var box = await Hive.openBox<NewsModel>(collectionPath);
@@ -28,7 +26,6 @@ class NewsProvider {
     }
   }
 
-  // Get news from Hive (local storage)
   Future<List<NewsModel>> getNewsFromHive() async {
     try {
       var box = await Hive.openBox<NewsModel>(collectionPath);
@@ -38,7 +35,6 @@ class NewsProvider {
     }
   }
 
-  // Get all news from Firebase
   Future<List<NewsModel>> getNewsFromFirebase() async {
     try {
       QuerySnapshot querySnapshot =
@@ -53,8 +49,8 @@ class NewsProvider {
     }
   }
 
-  // Método hideNews (mantém a versão mais limpa)
-  Future<String> hideNews(String newsId, String status, String userEmail) async {
+  Future<String> hideNews(
+      String newsId, String status, String userEmail) async {
     try {
       await _firestore.collection(collectionPath).doc(newsId).update({
         'status': status,
@@ -67,8 +63,8 @@ class NewsProvider {
     }
   }
 
-  // Método updateNews (da branch vitorviana/update-news)
-  Future<void> updateNews(String newsId, Map<String, dynamic> updatedData) async {
+  Future<void> updateNews(
+      String newsId, Map<String, dynamic> updatedData) async {
     try {
       await FirebaseFirestore.instance
           .collection('news')
