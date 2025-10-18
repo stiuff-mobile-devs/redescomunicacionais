@@ -107,7 +107,10 @@ class CreateNewsFormController extends GetxController {
     if (_selectedCities.contains(city)) {
       _selectedCities.remove(city);
     } else {
-      _selectedCities.add(city);
+      // permite apenas uma cidade selecionada por vez
+      _selectedCities
+        ..clear()
+        ..add(city);
     }
     _showCityError.value = false;
   }
@@ -141,7 +144,7 @@ class CreateNewsFormController extends GetxController {
     final String title = _titleController.text;
     final String subtitle = _subtitleController.text;
     final String body = _getBodyText();
-    List<String> urlImages = [_imageController.base64String ?? iconBase64()];
+    List<String> urlImages = [_imageController.base64String ?? ""];
     final String author = _homeController.user.name!;
     final String email = _homeController.user.email;
     final String createdAt = DateTime.now().toString();

@@ -3,15 +3,13 @@ import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:redescomunicacionais/app/modules/news/controller/create_news_form_controller.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
+import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 
-class CreateNewsPage extends StatelessWidget {
+class CreateNewsPage extends GetView<CreateNewsFormController> {
   const CreateNewsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final CreateNewsFormController controller =
-        Get.put(CreateNewsFormController());
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Adicionar Matéria"),
@@ -20,15 +18,8 @@ class CreateNewsPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Colors.blue,
-              Colors.black,
-            ],
-          ),
+        decoration: BoxDecoration(
+          gradient: AppColors.darkBlueToBlackGradient(),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
