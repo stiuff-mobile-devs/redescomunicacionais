@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart' show Colors;
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
@@ -172,9 +173,10 @@ class NewsController extends GetxController {
   List<dynamic> getValidNews() {
     return newss.where((news) {
       if (news.status != 'publicado') return false;
-      if (news.urlImages == null || news.urlImages.isEmpty) return false;
       try {
-        base64Decode(news.urlImages[0]);
+        if (news.urlImages[0] != "") {
+          base64Decode(news.urlImages[0]);
+        }
         return true;
       } catch (_) {
         return false;
@@ -235,4 +237,22 @@ class NewsController extends GetxController {
   }
 
   bool isSelected(int index) => selectedCardIndex.value == index;
+
+  // Mapeamento city -> asset path (adicione as imagens em assets/ e registre no pubspec.yaml)
+  final Map<String, String> _cityImageAssets = {
+    'São Sebastião do Alto': 'assets/images/cidades/saosebastiaodoalto.jpg',
+    'Macuco': 'assets/images/cidades/macuco.jpg',
+    'Rio das Flores': 'assets/images/cidades/riodasflores.jpg',
+    'Comendador Levy Gasparian': 'assets/images/cidades/levygasparian.jpg',
+    'Laje do Muriaé': 'assets/images/cidades/lajedomuriae.jpg',
+    'São José de Ubá': 'assets/images/cidades/saojosedeuba.jpg',
+    // add more or a 'default' entry
+    'default': 'assets/images/default_city.jpg',
+  };
+
+  // Retorna o path do asset JPG para a cidade dada
+  String getCityImageAsset(String? city) {
+    final key = (city == null || city.isEmpty) ? 'default' : city;
+    return _cityImageAssets[key] ?? _cityImageAssets['default']!;
+  }
 }

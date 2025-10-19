@@ -3,19 +3,20 @@ import 'package:redescomunicacionais/app/modules/news/data/repository/news_repos
 
 class UpdateNewsController extends GetxController {
   // Repository para acessar os dados
-  final NewsRepository newsRepository = Get.find<NewsRepository>();
-  
+  final NewsRepository newsRepository = NewsRepository();
+
   // Estado de carregamento
   final RxBool isLoading = false.obs;
 
   // Método para atualizar notícia
-  Future<String> updateNews(String newsId, Map<String, dynamic> updatedData) async {
+  Future<String> updateNews(
+      String newsId, Map<String, dynamic> updatedData) async {
     try {
       isLoading.value = true;
-      
+
       // Chama o repository para atualizar
       String result = await newsRepository.updateNews(newsId, updatedData);
-      
+
       return result;
     } catch (e) {
       return "Erro ao atualizar notícia: $e";

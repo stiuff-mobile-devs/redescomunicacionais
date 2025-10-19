@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart'; // Adicione este import
 import 'package:intl/intl.dart';
 import 'package:redescomunicacionais/app/data/services/youtube_service.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
+import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 
 class NewsPage extends StatefulWidget {
   const NewsPage({super.key});
@@ -15,12 +16,14 @@ class NewsPage extends StatefulWidget {
 
 class _NewsPageState extends State<NewsPage> {
   late QuillController _quillController;
+  late final NewsController _newsController;
 
   @override
   void initState() {
     super.initState();
     // Inicializa com documento vazio - será carregado no build
     _quillController = QuillController.basic();
+    _newsController = Get.find<NewsController>();
   }
 
   @override
@@ -170,18 +173,26 @@ class _NewsPageState extends State<NewsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Container da imagem
+                // Container da imagem (usa asset se imgurl vazio)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(
                       ResponsiveUtils.calculateResponsiveBorderRadius(
                               isTablet) *
                           0.8),
-                  child: Image.memory(
-                    base64Decode(imgurl),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: isTablet ? 300 : 250,
-                  ),
+                  child: imgurl.isNotEmpty
+                      ? Image.memory(
+                          base64Decode(imgurl),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: isTablet ? 300 : 250,
+                        )
+                      : Image.asset(
+                          _newsController.getCityImageAsset(
+                              cidade.isNotEmpty ? cidade : 'default'),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: isTablet ? 300 : 250,
+                        ),
                 ),
                 SizedBox(height: isTablet ? 25 : 20),
 
@@ -444,12 +455,20 @@ class _NewsPageState extends State<NewsPage> {
               borderRadius: BorderRadius.circular(
                   ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) *
                       0.8),
-              child: Image.memory(
-                base64Decode(imgurl),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: isTablet ? 250 : 200,
-              ),
+              child: imgurl.isNotEmpty
+                  ? Image.memory(
+                      base64Decode(imgurl),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: isTablet ? 250 : 200,
+                    )
+                  : Image.asset(
+                      _newsController.getCityImageAsset(
+                          cidade.isNotEmpty ? cidade : 'default'),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: isTablet ? 250 : 200,
+                    ),
             ),
           ],
         ),

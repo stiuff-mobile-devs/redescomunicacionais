@@ -94,7 +94,18 @@ class NewsWindowsPage extends GetView<NewsController> {
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(8.0)),
-                        child: _buildSafeImage(n.urlImages[0], 70.0),
+                        child: n.urlImages.isNotEmpty &&
+                                n.urlImages[0].isNotEmpty
+                            ? _buildSafeImage(n.urlImages[0], 70.0)
+                            : Image.asset(
+                                controller.getCityImageAsset(
+                                    (n.cities != null && n.cities.isNotEmpty)
+                                        ? n.cities[0]
+                                        : 'default'),
+                                fit: BoxFit.cover,
+                                width: 120.0,
+                                height: 70.0,
+                              ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -240,7 +251,19 @@ class NewsWindowsPage extends GetView<NewsController> {
                                 ? Radius.zero
                                 : const Radius.circular(12.0),
                           ),
-                          child: _buildSafeImage(news.urlImages[0], 200.0),
+                          child: news.urlImages.isNotEmpty &&
+                                  news.urlImages[0].isNotEmpty
+                              ? _buildSafeImage(news.urlImages[0], 200.0)
+                              : // se não houver base64, usa asset local por city
+                              Image.asset(
+                                  controller.getCityImageAsset(
+                                      news.cities.isNotEmpty
+                                          ? news.cities[0]
+                                          : 'default'),
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: 200.0,
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(12.0),
