@@ -41,9 +41,8 @@ class LoginPage extends GetView<LoginController> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.appBarTopGradient(),
-        ),
+        decoration:
+            BoxDecoration(gradient: AppColors.darkBlueToBlackGradient()),
         child: SafeArea(
           child: Padding(
             padding: screenPadding,

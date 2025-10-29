@@ -76,17 +76,17 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   background_color_ios: "#ffffff"
-  image_path: "assets/icons/RCLWhiteIcon.png"
+  image_path: "assets/icons/rcl-blue-logo.png"
   min_sdk_android: 21
   web:
     generate: true
-    image_path: "assets/icons/RCLWhiteIcon.png"
+    image_path: "assets/icons/rcl-blue-logo.png"
     background_color: "#ffffff"
     theme_color: "#ffffff"
 
 flutter_native_splash:
   color: "#000000" 
-  image: "assets/icons/RCLWhiteIcon.png"
+  image: "assets/icons/rcl-blue-logo.png"
   android: true 
   ios: true 
   web: true
@@ -94,9 +94,9 @@ flutter_native_splash:
 
   android_12:
     icon_background_color: "#FFFFFF"
-    image: "assets/icons/RCLWhiteIcon.png"
+    image: "assets/icons/rcl-blue-logo.png"
     icon_background_color_dark: "#1a1a1a"
-    image_dark: "assets/icons/RCLWhiteIcon.png"
+    image_dark: "assets/icons/rcl-blue-logo.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
