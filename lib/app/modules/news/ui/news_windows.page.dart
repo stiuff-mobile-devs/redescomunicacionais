@@ -340,7 +340,8 @@ class NewsWindowsPage extends GetView<NewsController> {
                     newsId, status, userEmail, authorEmail, type);
                 if (result == "sucess" || result == "success") {
                   // Recarrega as notícias
-                  controller.getNewsFromHive();
+                  await controller.syncHiveAndFirebase();
+                  await controller.getNewsFromHive();
                   controller.homeController.forceRecreate();
                 }
               } catch (_) {}

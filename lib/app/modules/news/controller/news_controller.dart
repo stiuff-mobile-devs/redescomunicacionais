@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' show Colors, debugPrint;
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
@@ -25,7 +27,8 @@ class NewsController extends GetxController {
     homeController = Get.find<HomeController>();
     user = await userController.getCurrentUser() ??
         UserModel(id: '', email: '', role: '', createdAt: null, status: '');
-    getNewsFromFirebase();
+    await syncHiveAndFirebase();
+    getNewsFromHive();
   }
 
   // Add news - save to both Hive and Firebase
@@ -243,6 +246,118 @@ class NewsController extends GetxController {
   }
 
   bool isSelected(int index) => selectedCardIndex.value == index;
+
+  /// Sincroniza Hive <-> Firebase
+  Future<void> syncHiveAndFirebase() async {
+    try {
+      isLoading(true);
+
+      // Busca dados
+      final List<NewsModel> firebaseList =
+          await _repository.getNewsFromFirebase();
+      final List<NewsModel> hiveList = await _repository.getNewsFromHive();
+
+      // Cria maps para acesso rápido por ID
+      final Map<String, NewsModel> fbMap = {
+        for (var n in firebaseList) n.id: n,
+      };
+      final Map<String, NewsModel> hiveMap = {
+        for (var n in hiveList) n.id: n,
+      };
+
+      final Set<String> allIds = {...fbMap.keys, ...hiveMap.keys};
+
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final WriteBatch batch = firestore.batch();
+      final CollectionReference collRef = firestore.collection('news');
+
+      var hiveBox = await Hive.openBox<NewsModel>('news');
+
+      for (final id in allIds) {
+        final fb = fbMap[id];
+        final hv = hiveMap[id];
+
+        if (fb != null && hv == null) {
+          // existe só no firebase -> salva no Hive
+          try {
+            await hiveBox.put(id, fb);
+          } catch (e) {
+            debugPrint("Erro ao salvar no Hive (from Firebase): $e");
+          }
+        } else if (hv != null && fb == null) {
+          // existe só no hive -> envia para Firebase (batch)
+          final docRef = collRef.doc(id);
+          batch.set(docRef, hv.toMap());
+        } else if (fb != null && hv != null) {
+          // existe nos dois -> comparar última modificação
+          final DateTime? fbLast = _lastModifiedFromModel(fb);
+          final DateTime? hvLast = _lastModifiedFromModel(hv);
+
+          if ((hvLast ?? DateTime.fromMillisecondsSinceEpoch(0))
+              .isAfter(fbLast ?? DateTime.fromMillisecondsSinceEpoch(0))) {
+            // Hive mais novo -> envia para Firebase
+            final docRef = collRef.doc(id);
+            batch.set(docRef, hv.toMap());
+          } else if ((fbLast ?? DateTime.fromMillisecondsSinceEpoch(0))
+              .isAfter(hvLast ?? DateTime.fromMillisecondsSinceEpoch(0))) {
+            // Firebase mais novo -> atualiza Hive
+            try {
+              await hiveBox.put(id, fb);
+            } catch (e) {
+              debugPrint("Erro ao atualizar Hive (from Firebase): $e");
+            }
+          } // se iguais, nada a fazer
+        }
+      }
+
+      // Commit batch se houver operações
+      try {
+        await batch.commit();
+      } catch (e) {
+        debugPrint("Erro ao commitar batch no Firestore: $e");
+      }
+
+      // Atualiza lista local do controller com os dados mais recentes (re-fetch do Hive)
+      try {
+        newss.value = await _repository.getNewsFromHive();
+        newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
+            .compareTo(DateTime.parse(a.createdAt.toString())));
+      } catch (e) {
+        debugPrint("Erro ao recarregar notícias após sync: $e");
+      }
+    } catch (e) {
+      debugPrint("Erro na sincronização: $e");
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  // helper para extrair última modificação de um NewsModel
+  DateTime? _lastModifiedFromModel(NewsModel n) {
+    DateTime? parseDynamic(dynamic d) {
+      if (d == null) return null;
+      if (d is DateTime) return d;
+      if (d is String) {
+        try {
+          return DateTime.tryParse(d);
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    final List<DateTime?> candidates = [
+      parseDynamic(n.createdAt),
+      parseDynamic(n.editedAt),
+      parseDynamic(n.validatedAt),
+      parseDynamic(n.excluedAt),
+    ];
+    candidates.removeWhere((c) => c == null);
+    if (candidates.isEmpty) return null;
+    candidates.sort((a, b) => a!.compareTo(b!));
+    return candidates.last;
+  }
 
   // Mapeamento city -> asset path (adicione as imagens em assets/ e registre no pubspec.yaml)
   final Map<String, String> _cityImageAssets = {

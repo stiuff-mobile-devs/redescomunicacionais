@@ -75,30 +75,36 @@ class HomePage extends GetView<HomeController> {
               ],
             ),
       drawer: useHorizontalLayout ? null : MenuPage(),
-      body: Obx(
-        () => controller.isLoadingLocation.value
-            ? Container(
-                decoration: BoxDecoration(
-                  gradient: AppColors.darkBlueToBlackGradient(),
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            : useHorizontalLayout
-                ? _buildHorizontalLayout(
-                    context,
-                    screenWidth,
-                    screenHeight,
-                    isTablet,
-                    appBarTitleSize,
-                    iconSize,
-                  )
-                : _buildVerticalLayout(
-                    context,
-                    screenHeight,
-                    isTablet,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          controller.newsController.syncHiveAndFirebase();
+          controller.forceRecreate();
+        },
+        child: Obx(
+          () => controller.isLoadingLocation.value
+              ? Container(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.darkBlueToBlackGradient(),
                   ),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : useHorizontalLayout
+                  ? _buildHorizontalLayout(
+                      context,
+                      screenWidth,
+                      screenHeight,
+                      isTablet,
+                      appBarTitleSize,
+                      iconSize,
+                    )
+                  : _buildVerticalLayout(
+                      context,
+                      screenHeight,
+                      isTablet,
+                    ),
+        ),
       ),
       bottomNavigationBar: useHorizontalLayout
           ? null
