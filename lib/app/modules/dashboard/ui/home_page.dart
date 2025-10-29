@@ -371,7 +371,9 @@ class HomePage extends GetView<HomeController> {
 
           // Lado direito - Conteúdo principal
           Expanded(
-            child: NewsWindowsPage(),
+            child: NewsWindowsPage(
+              key: ValueKey(controller.recreateKey),
+            ),
           ),
         ],
       ),
@@ -388,7 +390,9 @@ class HomePage extends GetView<HomeController> {
       decoration: BoxDecoration(
         gradient: AppColors.darkBlueToBlackGradient(),
       ),
-      child: NewsWindowsPage(),
+      child: NewsWindowsPage(
+        key: ValueKey(controller.recreateKey),
+      ),
     );
   }
 

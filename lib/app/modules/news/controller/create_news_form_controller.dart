@@ -6,7 +6,6 @@ import 'package:redescomunicacionais/app/modules/news/controller/news_controller
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/data/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
-import 'package:redescomunicacionais/app/utils/components/icon_base64.dart';
 
 class CreateNewsFormController extends GetxController {
   final _formKey = GlobalKey<FormState>();
@@ -149,7 +148,6 @@ class CreateNewsFormController extends GetxController {
     final String email = _homeController.user.email;
     final String createdAt = DateTime.now().toString();
     final String videoUrl = _videoUrlController.text;
-    // Adicionar notícia/FireStore
     _newsController.addNews(
       title,
       subtitle,

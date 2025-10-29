@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart' show Colors, debugPrint;
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
@@ -11,6 +11,7 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
   late final UserController userController;
+  late final HomeController homeController;
   late final UserModel user;
 
   var newss = <NewsModel>[].obs;
@@ -21,6 +22,7 @@ class NewsController extends GetxController {
   onInit() async {
     super.onInit();
     userController = Get.find<UserController>();
+    homeController = Get.find<HomeController>();
     user = await userController.getCurrentUser() ??
         UserModel(id: '', email: '', role: '', createdAt: null, status: '');
     getNewsFromFirebase();
@@ -68,13 +70,19 @@ class NewsController extends GetxController {
         videoUrl: videoUrl,
       );
 
-      // Save to both Hive and Firebase simultaneously
-      await Future.wait([
-        _repository.saveNewsToHive(news),
-        _repository.saveNewsToFirebase(news),
-      ]);
+      try {
+        await _repository.saveNewsToHive(news);
+      } catch (e) {
+        debugPrint("Erro ao salvar notícia no Hive: $e");
+      }
 
-      newss.insert(0, news); // Insert at the beginning of the list
+      try {
+        await _repository.saveNewsToFirebase(news);
+      } catch (e) {
+        debugPrint("Erro ao salvar notícia no Firebase: $e");
+      }
+
+      newss.insert(0, news);
       Get.snackbar(
         'Sucesso',
         'Matéria cadastrada com sucesso!',
@@ -118,9 +126,7 @@ class NewsController extends GetxController {
       newss.sort((a, b) => DateTime.parse(b.createdAt as String)
           .compareTo(DateTime.parse(a.createdAt as String)));
     } catch (e) {
-      Get.snackbar(
-          'Erro', 'Não foi possível carregar as matérias do cache local.',
-          snackPosition: SnackPosition.BOTTOM);
+      debugPrint("Erro ao carregar as notícias do Hive: $e");
     } finally {
       isLoading(false);
     }

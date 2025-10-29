@@ -52,11 +52,31 @@ class NewsProvider {
   Future<String> hideNews(
       String newsId, String status, String userEmail) async {
     try {
+      // Atualiza no Firestore
       await _firestore.collection(collectionPath).doc(newsId).update({
         'status': status,
         'excluedAt': DateTime.now().toIso8601String(),
         'excluedBy': userEmail,
       });
+
+      // Atualiza no Hive (se existir, atualiza; se não, cria um registro mínimo)
+      try {
+        var box = await Hive.openBox<NewsModel>(collectionPath);
+        final existing = box.get(newsId);
+
+        // Monta o mapa de dados a ser salvo
+        Map<String, dynamic> updatedMap =
+            existing != null ? existing.toMap() : <String, dynamic>{};
+
+        updatedMap['status'] = status;
+        updatedMap['excluedAt'] = DateTime.now().toIso8601String();
+        updatedMap['excluedBy'] = userEmail;
+
+        await box.put(newsId, NewsModel.fromMap(newsId, updatedMap));
+      } catch (e) {
+        return "Error hiding news in Hive: $e";
+      }
+
       return "success";
     } catch (e) {
       return "Error hiding news status: $e";

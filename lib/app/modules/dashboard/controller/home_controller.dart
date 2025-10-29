@@ -14,6 +14,11 @@ class HomeController extends GetxController {
 
   RxBool isLoadingLocation = false.obs;
 
+  /// chave usada para forçar recriação de widgets
+  final RxInt _recreateKey = 0.obs;
+  int get recreateKey => _recreateKey.value;
+  void forceRecreate() => _recreateKey.value++;
+
   @override
   Future<void> onInit() async {
     versionService = Get.find<VersionService>();
