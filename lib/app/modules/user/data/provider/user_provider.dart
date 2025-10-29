@@ -23,8 +23,17 @@ class UserProvider {
       status: 'active',
     );
 
-    await createUserDocInFirebase(user);
-    await createUserDocInHive(user);
+    try {
+      await createUserDocInFirebase(user);
+    } catch (e) {
+      debugPrint("Erro ao criar usuário no Firebase: $e");
+    }
+
+    try {
+      await createUserDocInHive(user);
+    } catch (e) {
+      debugPrint("Erro ao criar usuário no Hive: $e");
+    }
 
     return user;
   }

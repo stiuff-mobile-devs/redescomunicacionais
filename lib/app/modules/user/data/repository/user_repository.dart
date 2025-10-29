@@ -25,4 +25,8 @@ class UserRepository {
   Future<UserModel?> getCurrentUser() {
     return _userProvider.getCurrentUserFromHive();
   }
+
+  createUserDocInHive(UserModel user) {
+    return _userProvider.createUserDocInHive(user);
+  }
 }
