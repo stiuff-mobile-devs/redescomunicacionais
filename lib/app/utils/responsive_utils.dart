@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:redescomunicacionais/app/services/device_detector_service.dart';
+import 'package:redescomunicacionais/app/data/services/device_detector_service.dart';
 
 /// Classe utilitária para cálculos de responsividade
 /// Centraliza todas as funções de responsividade para manter o código limpo
