@@ -6,6 +6,8 @@ import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_binding
 import 'package:redescomunicacionais/app/data/bindings/image_bindings.dart';
 import 'package:redescomunicacionais/app/modules/login/bindings/login_bindings.dart';
 import 'package:redescomunicacionais/app/modules/news/bindings/news_bindings.dart';
+import 'package:redescomunicacionais/app/modules/news_revision/bindings/news_revision_bindings.dart';
+import 'package:redescomunicacionais/app/modules/news_revision/ui/news_revision_page.dart';
 import 'package:redescomunicacionais/app/modules/splash/bindings/splash_bindings.dart';
 import 'package:redescomunicacionais/app/modules/user/bindings/user_bindings.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
@@ -61,5 +63,6 @@ class AppPages {
       page: () => CentralDeComunicacaoPage(),
       binding: CentralDeComunicacaoBinding(),
     ),
+    GetPage(name: Routes.NEWS_REVISION, page: () => NewsRevisionPage(), binding: NewsRevisionBindings()),
   ];
 }

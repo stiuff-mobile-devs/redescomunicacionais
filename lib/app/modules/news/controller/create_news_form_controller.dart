@@ -159,7 +159,7 @@ class CreateNewsFormController extends GetxController {
       email,
       createdAt,
       _type.value ?? '',
-      NewsStates.publicado,
+      NewsStates.emAnalise,
       videoUrl,
     );
 

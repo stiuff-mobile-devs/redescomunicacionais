@@ -115,6 +115,29 @@ class MenuPage extends StatelessWidget {
               );
             }
           }),
+          Obx(() {
+            _userController.loadUserRole(_homeController.user.email);
+            if (_userController.isEditor.value || _userController.isAdmin.value) {
+              return ListTile(
+                leading: const Icon(Icons.person_outline, color: Colors.white),
+                title: const Text(
+                  'Matérias para Revisão',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Get.toNamed(Routes.NEWS_REVISION);
+                },
+              );
+            } else {
+              return const ListTile(
+                leading: Icon(Icons.lock_outline, color: Colors.red),
+                title: Text(
+                  'Matérias para Revisão',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+          }),
           ListTile(
             leading: const Icon(Icons.chat_bubble_outline, color: Colors.white),
             title: const Text(
