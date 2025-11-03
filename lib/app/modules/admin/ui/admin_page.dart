@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({Key? key}) : super(key: key);
@@ -12,15 +13,20 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   final UserController _userController = Get.find<UserController>();
-  late final UserModel _user;
+  UserModel? _user;
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
     // Carrega a lista de usuários ao iniciar a página
     _user = await _userController.getCurrentUser() ??
         UserModel(id: '', email: '', role: '', createdAt: null, status: '');
     _userController.loadAllUsers();
+    setState(() {}); // atualiza caso algo dependa de _user
   }
 
   @override
@@ -28,7 +34,11 @@ class _AdminPageState extends State<AdminPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Gerenciar Usuários"),
-        backgroundColor: Colors.black,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appBarTopGradient(),
+          ),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         actions: [
@@ -41,12 +51,8 @@ class _AdminPageState extends State<AdminPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [Colors.blue, Colors.black],
-          ),
+        decoration: BoxDecoration(
+          gradient: AppColors.darkBlueToBlackGradient(),
         ),
         child: Column(
           children: [
@@ -197,7 +203,7 @@ class _AdminPageState extends State<AdminPage> {
                         await _showConfirmDialog(email, currentRole, newRole);
                     if (confirm == true) {
                       await _userController.addProfile(
-                          email, newRole, _user.email);
+                          email, newRole, _user?.email ?? '');
                       // Recarrega a lista
                       _userController.loadAllUsers();
                     }
