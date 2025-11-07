@@ -35,4 +35,9 @@ class NewsRepository {
       return "Erro ao atualizar notícia: $e";
     }
   }
+
+  Future<void> reviewNews(
+      String newsId, bool isApproved, String reason, String validator) async {
+    await newsProvider.reviewNews(newsId, isApproved, reason, validator);
+  }
 }

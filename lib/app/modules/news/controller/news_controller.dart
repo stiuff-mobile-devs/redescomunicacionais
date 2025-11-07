@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
@@ -181,7 +182,21 @@ class NewsController extends GetxController {
 
   List<dynamic> getValidNews() {
     return newss.where((news) {
-      if (news.status != 'publicado') return false;
+      if (news.status != NewsStates.publicado) return false;
+      try {
+        if (news.urlImages[0] != "") {
+          base64Decode(news.urlImages[0]);
+        }
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }).toList();
+  }
+
+  List<dynamic> getInAnalysis() {
+    return newss.where((news) {
+      if (news.status != NewsStates.emAnalise) return false;
       try {
         if (news.urlImages[0] != "") {
           base64Decode(news.urlImages[0]);
@@ -375,5 +390,36 @@ class NewsController extends GetxController {
   String getCityImageAsset(String? city) {
     final key = (city == null || city.isEmpty) ? 'default' : city;
     return _cityImageAssets[key] ?? _cityImageAssets['default']!;
+  }
+
+  reviewNews(
+      String newsId, bool isApproved, String reason, String validator) async {
+    try {
+      isLoading(true);
+      await _repository.reviewNews(newsId, isApproved, reason, validator);
+      // Atualiza lista local
+      await syncHiveAndFirebase();
+      await getNewsFromHive();
+      homeController.forceRecreate();
+      Get.snackbar(
+        'Sucesso',
+        isApproved
+            ? 'Matéria aprovada com sucesso!'
+            : 'Matéria rejeitada com sucesso!',
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.green,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Erro',
+        'Não foi possível revisar a matéria.',
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isLoading(false);
+    }
   }
 }

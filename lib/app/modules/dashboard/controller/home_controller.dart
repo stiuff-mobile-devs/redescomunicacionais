@@ -15,6 +15,7 @@ class HomeController extends GetxController {
   late final NewsController newsController;
 
   RxBool isLoadingLocation = false.obs;
+  RxBool isRevisionMode = false.obs;
 
   /// chave usada para forçar recriação de widgets
   final RxInt _recreateKey = 0.obs;

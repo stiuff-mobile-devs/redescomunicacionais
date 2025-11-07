@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 
 class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -92,6 +93,20 @@ class NewsProvider {
           .update(updatedData);
     } catch (e) {
       throw Exception("Erro ao atualizar notícia no Firebase: $e");
+    }
+  }
+
+  reviewNews(
+      String newsId, bool isApproved, String reason, String validator) async {
+    try {
+      await _firestore.collection(collectionPath).doc(newsId).update({
+        'status': isApproved ? NewsStates.publicado : NewsStates.emAnalise,
+        'validatedAt': DateTime.now().toIso8601String(),
+        'validatedObservation': reason,
+        'validatedBy': validator,
+      });
+    } catch (e) {
+      throw Exception("Erro ao revisar notícia no Firebase: $e");
     }
   }
 }
