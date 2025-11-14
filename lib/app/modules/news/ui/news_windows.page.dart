@@ -172,12 +172,27 @@ class NewsWindowsPage extends GetView<NewsController> {
                             _showAccessDeniedDialog(Get.context!);
                           }
                         },
+                        // ...existing code...
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                            size: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                              SizedBox(width: 8.0),
+                              Text(
+                                'Editar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -190,10 +205,24 @@ class NewsWindowsPage extends GetView<NewsController> {
                         },
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 30,
+                              ),
+                              SizedBox(width: 8.0),
+                              Text(
+                                'Excluir',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -203,10 +232,24 @@ class NewsWindowsPage extends GetView<NewsController> {
                           onTap: () => _showReviewDialog(news),
                           child: Container(
                             padding: const EdgeInsets.all(8.0),
-                            child: const Icon(
-                              Icons.rate_review,
-                              color: Colors.yellowAccent,
-                              size: 20,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.rate_review,
+                                  color: Colors.yellowAccent,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'Revisar',
+                                  style: TextStyle(
+                                    color: Colors.yellowAccent,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
