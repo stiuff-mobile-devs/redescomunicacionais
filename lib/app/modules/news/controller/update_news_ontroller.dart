@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 
 class UpdateNewsController extends GetxController {
   // Repository para acessar os dados
   final NewsRepository newsRepository = NewsRepository();
+  final NewsController newsController = Get.find<NewsController>();
 
   // Estado de carregamento
   final RxBool isLoading = false.obs;
@@ -16,7 +18,9 @@ class UpdateNewsController extends GetxController {
 
       // Chama o repository para atualizar
       String result = await newsRepository.updateNews(newsId, updatedData);
-
+      newsController.getNewsFromFirebase();
+      newsController.syncHiveAndFirebase();
+      newsController.homeController.forceRecreate();
       return result;
     } catch (e) {
       return "Erro ao atualizar notícia: $e";

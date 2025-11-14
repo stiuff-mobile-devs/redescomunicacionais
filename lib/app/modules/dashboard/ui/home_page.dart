@@ -86,7 +86,7 @@ class HomePage extends GetView<HomeController> {
       drawer: useHorizontalLayout ? null : MenuPage(),
       body: RefreshIndicator(
         onRefresh: () async {
-          controller.newsController.syncHiveAndFirebase();
+          await controller.newsController.getNewsFromFirebase();
           controller.forceRecreate();
         },
         child: Obx(

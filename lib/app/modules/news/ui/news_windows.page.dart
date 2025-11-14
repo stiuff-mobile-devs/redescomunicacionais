@@ -401,8 +401,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                     newsId, status, userEmail, authorEmail, type);
                 if (result == "sucess" || result == "success") {
                   // Recarrega as notícias
-                  await controller.syncHiveAndFirebase();
-                  await controller.getNewsFromHive();
+                  await controller.getNewsFromFirebase();
                   controller.homeController.forceRecreate();
                 }
               } catch (_) {}
@@ -573,9 +572,8 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               try {
                 // envia o motivo junto com a revisão
-                await controller.reviewNews(
-                    news.id, accepted, reason, controller.user.email);
-                await controller.syncHiveAndFirebase();
+                await controller.reviewNews(news.id, accepted, reason,
+                    controller.user.email, news.createdBy);
                 controller.homeController.forceRecreate();
               } catch (_) {}
             },

@@ -392,14 +392,23 @@ class NewsController extends GetxController {
     return _cityImageAssets[key] ?? _cityImageAssets['default']!;
   }
 
-  reviewNews(
-      String newsId, bool isApproved, String reason, String validator) async {
+  reviewNews(String newsId, bool isApproved, String reason, String validator,
+      String creator) async {
     try {
       isLoading(true);
+      if (validator == creator) {
+        Get.snackbar(
+          'Erro',
+          'Você não pode revisar sua própria matéria.',
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
       await _repository.reviewNews(newsId, isApproved, reason, validator);
       // Atualiza lista local
-      await syncHiveAndFirebase();
-      await getNewsFromHive();
+      await getNewsFromFirebase();
       homeController.forceRecreate();
       Get.snackbar(
         'Sucesso',
