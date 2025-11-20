@@ -11,6 +11,8 @@ class MenuPage extends StatelessWidget {
   final UserController _userController = Get.find<UserController>();
   final VersionService _versionController = Get.find<VersionService>();
 
+  MenuPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -52,7 +54,7 @@ class MenuPage extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${_homeController.user.email}',
+                      _homeController.user.email,
                       style: const TextStyle(
                         fontSize: 10.0,
                         color: Colors.white,
@@ -110,6 +112,31 @@ class MenuPage extends StatelessWidget {
                 leading: Icon(Icons.lock_outline, color: Colors.red),
                 title: Text(
                   'Admin',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+          }),
+          Obx(() {
+            _userController.loadUserRole(_homeController.user.email);
+            if (_userController.isEditor.value ||
+                _userController.isAdmin.value) {
+              return ListTile(
+                leading: const Icon(Icons.person_outline, color: Colors.white),
+                title: const Text(
+                  'Matérias para Revisão',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _homeController.isRevisionMode.value = true;
+                },
+              );
+            } else {
+              return const ListTile(
+                leading: Icon(Icons.lock_outline, color: Colors.red),
+                title: Text(
+                  'Matérias para Revisão',
                   style: TextStyle(color: Colors.white),
                 ),
               );

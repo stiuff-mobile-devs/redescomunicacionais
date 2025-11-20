@@ -10,4 +10,5 @@ abstract class Routes {
   static const WEB_VIEW = '/web_view';
   static const EDIT_NEWS = '/edit-news';
   static const CENTRAL_DE_COMUNICACAO = '/central-de-comunicacao';
+  static const NEWS_REVISION = '/news-revision';
 }

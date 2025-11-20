@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 
 class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -52,11 +53,31 @@ class NewsProvider {
   Future<String> hideNews(
       String newsId, String status, String userEmail) async {
     try {
+      // Atualiza no Firestore
       await _firestore.collection(collectionPath).doc(newsId).update({
         'status': status,
         'excluedAt': DateTime.now().toIso8601String(),
         'excluedBy': userEmail,
       });
+
+      // Atualiza no Hive (se existir, atualiza; se não, cria um registro mínimo)
+      try {
+        var box = await Hive.openBox<NewsModel>(collectionPath);
+        final existing = box.get(newsId);
+
+        // Monta o mapa de dados a ser salvo
+        Map<String, dynamic> updatedMap =
+            existing != null ? existing.toMap() : <String, dynamic>{};
+
+        updatedMap['status'] = status;
+        updatedMap['excluedAt'] = DateTime.now().toIso8601String();
+        updatedMap['excluedBy'] = userEmail;
+
+        await box.put(newsId, NewsModel.fromMap(newsId, updatedMap));
+      } catch (e) {
+        return "Error hiding news in Hive: $e";
+      }
+
       return "success";
     } catch (e) {
       return "Error hiding news status: $e";
@@ -72,6 +93,20 @@ class NewsProvider {
           .update(updatedData);
     } catch (e) {
       throw Exception("Erro ao atualizar notícia no Firebase: $e");
+    }
+  }
+
+  reviewNews(
+      String newsId, bool isApproved, String reason, String validator) async {
+    try {
+      await _firestore.collection(collectionPath).doc(newsId).update({
+        'status': isApproved ? NewsStates.publicado : NewsStates.emAnalise,
+        'validatedAt': DateTime.now().toIso8601String(),
+        'validatedObservation': reason,
+        'validatedBy': validator,
+      });
+    } catch (e) {
+      throw Exception("Erro ao revisar notícia no Firebase: $e");
     }
   }
 }

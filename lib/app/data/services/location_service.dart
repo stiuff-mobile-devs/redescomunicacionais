@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -102,10 +103,11 @@ class LocationService extends GetxService {
                 AnimatedOpacity(
                   opacity: visible ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 300),
-                  child: Image.asset(
-                    'assets/icons/RCLIcon.png',
-                    height: 80,
+                  child: SvgPicture.asset(
+                    'assets/icons/new-icon-white.svg',
                     width: 80,
+                    height: 80,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 20),

@@ -14,7 +14,7 @@ class SplashPage extends GetView<SplashController> {
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: AppColors.appBarTopGradient(),
+              gradient: AppColors.darkBlueToBlackGradient(),
             ),
           ),
           Center(

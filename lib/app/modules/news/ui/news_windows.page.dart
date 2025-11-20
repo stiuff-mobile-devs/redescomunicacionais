@@ -8,7 +8,10 @@ import 'package:intl/intl.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart'; // Para formatar datas
 
 class NewsWindowsPage extends GetView<NewsController> {
-  const NewsWindowsPage({super.key});
+  NewsWindowsPage({super.key, RxBool? isRevisionMode})
+      : isRevisionMode = isRevisionMode ?? false.obs;
+
+  final RxBool isRevisionMode;
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +33,10 @@ class NewsWindowsPage extends GetView<NewsController> {
                 selectionColor: Colors.white,
               ));
             }
-            // Filtra notícias com imagens válidas e status "publicado"
-            final validNews = controller.getValidNews();
+            // Filtra notícias válidas com base no modo de revisão
+            final validNews = isRevisionMode.value
+                ? controller.getInAnalysis()
+                : controller.getValidNews();
 
             if (validNews.isEmpty) {
               return const Center(
@@ -167,12 +172,27 @@ class NewsWindowsPage extends GetView<NewsController> {
                             _showAccessDeniedDialog(Get.context!);
                           }
                         },
+                        // ...existing code...
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                            size: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                              SizedBox(width: 8.0),
+                              Text(
+                                'Editar',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -185,13 +205,54 @@ class NewsWindowsPage extends GetView<NewsController> {
                         },
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 30,
+                              ),
+                              SizedBox(width: 8.0),
+                              Text(
+                                'Excluir',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
+
+                      if (isRevisionMode.value)
+                        GestureDetector(
+                          onTap: () => _showReviewDialog(news),
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.rate_review,
+                                  color: Colors.yellowAccent,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'Revisar',
+                                  style: TextStyle(
+                                    color: Colors.yellowAccent,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -340,7 +401,8 @@ class NewsWindowsPage extends GetView<NewsController> {
                     newsId, status, userEmail, authorEmail, type);
                 if (result == "sucess" || result == "success") {
                   // Recarrega as notícias
-                  controller.getNewsFromFirebase();
+                  await controller.getNewsFromFirebase();
+                  controller.homeController.forceRecreate();
                 }
               } catch (_) {}
             },
@@ -429,5 +491,100 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
       );
     }
+  }
+
+  Future<void> _showReviewDialog(NewsModel news) async {
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text(
+          "Revisão da Matéria",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "Escolha uma ação para esta matéria:",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Get.back();
+              await _showReasonDialog(news, true);
+            },
+            child: const Text("Aceitar", style: TextStyle(color: Colors.green)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Get.back();
+              await _showReasonDialog(news, false);
+            },
+            child: const Text("Recusar", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  Future<void> _showReasonDialog(NewsModel news, bool accepted) async {
+    final TextEditingController _reasonController = TextEditingController();
+
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          accepted ? "Motivo para Aceitar" : "Motivo para Recusar",
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Escreva o motivo:",
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 8.0),
+            TextField(
+              controller: _reasonController,
+              maxLines: 4,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Escreva o motivo aqui",
+                hintStyle: TextStyle(color: Colors.white38),
+                filled: true,
+                fillColor: Colors.grey[850],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
+          ),
+          TextButton(
+            onPressed: () async {
+              final reason = _reasonController.text.trim();
+              Get.back();
+              try {
+                // envia o motivo junto com a revisão
+                await controller.reviewNews(news.id, accepted, reason,
+                    controller.user.email, news.createdBy);
+                controller.homeController.forceRecreate();
+              } catch (_) {}
+            },
+            child: Text(
+              accepted ? "Enviar" : "Enviar",
+              style: TextStyle(color: accepted ? Colors.green : Colors.red),
+            ),
+          ),
+        ],
+      ),
+      barrierDismissible: true,
+    );
   }
 }

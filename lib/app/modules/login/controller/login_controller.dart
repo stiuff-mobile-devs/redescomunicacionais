@@ -7,7 +7,6 @@ class LoginController extends GetxController {
   final LoginRepository repository = LoginRepository();
 
   late final VersionService versionService;
-  //final DeviceDetectorService deviceDetector = DeviceDetectorService.instance;
   @override
   void onInit() {
     versionService = Get.find<VersionService>();

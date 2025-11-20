@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:redescomunicacionais/app/data/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_ontroller.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
+import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 
 class EditNewsPage extends StatefulWidget {
   const EditNewsPage({super.key});
@@ -132,15 +134,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
         centerTitle: true,
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Colors.blue,
-              Colors.black,
-            ],
-          ),
+        decoration: BoxDecoration(
+          gradient: AppColors.darkBlueToBlackGradient(),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -550,7 +545,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
         'cities': selectedCities.toList(),
         'categories': selectedCategories.toList(),
         'type': selectedType.value,
-        'status': 'publicado',
+        'status': NewsStates.emAnalise,
         'updatedAt': DateTime.now(),
       };
 
@@ -572,7 +567,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
         );
 
         // Volta para a página anterior
-        Get.back();
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+     
       } else {
         Get.snackbar(
           "Erro",

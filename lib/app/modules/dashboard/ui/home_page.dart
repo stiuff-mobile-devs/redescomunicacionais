@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
@@ -39,16 +38,18 @@ class HomePage extends GetView<HomeController> {
               foregroundColor: Colors.white,
               title: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text(
-                  "Redes Comunicacionais Locais",
-                  style: TextStyle(
-                    fontSize: appBarTitleSize,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: Obx(() => Text(
+                      controller.isRevisionMode.value
+                          ? "Revisão de Matérias"
+                          : "Redes Comunicacionais Locais",
+                      style: TextStyle(
+                        fontSize: appBarTitleSize,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )),
               ),
               shape: const RoundedRectangleBorder(
                 borderRadius:
@@ -72,33 +73,47 @@ class HomePage extends GetView<HomeController> {
                     controller.goUserGuide();
                   },
                 ),
+                Obx(() => controller.isRevisionMode.value
+                    ? IconButton(
+                        onPressed: () {
+                          controller.isRevisionMode.value = false;
+                        },
+                        icon: const Icon(Icons.exit_to_app_outlined),
+                      )
+                    : const SizedBox.shrink()),
               ],
             ),
       drawer: useHorizontalLayout ? null : MenuPage(),
-      body: Obx(
-        () => controller.isLoadingLocation.value
-            ? Container(
-                decoration: BoxDecoration(
-                  gradient: AppColors.darkBlueToBlackGradient(),
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            : useHorizontalLayout
-                ? _buildHorizontalLayout(
-                    context,
-                    screenWidth,
-                    screenHeight,
-                    isTablet,
-                    appBarTitleSize,
-                    iconSize,
-                  )
-                : _buildVerticalLayout(
-                    context,
-                    screenHeight,
-                    isTablet,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.newsController.getNewsFromFirebase();
+          controller.forceRecreate();
+        },
+        child: Obx(
+          () => controller.isLoadingLocation.value
+              ? Container(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.darkBlueToBlackGradient(),
                   ),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : useHorizontalLayout
+                  ? _buildHorizontalLayout(
+                      context,
+                      screenWidth,
+                      screenHeight,
+                      isTablet,
+                      appBarTitleSize,
+                      iconSize,
+                    )
+                  : _buildVerticalLayout(
+                      context,
+                      screenHeight,
+                      isTablet,
+                    ),
+        ),
       ),
       bottomNavigationBar: useHorizontalLayout
           ? null
@@ -163,17 +178,19 @@ class HomePage extends GetView<HomeController> {
                     vertical: isTablet ? 15.0 : 12.0,
                     horizontal: isTablet ? 15.0 : 10.0,
                   ),
-                  child: Text(
-                    "Redes Comunicacionais Locais",
-                    style: TextStyle(
-                      fontSize: isTablet ? 16.0 : 14.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Obx(() => Text(
+                        controller.isRevisionMode.value
+                            ? "Revisão de Matérias"
+                            : "Redes Comunicacionais Locais",
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      )),
                 ),
 
                 // Divisor após o título
@@ -371,7 +388,10 @@ class HomePage extends GetView<HomeController> {
 
           // Lado direito - Conteúdo principal
           Expanded(
-            child: NewsWindowsPage(),
+            child: NewsWindowsPage(
+              key: ValueKey(controller.recreateKey),
+              isRevisionMode: controller.isRevisionMode,
+            ),
           ),
         ],
       ),
@@ -388,7 +408,10 @@ class HomePage extends GetView<HomeController> {
       decoration: BoxDecoration(
         gradient: AppColors.darkBlueToBlackGradient(),
       ),
-      child: NewsWindowsPage(),
+      child: NewsWindowsPage(
+        key: ValueKey(controller.recreateKey),
+        isRevisionMode: controller.isRevisionMode,
+      ),
     );
   }
 

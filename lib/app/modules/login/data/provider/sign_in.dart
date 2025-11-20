@@ -34,6 +34,24 @@ class SignInService {
   }
 
   Future<UserModel?> trySignInGoogle() async {
+    final User? firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      return UserModel(
+        id: firebaseUser.uid,
+        name: firebaseUser.displayName,
+        email: firebaseUser.email ?? '',
+        urlImage: firebaseUser.photoURL,
+        role: 'user',
+        createdAt: firebaseUser.metadata.creationTime,
+        roleUpdatedAt: null,
+        roleUpdatedBy: null,
+        status: 'active',
+        statusUpdatedAt: null,
+        statusUpdatedBy: null,
+        statusObservation: null,
+      );
+      ;
+    }
     var account = await _googleSignIn.signInSilently();
     if (account == null) {
       return null;

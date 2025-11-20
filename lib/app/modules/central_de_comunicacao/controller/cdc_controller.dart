@@ -7,24 +7,19 @@ class CentralDeComunicacaoController extends GetxController {
 
   final List<Map<String, String>> chats = const [
     {
-      'name': 'Chat de Informes',
-      'url': 'https://chat.google.com/room/AAQAbsILxpE',
-      'image': 'assets/icons/midi.jpg'
+      'name': 'Avisos RCL SSA',
+      'url': 'https://chat.google.com/room/AAQA29ehRvg',
+      'image': 'assets/icons/new-icon-green.png'
     },
     {
-      'name': 'Chat 2',
-      'url': 'https://chat.google.com/room/AAQAbsILxpE',
-      'image': 'assets/icons/midi.jpg'
+      'name': 'Bate-papo Usuários RCL SSA',
+      'url': 'https://chat.google.com/room/AAQAlCP4PCI',
+      'image': 'assets/icons/new-icon-red.png'
     },
     {
-      'name': 'Chat 3',
-      'url': 'https://chat.google.com/room/AAQAbsILxpE',
-      'image': 'assets/icons/midi.jpg'
-    },
-    {
-      'name': 'Chat 4',
-      'url': 'https://chat.google.com/room/AAQAbsILxpE',
-      'image': 'assets/icons/midi.jpg'
+      'name': 'Feedback e Sugestões RCL SSA',
+      'url': 'https://chat.google.com/room/AAQAkabSUuw',
+      'image': 'assets/icons/new-icon-yellow.png'
     },
   ];
 }
