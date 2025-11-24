@@ -572,8 +572,13 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               try {
                 // envia o motivo junto com a revisão
-                await controller.reviewNews(news.id, accepted, reason,
-                    controller.user.email, news.createdBy);
+                await controller.reviewNews(
+                    news.id,
+                    accepted,
+                    reason,
+                    controller.user.email,
+                    news.createdBy,
+                    controller.user.name ?? '');
                 controller.homeController.forceRecreate();
               } catch (_) {}
             },

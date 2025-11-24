@@ -36,8 +36,9 @@ class NewsRepository {
     }
   }
 
-  Future<void> reviewNews(
-      String newsId, bool isApproved, String reason, String validator) async {
-    await newsProvider.reviewNews(newsId, isApproved, reason, validator);
+  Future<void> reviewNews(String newsId, bool isApproved, String reason,
+      String validator, String validatorName) async {
+    await newsProvider.reviewNews(
+        newsId, isApproved, reason, validator, validatorName);
   }
 }
