@@ -127,8 +127,8 @@ class NewsController extends GetxController {
     try {
       isLoading(true);
       newss.value = await _repository.getNewsFromHive();
-      newss.sort((a, b) => DateTime.parse(b.createdAt as String)
-          .compareTo(DateTime.parse(a.createdAt as String)));
+      newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
+          .compareTo(DateTime.parse(a.createdAt.toString())));
     } catch (e) {
       debugPrint("Erro ao carregar as notícias do Hive: $e");
     } finally {
