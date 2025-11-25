@@ -78,12 +78,12 @@ class HomePage extends GetView<HomeController> {
                         onPressed: () {
                           controller.isRevisionMode.value = false;
                         },
-                        icon: const Icon(Icons.exit_to_app_outlined),
+                        icon: const Icon(Icons.arrow_back),
                       )
                     : const SizedBox.shrink()),
               ],
             ),
-      drawer: useHorizontalLayout ? null : MenuPage(),
+      drawer: (useHorizontalLayout || controller.isRevisionMode.value) ? null : MenuPage(),
       body: RefreshIndicator(
         onRefresh: () async {
           await controller.newsController.getNewsFromFirebase();

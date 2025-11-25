@@ -15,7 +15,10 @@ migrate_working_dir/
 *.ipr
 *.iws
 .idea/
-
+/android
+/linux/flutter
+/windows/flutter
+/macos/flutter
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
@@ -36,8 +39,7 @@ app.*.symbols
 
 # Obfuscation related
 app.*.map.json
-
-# Android Studio will place build artifacts here
+/android/app/build
 /android/app/debug
 /android/app/profile
 /android/app/release
