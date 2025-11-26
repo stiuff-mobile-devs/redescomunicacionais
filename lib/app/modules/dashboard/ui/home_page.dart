@@ -76,9 +76,9 @@ class HomePage extends GetView<HomeController> {
                 Obx(() => controller.isRevisionMode.value
                     ? IconButton(
                         onPressed: () {
-                          controller.isRevisionMode.value = false;
+                          controller.isRevisionMode.value = false; 
                         },
-                        icon: const Icon(Icons.exit_to_app_outlined),
+                        icon: const Icon(Icons.arrow_back),
                       )
                     : const SizedBox.shrink()),
               ],
