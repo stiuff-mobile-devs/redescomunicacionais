@@ -117,9 +117,13 @@ class MenuPage extends StatelessWidget {
               );
             }
           }),
-
-              ListTile(
-                leading: const Icon(Icons.reviews_outlined, color: Colors.white),
+          Obx(() {
+            _userController.loadUserRole(_homeController.user.email);
+            if (_userController.isEditor.value ||
+                _userController.isAdmin.value) {
+              return ListTile(
+                leading:
+                    const Icon(Icons.reviews_outlined, color: Colors.white),
                 title: const Text(
                   'Matérias para Revisão',
                   style: TextStyle(color: Colors.white),
@@ -128,8 +132,17 @@ class MenuPage extends StatelessWidget {
                   Navigator.pop(context);
                   _homeController.isRevisionMode.value = true;
                 },
-              ) 
-          ,
+              );
+            } else {
+              return const ListTile(
+                leading: Icon(Icons.reviews_outlined, color: Colors.red),
+                title: Text(
+                  'Matérias para Revisão',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+          }),
           ListTile(
             leading: const Icon(Icons.chat_bubble_outline, color: Colors.white),
             title: const Text(
