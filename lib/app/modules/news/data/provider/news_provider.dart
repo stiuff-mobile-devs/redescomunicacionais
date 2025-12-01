@@ -96,14 +96,15 @@ class NewsProvider {
     }
   }
 
-  reviewNews(
-      String newsId, bool isApproved, String reason, String validator) async {
+  reviewNews(String newsId, bool isApproved, String reason, String validator,
+      String validatorName) async {
     try {
       await _firestore.collection(collectionPath).doc(newsId).update({
         'status': isApproved ? NewsStates.publicado : NewsStates.emAnalise,
         'validatedAt': DateTime.now().toIso8601String(),
         'validatedObservation': reason,
         'validatedBy': validator,
+        'validatedByName': validatorName,
       });
     } catch (e) {
       throw Exception("Erro ao revisar notícia no Firebase: $e");

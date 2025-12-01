@@ -66,6 +66,15 @@ class HomePage extends GetView<HomeController> {
               ),
               toolbarHeight: isTablet ? 70.0 : 56.0,
               actions: [
+                Obx(() => controller.isRevisionMode.value
+                    ? IconButton(
+                        onPressed: () {
+                          controller.isRevisionMode.value = false;
+                        },
+                        icon:
+                            const Icon(Icons.arrow_back, color: Colors.orange),
+                      )
+                    : const SizedBox.shrink()),
                 IconButton(
                   iconSize: iconSize,
                   icon: const Icon(Icons.help_outline),
@@ -73,14 +82,6 @@ class HomePage extends GetView<HomeController> {
                     controller.goUserGuide();
                   },
                 ),
-                Obx(() => controller.isRevisionMode.value
-                    ? IconButton(
-                        onPressed: () {
-                          controller.isRevisionMode.value = false;
-                        },
-                        icon: const Icon(Icons.exit_to_app_outlined),
-                      )
-                    : const SizedBox.shrink()),
               ],
             ),
       drawer: useHorizontalLayout ? null : MenuPage(),

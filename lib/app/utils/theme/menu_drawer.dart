@@ -122,7 +122,8 @@ class MenuPage extends StatelessWidget {
             if (_userController.isEditor.value ||
                 _userController.isAdmin.value) {
               return ListTile(
-                leading: const Icon(Icons.person_outline, color: Colors.white),
+                leading:
+                    const Icon(Icons.reviews_outlined, color: Colors.white),
                 title: const Text(
                   'Matérias para Revisão',
                   style: TextStyle(color: Colors.white),
@@ -134,7 +135,7 @@ class MenuPage extends StatelessWidget {
               );
             } else {
               return const ListTile(
-                leading: Icon(Icons.lock_outline, color: Colors.red),
+                leading: Icon(Icons.reviews_outlined, color: Colors.red),
                 title: Text(
                   'Matérias para Revisão',
                   style: TextStyle(color: Colors.white),

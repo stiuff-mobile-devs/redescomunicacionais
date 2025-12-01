@@ -127,8 +127,8 @@ class NewsController extends GetxController {
     try {
       isLoading(true);
       newss.value = await _repository.getNewsFromHive();
-      newss.sort((a, b) => DateTime.parse(b.createdAt as String)
-          .compareTo(DateTime.parse(a.createdAt as String)));
+      newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
+          .compareTo(DateTime.parse(a.createdAt.toString())));
     } catch (e) {
       debugPrint("Erro ao carregar as notícias do Hive: $e");
     } finally {
@@ -221,6 +221,8 @@ class NewsController extends GetxController {
       "dataCriacao": news.createdAt.toString(),
       "type": news.type,
       "videoUrl": news.videoUrl,
+      "validatedBy": news.validatedBy ?? '',
+      "validatedByName": news.validatedByName ?? '',
     };
   }
 
@@ -393,7 +395,7 @@ class NewsController extends GetxController {
   }
 
   reviewNews(String newsId, bool isApproved, String reason, String validator,
-      String creator) async {
+      String creator, String validatorName) async {
     try {
       isLoading(true);
       if (validator == creator) {
@@ -406,7 +408,8 @@ class NewsController extends GetxController {
         );
         return;
       }
-      await _repository.reviewNews(newsId, isApproved, reason, validator);
+      await _repository.reviewNews(
+          newsId, isApproved, reason, validator, validatorName);
       // Atualiza lista local
       await getNewsFromFirebase();
       homeController.forceRecreate();

@@ -390,12 +390,11 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => Navigator.of(Get.context!).pop(),
             child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
-              Get.back(); // Fecha o diálogo
               try {
                 String result = await controller.hideNews(
                     newsId, status, userEmail, authorEmail, type);
@@ -403,6 +402,26 @@ class NewsWindowsPage extends GetView<NewsController> {
                   // Recarrega as notícias
                   await controller.getNewsFromFirebase();
                   controller.homeController.forceRecreate();
+                } else {
+                  showDialog(
+                    context: Get.context!,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: Colors.grey[900],
+                      title: const Text("Erro",
+                          style: TextStyle(color: Colors.white)),
+                      content: Text(
+                        result,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text("OK",
+                              style: TextStyle(color: Colors.blue)),
+                        ),
+                      ],
+                    ),
+                  );
                 }
               } catch (_) {}
             },
@@ -572,8 +591,13 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               try {
                 // envia o motivo junto com a revisão
-                await controller.reviewNews(news.id, accepted, reason,
-                    controller.user.email, news.createdBy);
+                await controller.reviewNews(
+                    news.id,
+                    accepted,
+                    reason,
+                    controller.user.email,
+                    news.createdBy,
+                    controller.user.name ?? '');
                 controller.homeController.forceRecreate();
               } catch (_) {}
             },

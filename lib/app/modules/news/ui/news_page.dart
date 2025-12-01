@@ -52,6 +52,7 @@ class _NewsPageState extends State<NewsPage> {
     final String type = Get.arguments["type"] ?? "";
     final String videoUrl = Get.arguments["videoUrl"] ??
         "https://www.youtube.com/shorts/vCeCb-evJOc";
+    final String validatedByName = Get.arguments["validatedByName"] ?? "-";
 
     // Carrega o conteúdo Delta no controller
     try {
@@ -122,7 +123,9 @@ class _NewsPageState extends State<NewsPage> {
               type,
               context,
               videoUrl,
-              formatData)
+              formatData,
+              validatedByName,
+            )
           : _buildMobileLayout(
               screenWidth,
               screenHeight,
@@ -139,7 +142,9 @@ class _NewsPageState extends State<NewsPage> {
               type,
               context,
               videoUrl,
-              formatData),
+              formatData,
+              validatedByName,
+            ),
     );
   }
 
@@ -161,6 +166,7 @@ class _NewsPageState extends State<NewsPage> {
     BuildContext context,
     String videoUrl,
     String Function(String) formatData,
+    String validatedBy,
   ) {
     return Row(
       children: [
@@ -444,6 +450,7 @@ class _NewsPageState extends State<NewsPage> {
     BuildContext context,
     String videoUrl,
     String Function(String) formatData,
+    String validatedBy,
   ) {
     return ListView(
       padding: ResponsiveUtils.calculateResponsivePadding(
@@ -547,16 +554,18 @@ class _NewsPageState extends State<NewsPage> {
 
               // Informações organizadas
               _buildInfoRow(
-                  isTablet,
-                  autor,
-                  dataCriacao,
-                  cidade,
-                  categorias,
-                  visibleCategories,
-                  hasMoreThanTwoCategories,
-                  type,
-                  context,
-                  formatData),
+                isTablet,
+                autor,
+                dataCriacao,
+                cidade,
+                categorias,
+                visibleCategories,
+                hasMoreThanTwoCategories,
+                type,
+                context,
+                formatData,
+                validatedBy,
+              ),
             ],
           ),
         ),
@@ -708,7 +717,13 @@ class _NewsPageState extends State<NewsPage> {
           isTablet: isTablet,
         ),
         SizedBox(height: isTablet ? 12 : 10),
-
+        _buildInfoItem(
+          icon: Icons.category,
+          label: "Tipo",
+          value: type,
+          isTablet: isTablet,
+        ),
+        SizedBox(height: isTablet ? 12 : 10),
         // Quinta linha: Categorias
         _buildCategoriesItem(isTablet, categorias, visibleCategories,
             hasMoreThanTwoCategories, context),
@@ -718,16 +733,18 @@ class _NewsPageState extends State<NewsPage> {
 
   // Widget para construir a linha de informações com categorias responsivas
   Widget _buildInfoRow(
-      bool isTablet,
-      String autor,
-      String dataCriacao,
-      String cidade,
-      List<String> categorias,
-      List<String> visibleCategories,
-      bool hasMoreThanTwoCategories,
-      String type,
-      BuildContext context,
-      String Function(String) formatData) {
+    bool isTablet,
+    String autor,
+    String dataCriacao,
+    String cidade,
+    List<String> categorias,
+    List<String> visibleCategories,
+    bool hasMoreThanTwoCategories,
+    String type,
+    BuildContext context,
+    String Function(String) formatData,
+    String validateBy,
+  ) {
     return Column(
       children: [
         // Primeira linha: Autor e Data
@@ -781,6 +798,17 @@ class _NewsPageState extends State<NewsPage> {
         // Terceira linha: Categorias
         _buildCategoriesItem(isTablet, categorias, visibleCategories,
             hasMoreThanTwoCategories, context),
+        Row(
+          children: [
+            Expanded(
+              child: _buildInfoItem(
+                  icon: Icons.supervisor_account,
+                  label: 'Revisor',
+                  value: validateBy,
+                  isTablet: isTablet),
+            )
+          ],
+        )
       ],
     );
   }
