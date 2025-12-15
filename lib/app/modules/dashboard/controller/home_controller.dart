@@ -97,4 +97,10 @@ class HomeController extends GetxController {
       'title': 'Sobre Nós',
     });
   }
+
+  void filterNewsByName(String name) {
+    newsController.newss.value = newsController.newss
+        .where((news) => news.title.toLowerCase().contains(name.toLowerCase()))
+        .toList();
+  }
 }

@@ -74,7 +74,7 @@ class CreateNewsFormController extends GetxController {
 
   final List<String> types = [
     'Notícia',
-    'Opnião',
+    'Opinião',
   ];
 
   @override
