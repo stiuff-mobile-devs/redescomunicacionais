@@ -35,39 +35,63 @@ class SignInService {
 
   Future<UserModel?> trySignInGoogle() async {
     final User? firebaseUser = FirebaseAuth.instance.currentUser;
+
     if (firebaseUser != null) {
-      return UserModel(
-        id: firebaseUser.uid,
-        name: firebaseUser.displayName,
-        email: firebaseUser.email ?? '',
-        urlImage: firebaseUser.photoURL,
-        role: 'user',
-        createdAt: firebaseUser.metadata.creationTime,
-        roleUpdatedAt: null,
-        roleUpdatedBy: null,
-        status: 'active',
-        statusUpdatedAt: null,
-        statusUpdatedBy: null,
-        statusObservation: null,
-      );
-      ;
+      try {
+        // Busca o documento completo do usuário no Firestore
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .get();
+
+        if (userDoc.exists) {
+          // Retorna o UserModel com todos os campos do Firestore
+          return UserModel.fromMap(userDoc.data()!);
+        } else {
+          // Se não existe documento, cria um novo
+          return await _userRepository.createUserDoc(
+            firebaseUser.email!,
+            firebaseUser.displayName!,
+            firebaseUser.uid,
+            firebaseUser.photoURL!,
+          );
+        }
+      } catch (err) {
+        debugPrint("Erro ao buscar dados do usuário: $err");
+      }
     }
+
+    // Tenta login silencioso apenas se não houver usuário autenticado
     var account = await _googleSignIn.signInSilently();
     if (account == null) {
       return null;
     }
+
     var b = await account.authentication;
     final authCredential = GoogleAuthProvider.credential(
         accessToken: b.accessToken, idToken: b.idToken);
+
     try {
       var userCredential =
           await FirebaseAuth.instance.signInWithCredential(authCredential);
-      return await _userRepository.createUserDoc(
-        userCredential.user!.email!,
-        userCredential.user!.displayName!,
-        userCredential.user!.uid,
-        userCredential.user!.photoURL!,
-      );
+
+      // Verifica se já existe documento no Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        return UserModel.fromMap(userDoc.data()!);
+      } else {
+        // Cria novo documento apenas se não existir
+        return await _userRepository.createUserDoc(
+          userCredential.user!.email!,
+          userCredential.user!.displayName!,
+          userCredential.user!.uid,
+          userCredential.user!.photoURL!,
+        );
+      }
     } catch (err) {
       debugPrint(err.toString());
     }

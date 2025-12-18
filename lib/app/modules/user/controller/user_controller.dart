@@ -65,7 +65,15 @@ class UserController extends GetxController {
     }
   }
 
-  Future<UserModel?> getCurrentUser() {
+  Future<UserModel> getCurrentUser() {
     return _repository.getCurrentUser();
+  }
+
+  Future<void> updateUserInFirebase(UserModel user) {
+    return _repository.updateUserInFirebase(user);
+  }
+
+  Future<void> updateUserInHive(UserModel user) {
+    return _repository.updateUserInHive(user);
   }
 }

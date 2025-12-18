@@ -32,11 +32,14 @@ class AppPages {
         name: Routes.LOGIN,
         page: () => const LoginPage(),
         binding: LoginBinding()),
-    GetPage(name: Routes.ADMIN, page: () => AdminPage()),
+    GetPage(
+      name: Routes.ADMIN,
+      page: () => AdminPage(),
+    ),
     GetPage(
       name: Routes.HOME,
       page: () => HomePage(),
-      bindings: [HomeBinding(), UserBinding(), NewsBinding()],
+      bindings: [UserBinding(), HomeBinding(), NewsBinding()],
     ),
     GetPage(
       name: Routes.NEWS,
@@ -63,6 +66,9 @@ class AppPages {
       page: () => CentralDeComunicacaoPage(),
       binding: CentralDeComunicacaoBinding(),
     ),
-    GetPage(name: Routes.NEWS_REVISION, page: () => NewsRevisionPage(), binding: NewsRevisionBindings()),
+    GetPage(
+        name: Routes.NEWS_REVISION,
+        page: () => NewsRevisionPage(),
+        binding: NewsRevisionBindings()),
   ];
 }

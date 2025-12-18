@@ -29,13 +29,15 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       statusUpdatedAt: fields[9] as DateTime?,
       statusUpdatedBy: fields[10] as String?,
       statusObservation: fields[11] as String?,
+      lastLocation: fields[12] as String?,
+      lastLocationUpdatedAt: fields[13] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -59,7 +61,11 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       ..writeByte(10)
       ..write(obj.statusUpdatedBy)
       ..writeByte(11)
-      ..write(obj.statusObservation);
+      ..write(obj.statusObservation)
+      ..writeByte(12)
+      ..write(obj.lastLocation)
+      ..writeByte(13)
+      ..write(obj.lastLocationUpdatedAt);
   }
 
   @override

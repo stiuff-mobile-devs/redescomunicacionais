@@ -6,7 +6,8 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 class LoginController extends GetxController {
   final LoginRepository repository = LoginRepository();
 
-  late final VersionService versionService;
+  late VersionService versionService;
+
   @override
   void onInit() {
     versionService = Get.find<VersionService>();
@@ -16,6 +17,7 @@ class LoginController extends GetxController {
   void loginGoogle() async {
     try {
       repository.logoutGoogle();
+
       final user = await repository.signInGoogle();
 
       if (user != null) {

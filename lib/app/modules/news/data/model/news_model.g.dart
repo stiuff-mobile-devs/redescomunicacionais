@@ -39,13 +39,14 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       validatedObservation: fields[19] as String?,
       excludedObservation: fields[20] as String?,
       videoUrl: fields[21] as String?,
+      validatedByName: fields[22] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, NewsModel obj) {
     writer
-      ..writeByte(22)
+      ..writeByte(23)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -89,7 +90,9 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       ..writeByte(20)
       ..write(obj.excludedObservation)
       ..writeByte(21)
-      ..write(obj.videoUrl);
+      ..write(obj.videoUrl)
+      ..writeByte(22)
+      ..write(obj.validatedByName);
   }
 
   @override

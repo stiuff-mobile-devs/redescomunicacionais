@@ -7,7 +7,7 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class HomeController extends GetxController {
-  late final UserModel user;
+  late UserModel user;
 
   late final VersionService versionService;
   late final LocationService locationService;
@@ -28,11 +28,13 @@ class HomeController extends GetxController {
     locationService = Get.find<LocationService>();
     userController = Get.find<UserController>();
     newsController = Get.find<NewsController>();
-    user = await userController.getCurrentUser() ??
-        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
+
+    user = await userController.getCurrentUser();
+
     isLoadingLocation.value = true;
-    await locationService.requestLocation();
+    await locationService.requestLocation(user);
     isLoadingLocation.value = false;
+
     super.onInit();
   }
 
