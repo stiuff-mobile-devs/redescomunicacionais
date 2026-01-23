@@ -69,7 +69,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
   final List<String> types = [
     'Notícia',
-    'Opnião',
+    'Opinião',
   ];
 
   @override

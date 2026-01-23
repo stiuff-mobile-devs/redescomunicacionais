@@ -82,6 +82,42 @@ class HomePage extends GetView<HomeController> {
                     controller.goUserGuide();
                   },
                 ),
+                IconButton(
+                  iconSize: iconSize,
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        TextEditingController searchController = TextEditingController();
+                        return AlertDialog(
+                          title: const Text('Filtrar Notícias'),
+                          content: TextField(
+                            controller: searchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Digite o nome da notícia',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancelar'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                controller.filterNewsByName(searchController.text);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Filtrar'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
               ],
             ),
       drawer: useHorizontalLayout ? null : MenuPage(),
@@ -276,6 +312,46 @@ class HomePage extends GetView<HomeController> {
                           iconSize: iconSize,
                           isTablet: isTablet,
                         ),
+                        
+                        // Filtrar Notícias
+                        _buildMenuTile(
+                          icon: Icons.search,
+                          title: "Filtrar Notícias",
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                TextEditingController searchController = TextEditingController();
+                                return AlertDialog(
+                                  title: const Text('Filtrar Notícias'),
+                                  content: TextField(
+                                    controller: searchController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Digite o nome da notícia',
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        controller.filterNewsByName(searchController.text);
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Filtrar'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          iconSize: iconSize,
+                          isTablet: isTablet,
+                        ),
 
                         SizedBox(height: isTablet ? 15.0 : 10.0),
                         Divider(
@@ -332,7 +408,7 @@ class HomePage extends GetView<HomeController> {
                             color: Colors.white.withOpacity(0.2),
                             thickness: 0.5),
                         SizedBox(height: isTablet ? 15.0 : 10.0),
-
+                        
                         // Sobre
                         _buildMenuTile(
                           icon: Icons.info_outline,
