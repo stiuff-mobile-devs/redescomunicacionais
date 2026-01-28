@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/data/services/image_base64_service.dart';
+import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 
 class ImageBinding implements Bindings {
   @override

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/data/services/version_service.dart';
+import 'package:redescomunicacionais/app/services/version_service.dart';
 
 class VersionBindings implements Bindings {
   @override

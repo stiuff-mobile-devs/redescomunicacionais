@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/data/services/location_service.dart';
-import 'package:redescomunicacionais/app/data/services/version_service.dart';
+import 'package:redescomunicacionais/app/services/location_service.dart';
+import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';

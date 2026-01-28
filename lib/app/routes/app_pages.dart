@@ -31,7 +31,7 @@ class AppPages {
     GetPage(
         name: Routes.LOGIN,
         page: () => const LoginPage(),
-        binding: LoginBinding()),
+        bindings: [LoginBinding(), VersionBindings()]),
     GetPage(
       name: Routes.ADMIN,
       page: () => AdminPage(),

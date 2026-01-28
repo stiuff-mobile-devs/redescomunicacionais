@@ -5,7 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/routes/app_pages.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/data/services/hive_service.dart';
+import 'package:redescomunicacionais/app/services/hive_service.dart';
 import 'package:redescomunicacionais/app/utils/theme/app_theme.dart';
 import 'package:redescomunicacionais/firebase_options.dart';
 

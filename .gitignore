@@ -50,3 +50,4 @@ android/app/.cxx/
 upload-keystore.jks
 macos/Flutter/GeneratedPluginRegistrant.swift
 android/app/google-services.json
+lib/app/config/Secrets.dart
