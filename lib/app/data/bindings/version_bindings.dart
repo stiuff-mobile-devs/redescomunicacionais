@@ -3,12 +3,11 @@ import 'package:redescomunicacionais/app/services/version_service.dart';
 
 class VersionBindings implements Bindings {
   @override
-  Future<void> dependencies() async {
-    // Registra a instância do serviço primeiro
-    final versionService = VersionService();
-    Get.put<VersionService>(versionService, permanent: true);
-
-    // Depois chama a inicialização (aguarde se for assíncrono)
-    await versionService.init();
+  void dependencies() {
+    // Registra o serviço usando Get.putAsync para aguardar a inicialização
+    Get.putAsync<VersionService>(
+      () async => await VersionService().init(),
+      permanent: true,
+    );
   }
 }
