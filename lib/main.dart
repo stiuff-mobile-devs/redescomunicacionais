@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/routes/app_pages.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/services/hive_service.dart';
+import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/utils/theme/app_theme.dart';
 import 'package:redescomunicacionais/firebase_options.dart';
 
@@ -18,6 +19,10 @@ Future<void> main() async {
 
   await HiveInitializer
       .initialize(); // Inicializa o Hive e registra os adapters
+
+  // Initialize VersionService globally
+  final versionService = await VersionService().init();
+  Get.put<VersionService>(versionService);
 
   runApp(
     GetMaterialApp(
