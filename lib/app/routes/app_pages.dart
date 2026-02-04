@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/data/bindings/version_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
@@ -26,12 +25,12 @@ class AppPages {
     GetPage(
       name: Routes.INITIAL,
       page: () => SplashPage(),
-      bindings: [VersionBindings(), LoginBinding(), SplashBindings()],
+      bindings: [LoginBinding(), SplashBindings()],
     ),
     GetPage(
         name: Routes.LOGIN,
         page: () => const LoginPage(),
-        bindings: [LoginBinding(), VersionBindings()]),
+        bindings: [LoginBinding()]),
     GetPage(
       name: Routes.ADMIN,
       page: () => AdminPage(),

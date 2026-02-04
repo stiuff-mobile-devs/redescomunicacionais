@@ -13,6 +13,7 @@ class UserProvider {
 
   Future<UserModel> createUserDoc(
       String email, String name, String uid, String urlImage) async {
+
     UserModel user = UserModel(
       id: uid,
       name: name,
@@ -24,13 +25,14 @@ class UserProvider {
     );
 
     try {
-      await createUserDocInFirebase(user);
+      user = await _createUserDocInFirebase(user);
+      user 
     } catch (e) {
       debugPrint("Erro ao criar usuário no Firebase: $e");
     }
 
     try {
-      await createUserDocInHive(user);
+      user = await _createUserDocInHive(user);
     } catch (e) {
       debugPrint("Erro ao criar usuário no Hive: $e");
     }
@@ -38,14 +40,19 @@ class UserProvider {
     return user;
   }
 
-  Future<void> createUserDocInFirebase(UserModel user) async {
+  Future<UserModel> _createUserDocInFirebase(UserModel user) async {
     try {
       DocumentSnapshot doc =
           await _firestore.collection('users').doc(user.id).get();
 
-      if (doc.exists) return; // Evita sobrescrever se já existir
+      if (doc.exists) {
+        print(UserModel.fromMap(doc.data() as Map<String, dynamic>));
+        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+      }
 
       await _firestore.collection('users').doc(user.id).set({
+        'id': user.id,
+        'urlImage': user.urlImage,
         'name': user.name,
         'email': user.email,
         'role': user.role,
@@ -59,16 +66,24 @@ class UserProvider {
         'lastLocation': user.lastLocation,
         'lastLocationUpdatedAt': user.lastLocationUpdatedAt,
       });
+
+      return user;
     } catch (e) {
       throw Exception("Erro ao criar usuário no Firebase: $e");
     }
   }
 
-  Future<void> createUserDocInHive(UserModel user) async {
+  Future<UserModel> _createUserDocInHive(UserModel user) async {
     try {
       var box = await Hive.openBox<UserModel>('users');
 
-      await box.put(hiveUserKey, user);
+      // Verifica se a chave já existe
+      if (!box.containsKey(hiveUserKey)) {
+        await box.put(hiveUserKey, user);
+        return user;
+      } else {
+        return getCurrentUserFromHive();
+      }
     } catch (e) {
       throw Exception("Erro ao criar usuário no Hive: $e");
     }
@@ -202,6 +217,8 @@ class UserProvider {
   Future<void> updateUserInFirebase(UserModel user) async {
     try {
       await _firestore.collection('users').doc(user.id).update({
+        'id': user.id,
+        'urlImage': user.urlImage,
         'name': user.name,
         'email': user.email,
         'role': user.role,
@@ -218,6 +235,62 @@ class UserProvider {
     } catch (e) {
       debugPrint("Erro ao atualizar usuário no Firebase: $e");
       throw Exception("Erro ao atualizar usuário no Firebase: $e");
+    }
+  }
+
+  Future<UserModel> updateUserBasicInfo({
+    required String userId,
+    String? name,
+    String? email,
+    String? urlImage,
+  }) async {
+    try {
+      // Busca o usuário atual
+      DocumentSnapshot doc =
+          await _firestore.collection('users').doc(userId).get();
+
+      if (!doc.exists) {
+        throw Exception("Usuário não encontrado");
+      }
+
+      UserModel currentUser =
+          UserModel.fromMap(doc.data() as Map<String, dynamic>);
+
+      // Atualiza apenas os campos fornecidos
+      Map<String, dynamic> updates = {};
+      if (name != null) updates['name'] = name;
+      if (email != null) updates['email'] = email;
+      if (urlImage != null) updates['urlImage'] = urlImage;
+
+      // Atualiza no Firebase
+      await _firestore.collection('users').doc(userId).update(updates);
+
+      // Cria o usuário atualizado
+      UserModel updatedUser = UserModel(
+        id: currentUser.id,
+        name: name ?? currentUser.name,
+        email: email ?? currentUser.email,
+        urlImage: urlImage ?? currentUser.urlImage,
+        role: currentUser.role,
+        createdAt: currentUser.createdAt,
+        status: currentUser.status,
+        roleUpdatedAt: currentUser.roleUpdatedAt,
+        roleUpdatedBy: currentUser.roleUpdatedBy,
+        statusUpdatedAt: currentUser.statusUpdatedAt,
+        statusUpdatedBy: currentUser.statusUpdatedBy,
+        statusObservation: currentUser.statusObservation,
+        lastLocation: currentUser.lastLocation,
+        lastLocationUpdatedAt: currentUser.lastLocationUpdatedAt,
+      );
+
+      // Atualiza no Hive se for o usuário atual
+      await updateUserInHive(updatedUser);
+
+      debugPrint("Informações básicas do usuário atualizadas com sucesso");
+      return updatedUser;
+    } catch (e) {
+      debugPrint("Erro ao atualizar informações do usuário: $e");
+      throw Exception("Erro ao atualizar informações do usuário: $e");
     }
   }
 }

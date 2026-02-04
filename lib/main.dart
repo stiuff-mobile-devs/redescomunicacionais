@@ -20,14 +20,12 @@ Future<void> main() async {
   await HiveInitializer
       .initialize(); // Inicializa o Hive e registra os adapters
 
-  // Initialize VersionService globally
-  final versionService = await VersionService().init();
-  Get.put<VersionService>(versionService);
+  Get.put<VersionService>(await VersionService().init(), permanent: true);
 
   runApp(
     GetMaterialApp(
       title: 'Redes Comunicacionais',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       getPages: AppPages.routes,
       initialRoute: Routes.INITIAL,
       theme: appThemeData,
