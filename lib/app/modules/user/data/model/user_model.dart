@@ -91,6 +91,34 @@ class UserModel extends HiveObject {
     );
   }
 
+factory UserModel.fromMapWithData(Map<String, dynamic> map, String id, String name, String urlImage) {
+    return UserModel(
+      id: id ?? '',
+      name: name,
+      email: map['email'] ?? '',
+      urlImage: urlImage,
+      role: map['role'] ?? 'user',
+      createdAt: map['createdAt'] != null
+          ? (map['createdAt'] as Timestamp).toDate()
+          : null,
+      roleUpdatedAt: map['roleUpdatedAt'] != null
+          ? (map['roleUpdatedAt'] as Timestamp).toDate()
+          : null,
+      roleUpdatedBy: map['roleUpdatedBy'],
+      status: map['status'] ?? 'active',
+      statusUpdatedAt: map['statusUpdatedAt'] != null
+          ? (map['statusUpdatedAt'] as Timestamp).toDate()
+          : null,
+      statusUpdatedBy: map['statusUpdatedBy'],
+      statusObservation: map['statusObservation'],
+      lastLocation: map['lastLocation'],
+      lastLocationUpdatedAt: map['lastLocationUpdatedAt'] != null
+          ? (map['lastLocationUpdatedAt'] as Timestamp).toDate()
+          : null,
+    );
+  }
+
+
   // toJson
   Map<String, dynamic> toJson() {
     return {

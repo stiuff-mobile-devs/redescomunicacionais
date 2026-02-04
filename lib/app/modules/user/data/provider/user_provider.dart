@@ -25,8 +25,7 @@ class UserProvider {
     );
 
     try {
-      user = await _createUserDocInFirebase(user);
-      user 
+      user = await _createUserDocInFirebase(user, uid, name, urlImage);
     } catch (e) {
       debugPrint("Erro ao criar usuário no Firebase: $e");
     }
@@ -37,17 +36,18 @@ class UserProvider {
       debugPrint("Erro ao criar usuário no Hive: $e");
     }
 
+
     return user;
   }
 
-  Future<UserModel> _createUserDocInFirebase(UserModel user) async {
+  Future<UserModel> _createUserDocInFirebase(UserModel user, String uid, String name, String urlImage) async {
     try {
       DocumentSnapshot doc =
           await _firestore.collection('users').doc(user.id).get();
 
       if (doc.exists) {
-        print(UserModel.fromMap(doc.data() as Map<String, dynamic>));
-        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+        print(UserModel.fromMapWithData(doc.data() as Map<String, dynamic>, uid, name, urlImage));
+        return UserModel.fromMapWithData(doc.data() as Map<String, dynamic>, uid, name, urlImage);
       }
 
       await _firestore.collection('users').doc(user.id).set({
