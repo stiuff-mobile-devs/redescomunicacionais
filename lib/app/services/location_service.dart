@@ -1,22 +1,28 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 
 class LocationService extends GetxService {
+  UserController userController = Get.find<UserController>();
+
   RxString city = "Obtendo localização...".obs;
-  RxBool dialogShow = true.obs;
 
   Future<LocationService> init() async {
     return this;
   }
 
-  Future<void> requestLocation() async {
-    if (dialogShow.value) {
+  Future<void> requestLocation(UserModel user) async {
+    bool needsLocationUpdate = user.lastLocation == null ||
+        user.lastLocationUpdatedAt == null ||
+        DateTime.now().difference(user.lastLocationUpdatedAt!).inDays >= 7;
+
+    if (needsLocationUpdate) {
       final completer = Completer<void>();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -24,18 +30,19 @@ class LocationService extends GetxService {
           AlertDialog(
             title: Text("Solicitação de Localização"),
             content: Text(
-                "Este aplicativo precisa acessar sua localização para fornecer informações relevantes à sua área. Para continuar, selecione 'Confirmar'. Caso não deseje prosseguir, selecione 'Sair'."),
+                "O aplicativo gostaria de acessar sua localização para fornecer melhor informações sobre sua área. Se concorda, selecione 'Confirmar'. Caso contrário, selecione 'Continuar sem localização'."),
             actions: [
               TextButton(
                 onPressed: () {
-                  SystemNavigator.pop(); // fecha o app
+                  city.value = "Localização não fornecida";
+                  Get.back();
                 },
-                child: Text("Sair"),
+                child: Text("Continuar sem localização"),
               ),
               TextButton(
                 onPressed: () async {
                   _showLocationLoadingDialog();
-                  await _getUserLocation();
+                  await _getUserLocation(user);
                   Get.back();
                   Get.back();
                 },
@@ -50,18 +57,19 @@ class LocationService extends GetxService {
 
       await completer.future;
     } else {
-      await _getUserLocation();
+      await _getUserLocation(user);
       Get.back();
       Get.back();
     }
   }
 
-  Future<void> _getUserLocation() async {
+  Future<void> _getUserLocation(UserModel user) async {
     try {
       LocationPermission permission = await Geolocator.requestPermission();
+
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        city.value = "Permissão negada";
+        city.value = "Localização não fornecida";
         return;
       }
       // Obtém a posição atual
@@ -78,12 +86,29 @@ class LocationService extends GetxService {
       if (placemarks.isNotEmpty) {
         city.value =
             placemarks.first.subAdministrativeArea ?? "Cidade não encontrada";
+        user.lastLocation = placemarks.first.subAdministrativeArea;
+        user.lastLocationUpdatedAt = DateTime.now();
+
+        debugPrint(
+            "Atualizando localização: ${user.lastLocation} - ${user.lastLocationUpdatedAt}");
+
+        try {
+          await userController.updateUserInFirebase(user);
+          debugPrint("Firebase atualizado com sucesso");
+        } catch (e) {
+          debugPrint("Erro ao atualizar Firebase: $e");
+        }
+
+        try {
+          await userController.updateUserInHive(user);
+          debugPrint("Hive atualizado com sucesso");
+        } catch (e) {
+          debugPrint("Erro ao atualizar Hive: $e");
+        }
       }
     } catch (e) {
-      print("Erro ao obter localização: $e");
       city.value = "Erro ao obter localização";
     }
-    dialogShow.value = false;
   }
 
   void _showLocationLoadingDialog() {

@@ -4,7 +4,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'dart:convert';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/data/services/image_base64_service.dart';
+import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 
 class CreateNewsFormController extends GetxController {
@@ -74,7 +74,7 @@ class CreateNewsFormController extends GetxController {
 
   final List<String> types = [
     'Notícia',
-    'Opnião',
+    'Opinião',
   ];
 
   @override

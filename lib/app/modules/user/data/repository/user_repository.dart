@@ -22,11 +22,15 @@ class UserRepository {
     return _userProvider.getAllUsers();
   }
 
-  Future<UserModel?> getCurrentUser() {
+  Future<UserModel> getCurrentUser() {
     return _userProvider.getCurrentUserFromHive();
   }
 
-  createUserDocInHive(UserModel user) {
-    return _userProvider.createUserDocInHive(user);
+  updateUserInFirebase(UserModel user) {
+    return _userProvider.updateUserInFirebase(user);
+  }
+
+  updateUserInHive(UserModel user) {
+    return _userProvider.updateUserInHive(user);
   }
 }

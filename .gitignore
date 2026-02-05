@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -50,3 +52,8 @@ android/app/.cxx/
 upload-keystore.jks
 macos/Flutter/GeneratedPluginRegistrant.swift
 android/app/google-services.json
+lib/app/config/Secrets.dart
+ios/GoogleService-Info.plist
+ios/GoogleService-Info.plist
+ios/Runner/GoogleService-Info.plist
+ios/GoogleService-Info.plist

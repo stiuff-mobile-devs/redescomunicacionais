@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/data/bindings/version_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
@@ -26,17 +25,20 @@ class AppPages {
     GetPage(
       name: Routes.INITIAL,
       page: () => SplashPage(),
-      bindings: [VersionBindings(), LoginBinding(), SplashBindings()],
+      bindings: [LoginBinding(), SplashBindings()],
     ),
     GetPage(
         name: Routes.LOGIN,
         page: () => const LoginPage(),
-        binding: LoginBinding()),
-    GetPage(name: Routes.ADMIN, page: () => AdminPage()),
+        bindings: [LoginBinding()]),
+    GetPage(
+      name: Routes.ADMIN,
+      page: () => AdminPage(),
+    ),
     GetPage(
       name: Routes.HOME,
       page: () => HomePage(),
-      bindings: [HomeBinding(), UserBinding(), NewsBinding()],
+      bindings: [UserBinding(), HomeBinding(), NewsBinding()],
     ),
     GetPage(
       name: Routes.NEWS,
@@ -63,6 +65,9 @@ class AppPages {
       page: () => CentralDeComunicacaoPage(),
       binding: CentralDeComunicacaoBinding(),
     ),
-    GetPage(name: Routes.NEWS_REVISION, page: () => NewsRevisionPage(), binding: NewsRevisionBindings()),
+    GetPage(
+        name: Routes.NEWS_REVISION,
+        page: () => NewsRevisionPage(),
+        binding: NewsRevisionBindings()),
   ];
 }

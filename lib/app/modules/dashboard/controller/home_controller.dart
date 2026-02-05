@@ -1,13 +1,13 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/data/services/location_service.dart';
-import 'package:redescomunicacionais/app/data/services/version_service.dart';
+import 'package:redescomunicacionais/app/services/location_service.dart';
+import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class HomeController extends GetxController {
-  late final UserModel user;
+  late UserModel user;
 
   late final VersionService versionService;
   late final LocationService locationService;
@@ -28,11 +28,13 @@ class HomeController extends GetxController {
     locationService = Get.find<LocationService>();
     userController = Get.find<UserController>();
     newsController = Get.find<NewsController>();
-    user = await userController.getCurrentUser() ??
-        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
+
+    user = await userController.getCurrentUser();
+
     isLoadingLocation.value = true;
-    await locationService.requestLocation();
+    await locationService.requestLocation(user);
     isLoadingLocation.value = false;
+
     super.onInit();
   }
 
@@ -96,5 +98,11 @@ class HomeController extends GetxController {
       'url': 'https://redescomunicacionaislocais.uff.br/',
       'title': 'Sobre Nós',
     });
+  }
+
+  void filterNewsByName(String name) {
+    newsController.newss.value = newsController.newss
+        .where((news) => news.title.toLowerCase().contains(name.toLowerCase()))
+        .toList();
   }
 }
