@@ -62,5 +62,11 @@
 		</array>
 		<key>GIDClientID</key>
 		<string>792922518433-qjp00cfou7jadhop1j8qqseq0q83eu4l.apps.googleusercontent.com</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Usamos sua biblioteca de fotos para que os editores possam selecionar e enviar imagens na noticia.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Usamos sua localizacao enquanto o app esta em uso para filtrar noticias mais proximas.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Se voce permitir, podemos acessar a localizacao mesmo em segundo plano para continuar filtrando noticias proximas.</string>
 	</dict>
 </plist>
