@@ -57,6 +57,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   youtube_player_flutter: ^9.1.2
+  sign_in_with_apple: ^7.0.1
   
   flutter_localizations:
     sdk: flutter

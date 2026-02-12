@@ -214,6 +214,30 @@ class LoginPage extends GetView<LoginController> {
                         onPressed: controller.loginMicrosoft,
                       ),
                     ),
+
+                    SizedBox(height: verticalSpacing * 0.4),
+
+                    // Botão Apple
+                    Container(
+                      width: buttonWidth,
+                      margin: EdgeInsets.symmetric(
+                        vertical: verticalSpacing * 0.6,
+                      ),
+                      child: SignInButton(
+                        Buttons.apple,
+                        text: 'Entrar com Apple',
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50.0),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: isTablet ? 24.0 : 22.0,
+                          horizontal: 20.0,
+                        ),
+                        onPressed: () {
+                          controller.loginApple();
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -343,6 +367,30 @@ class LoginPage extends GetView<LoginController> {
                             horizontal: 16.0,
                           ),
                           onPressed: controller.loginMicrosoft,
+                        ),
+                      ),
+
+                      SizedBox(height: verticalSpacing * 0.3),
+
+                      // Botão Apple
+                      Container(
+                        width: buttonWidth,
+                        margin: EdgeInsets.symmetric(
+                          vertical: verticalSpacing * 0.4,
+                        ),
+                        child: SignInButton(
+                          Buttons.apple,
+                          text: 'Entrar com Apple',
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50.0),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: isTablet ? 24.0 : 22.0,
+                            horizontal: 16.0,
+                          ),
+                          onPressed: () {
+                            controller.loginApple();
+                          },
                         ),
                       ),
                     ],

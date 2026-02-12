@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:redescomunicacionais/app/modules/login/data/provider/sign_in_apple.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/login/data/provider/sign_in.dart';
 
 class LoginRepository {
   final SignInService signInService = SignInService();
+  final SignInApple signInApple = SignInApple();
 
   Future<UserModel?> signInGoogle() {
     return signInService.signInGoogle();
@@ -26,5 +29,9 @@ class LoginRepository {
 
   logoutMicrosoft() {
     signInService.logoutMicrosoft();
+  }
+
+  Future<User?> signInAppleAuth() async {
+    return await signInApple.signInWithApple();
   }
 }
