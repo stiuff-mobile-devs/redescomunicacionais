@@ -115,4 +115,34 @@ class LoginController extends GetxController {
     _repository.logoutGoogle();
     Get.offAllNamed(Routes.LOGIN);
   }
+
+  void loginApple() async {
+    try {
+      final user = await _repository.signInAppleAuth();
+      if (user != null) {
+        _userRepository.updateUserInHive(user);
+        Get.offNamed(Routes.HOME, arguments: user);
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.snackbar(
+            "Erro de Login",
+            "Falha ao autenticar o usuário.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint("Erro de Login Apple: $e");
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (Get.context != null) {
+          Get.snackbar(
+            "Erro de Login",
+            e.toString(),
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      });
+    }
+  }
 }

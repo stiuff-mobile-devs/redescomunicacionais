@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
@@ -214,6 +215,30 @@ class LoginPage extends GetView<LoginController> {
                         onPressed: controller.loginMicrosoft,
                       ),
                     ),
+
+                    SizedBox(height: verticalSpacing * 0.4),
+
+                    // Botão Apple
+                    Container(
+                      width: buttonWidth,
+                      margin: EdgeInsets.symmetric(
+                        vertical: verticalSpacing * 0.6,
+                      ),
+                      child: SignInButton(
+                        Buttons.apple,
+                        text: 'Entrar com Apple',
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50.0),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: isTablet ? 24.0 : 22.0,
+                          horizontal: 20.0,
+                        ),
+                        onPressed: () {
+                          controller.loginApple();
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -306,21 +331,17 @@ class LoginPage extends GetView<LoginController> {
                     children: [
                       // Botão Google
                       Container(
-                        width: buttonWidth,
                         margin: EdgeInsets.symmetric(
                           vertical: verticalSpacing * 0.4,
                         ),
-                        child: SignInButton(
-                          Buttons.google,
-                          text: 'Entrar com Google',
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50.0),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            vertical: isTablet ? 20.0 : 16.0,
-                            horizontal: 16.0,
-                          ),
+                        child: _buildMinimalLoginButton(
+                          label: 'Entrar com Google',
+                          iconData: FontAwesomeIcons.google,
+                          badgeColor: Colors.white,
+                          iconColor: const Color(0xFFEA4335),
                           onPressed: controller.loginGoogle,
+                          width: buttonWidth,
+                          verticalPadding: isTablet ? 18.0 : 14.0,
                         ),
                       ),
 
@@ -328,21 +349,35 @@ class LoginPage extends GetView<LoginController> {
 
                       // Botão Microsoft
                       Container(
-                        width: buttonWidth,
                         margin: EdgeInsets.symmetric(
                           vertical: verticalSpacing * 0.4,
                         ),
-                        child: SignInButton(
-                          Buttons.microsoft,
-                          text: 'Entrar com Microsoft',
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50.0),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            vertical: isTablet ? 24.0 : 22.0,
-                            horizontal: 16.0,
-                          ),
+                        child: _buildMinimalLoginButton(
+                          label: 'Entrar com Microsoft',
+                          iconData: FontAwesomeIcons.microsoft,
+                          badgeColor: Colors.white,
+                          iconColor: const Color(0xFF00A4EF),
                           onPressed: controller.loginMicrosoft,
+                          width: buttonWidth,
+                          verticalPadding: isTablet ? 18.0 : 14.0,
+                        ),
+                      ),
+
+                      SizedBox(height: verticalSpacing * 0.3),
+
+                      // Botão Apple
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          vertical: verticalSpacing * 0.4,
+                        ),
+                        child: _buildMinimalLoginButton(
+                          label: 'Entrar com Apple',
+                          badgeColor: Colors.white,
+                          iconData: FontAwesomeIcons.apple,
+                          iconColor: Colors.black,
+                          onPressed: controller.loginApple,
+                          width: buttonWidth,
+                          verticalPadding: isTablet ? 18.0 : 14.0,
                         ),
                       ),
                     ],
@@ -374,6 +409,66 @@ class LoginPage extends GetView<LoginController> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalLoginButton({
+    required String label,
+    required Color badgeColor,
+    required IconData iconData,
+    required Color iconColor,
+    required VoidCallback onPressed,
+    required double width,
+    required double verticalPadding,
+  }) {
+    return SizedBox(
+      width: width,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white.withOpacity(0.06),
+          foregroundColor: Colors.white,
+          side: BorderSide(
+            color: Colors.white.withOpacity(0.3),
+            width: 1.0,
+          ),
+          padding: EdgeInsets.symmetric(
+            vertical: verticalPadding,
+            horizontal: 18.0,
+          ),
+          shape: const StadiumBorder(),
+        ),
+        onPressed: onPressed,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 28.0,
+              height: 28.0,
+              decoration: BoxDecoration(
+                color: badgeColor,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: FaIcon(
+                iconData,
+                size: 14.0,
+                color: iconColor,
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
