@@ -31,7 +31,7 @@ class LoginRepository {
     signInService.logoutMicrosoft();
   }
 
-  Future<User?> signInAppleAuth() async {
+  Future<UserModel?> signInAppleAuth() async {
     return await signInApple.signInWithApple();
   }
 }

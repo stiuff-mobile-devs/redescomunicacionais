@@ -120,7 +120,7 @@ class LoginController extends GetxController {
     try {
       final user = await _repository.signInAppleAuth();
       if (user != null) {
-        //_userRepository.updateUserInHive(user);
+        _userRepository.updateUserInHive(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
