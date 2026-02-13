@@ -72,10 +72,10 @@ class LocationService extends GetxService {
         city.value = "Localização não fornecida";
         return;
       }
-      // Obtém a posição atual
+      // Obtém a posição atual com timeout
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       // Converte coordenadas em cidade
       List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -106,8 +106,10 @@ class LocationService extends GetxService {
           debugPrint("Erro ao atualizar Hive: $e");
         }
       }
+    } on TimeoutException {
+      city.value = "Erro ao atualizar localização";
     } catch (e) {
-      city.value = "Erro ao obter localização";
+      city.value = "Erro ao atualizar localização";
     }
   }
 
