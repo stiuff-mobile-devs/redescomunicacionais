@@ -25,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -58,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBO5t2GpdYhX_fQPbHc4YNOK--d6a3qekk',
-    appId: '1:792922518433:android:22a21920187fe4b1c891e0',
+    appId: '1:792922518433:android:2d8f211e08c11333c891e0',
     messagingSenderId: '792922518433',
     projectId: 'redescomunicacionais',
     storageBucket: 'redescomunicacionais.firebasestorage.app',
@@ -66,10 +60,34 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyASdAOnfc6TSY8bdMv0azXa_gRjG0L7NJY',
-    appId: '1:792922518433:ios:7e3ef1e0bd13f1aec891e0',
+    appId: '1:792922518433:ios:e3d576ed741b3a8dc891e0',
     messagingSenderId: '792922518433',
     projectId: 'redescomunicacionais',
     storageBucket: 'redescomunicacionais.firebasestorage.app',
-    iosBundleId: 'com.example.redescomunicacionais',
+    androidClientId: '792922518433-0tul09c6dofgcsmp6fs6a8unq93l2g5u.apps.googleusercontent.com',
+    iosClientId: '792922518433-2eueup5n0tiqvbc3jonpn71iciga2glo.apps.googleusercontent.com',
+    iosBundleId: 'br.uff.sti.redescomunicacionais',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyASdAOnfc6TSY8bdMv0azXa_gRjG0L7NJY',
+    appId: '1:792922518433:ios:e3d576ed741b3a8dc891e0',
+    messagingSenderId: '792922518433',
+    projectId: 'redescomunicacionais',
+    storageBucket: 'redescomunicacionais.firebasestorage.app',
+    androidClientId: '792922518433-0tul09c6dofgcsmp6fs6a8unq93l2g5u.apps.googleusercontent.com',
+    iosClientId: '792922518433-2eueup5n0tiqvbc3jonpn71iciga2glo.apps.googleusercontent.com',
+    iosBundleId: 'br.uff.sti.redescomunicacionais',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDKDmh4IdRvqvf5WQ5pGKsVZ4-LauloxjE',
+    appId: '1:792922518433:web:6776e7c1c1b20a9fc891e0',
+    messagingSenderId: '792922518433',
+    projectId: 'redescomunicacionais',
+    authDomain: 'redescomunicacionais.firebaseapp.com',
+    storageBucket: 'redescomunicacionais.firebasestorage.app',
+    measurementId: 'G-M9WZG96DY4',
+  );
+
 }
