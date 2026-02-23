@@ -113,6 +113,7 @@ class LoginController extends GetxController {
   void logout() {
     _repository.logoutMicrosoft();
     _repository.logoutGoogle();
+    _userRepository.deleteCurrentUserFromHive();
     Get.offAllNamed(Routes.LOGIN);
   }
 

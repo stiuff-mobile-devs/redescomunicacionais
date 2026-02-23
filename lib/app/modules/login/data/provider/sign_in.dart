@@ -36,7 +36,9 @@ class SignInService {
         idToken: googleAuth.idToken,
       );
       var userCredential = await _auth.signInWithCredential(authCredential);
-      return await _createUserDoc(userCredential);
+
+      return await _createUserDoc(
+          userCredential, account.displayName, account.photoUrl);
     } catch (e) {
       debugPrint('Error during Google sign-in: $e');
       return null;
@@ -45,13 +47,15 @@ class SignInService {
 
   Future<UserModel?> _createUserDoc(
     fb.UserCredential userCredential,
+    String? displayName,
+    String? photoUrl,
   ) async {
     try {
       return await _userRepository.createUserDoc(
         userCredential.user!.email ?? '',
-        userCredential.user!.displayName ?? '',
+        displayName ?? userCredential.user!.displayName ?? '',
         userCredential.user!.uid,
-        userCredential.user!.photoURL ?? '',
+        photoUrl ?? userCredential.user!.photoURL ?? '',
       );
     } catch (err) {
       debugPrint(err.toString());

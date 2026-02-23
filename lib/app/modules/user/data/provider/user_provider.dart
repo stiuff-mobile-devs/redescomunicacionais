@@ -13,7 +13,6 @@ class UserProvider {
 
   Future<UserModel> createUserDoc(
       String email, String name, String uid, String urlImage) async {
-
     UserModel user = UserModel(
       id: uid,
       name: name,
@@ -36,20 +35,21 @@ class UserProvider {
       debugPrint("Erro ao criar usuário no Hive: $e");
     }
 
-
     return user;
   }
 
-  Future<UserModel> _createUserDocInFirebase(UserModel user, String uid, String name, String urlImage) async {
+  Future<UserModel> _createUserDocInFirebase(
+      UserModel user, String uid, String name, String urlImage) async {
     try {
       DocumentSnapshot doc =
           await _firestore.collection('users').doc(user.id).get();
 
       if (doc.exists) {
-        print(UserModel.fromMapWithData(doc.data() as Map<String, dynamic>, uid, name, urlImage));
-        return UserModel.fromMapWithData(doc.data() as Map<String, dynamic>, uid, name, urlImage);
+        return UserModel.fromMapWithData(
+            doc.data() as Map<String, dynamic>, uid, name, urlImage);
       }
 
+      // Se o documento não existe, cria um novo
       await _firestore.collection('users').doc(user.id).set({
         'id': user.id,
         'urlImage': user.urlImage,
@@ -291,6 +291,23 @@ class UserProvider {
     } catch (e) {
       debugPrint("Erro ao atualizar informações do usuário: $e");
       throw Exception("Erro ao atualizar informações do usuário: $e");
+    }
+  }
+
+  Future<void> deleteCurrentUserFromHive() async {
+    try {
+      final box = await Hive.openBox<UserModel>('users');
+
+      if (box.containsKey(hiveUserKey)) {
+        await box.delete(hiveUserKey);
+        await box.flush();
+        debugPrint("Usuário removido do Hive com sucesso");
+      } else {
+        debugPrint("Nenhum usuário encontrado no Hive para remover");
+      }
+    } catch (e) {
+      debugPrint("Erro ao remover usuário do Hive: $e");
+      throw Exception("Erro ao remover usuário do Hive: $e");
     }
   }
 }

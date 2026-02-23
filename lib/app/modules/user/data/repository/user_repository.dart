@@ -33,4 +33,8 @@ class UserRepository {
   updateUserInHive(UserModel user) {
     return _userProvider.updateUserInHive(user);
   }
+
+  Future<void> deleteCurrentUserFromHive() {
+    return _userProvider.deleteCurrentUserFromHive();
+  }
 }
