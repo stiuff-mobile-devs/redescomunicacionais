@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="br.uff.sti.redescomunicacionais">
+    package="com.example.redescomunicacionais">
 
     <!-- Permissões de localização -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -36,7 +36,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="msauth"
-                        android:host="br.uff.sti.redescomunicacionais"
+                      android:host="com.example.redescomunicacionais"
                       android:path="/HASH_DO_SEU_KEYSTORE" />
             </intent-filter>
         </activity>

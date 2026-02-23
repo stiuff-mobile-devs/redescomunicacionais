@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"redescomunicacionais","appId":"1:792922518433:android:2d8f211e08c11333c891e0","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"redescomunicacionais","configurations":{"android":"1:792922518433:android:2d8f211e08c11333c891e0","ios":"1:792922518433:ios:e3d576ed741b3a8dc891e0","macos":"1:792922518433:ios:e3d576ed741b3a8dc891e0","web":"1:792922518433:web:96a1cf1e3bbc23e0c891e0","windows":"1:792922518433:web:6776e7c1c1b20a9fc891e0"}}}}},"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "redescomunicacionais",
+          "appId": "1:792922518433:android:22a21920187fe4b1c891e0",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "redescomunicacionais",
+          "configurations": {
+            "android": "1:792922518433:android:22a21920187fe4b1c891e0",
+            "ios": "1:792922518433:ios:7e3ef1e0bd13f1aec891e0",
+            "web": "1:792922518433:web:96a1cf1e3bbc23e0c891e0"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
