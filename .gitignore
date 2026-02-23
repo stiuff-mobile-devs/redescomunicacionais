@@ -58,4 +58,8 @@ ios/GoogleService-Info.plist
 ios/Runner/GoogleService-Info.plist
 ios/GoogleService-Info.plist
 android/app/google-services.json
+<<<<<<< Updated upstream
 ios/GoogleService-Info.plist
+=======
+android/app/google-services.json
+>>>>>>> Stashed changes
