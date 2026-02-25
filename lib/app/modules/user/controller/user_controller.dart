@@ -37,6 +37,15 @@ class UserController extends GetxController {
     }
   }
 
+  Future<void> updateRoleDocument(
+      String userId, String role, String updatedBy) async {
+    try {
+      await _repository.updateRoleDocument(userId, role, updatedBy);
+    } catch (e) {
+      debugPrint("Erro ao atualizar documento de role: $e");
+    }
+  }
+
   Future<void> loadUserRole(String uid) async {
     try {
       isLoading.value = true;

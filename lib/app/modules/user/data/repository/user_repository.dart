@@ -14,6 +14,11 @@ class UserRepository {
     return _userProvider.addProfile(email, profile, adminEmail);
   }
 
+  Future<void> updateRoleDocument(
+      String userId, String role, String updatedBy) {
+    return _userProvider.updateRoleDocument(userId, role, updatedBy);
+  }
+
   Future<UserRole> getUserRole(String uid) {
     return _userProvider.getUserRole(uid);
   }

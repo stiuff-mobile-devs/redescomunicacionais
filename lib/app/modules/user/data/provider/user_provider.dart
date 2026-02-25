@@ -146,6 +146,22 @@ class UserProvider {
     }
   }
 
+  Future<void> updateRoleDocument(
+      String userId, String role, String updatedBy) async {
+    try {
+      await _firestore.collection('roles').doc(userId).set({
+        'userId': userId,
+        'role': role,
+        'updatedAt': DateTime.now(),
+        'updatedBy': updatedBy,
+      }, SetOptions(merge: true));
+      debugPrint(
+          "Documento de role atualizado: userId=$userId, role=$role, updatedBy=$updatedBy");
+    } catch (e) {
+      throw Exception("Erro ao atualizar documento de role: $e");
+    }
+  }
+
   Future<UserRole> getUserRole(String uid) async {
     try {
       DocumentSnapshot userDoc =

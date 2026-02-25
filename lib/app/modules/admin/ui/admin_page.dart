@@ -105,6 +105,7 @@ class _AdminPageState extends State<AdminPage> {
 
   Widget _buildUserCard(Map<String, dynamic> user) {
     String email = user['email'] ?? '';
+    String userId = user['id'] ?? '';
     String currentRole = user['role'] ?? 'user';
 
     // Gera iniciais do email
@@ -204,6 +205,11 @@ class _AdminPageState extends State<AdminPage> {
                     if (confirm == true) {
                       await _userController.addProfile(
                           email, newRole, _user?.email ?? '');
+                      // Atualiza documento de role
+                      if (userId.isNotEmpty) {
+                        await _userController.updateRoleDocument(
+                            userId, newRole, _user?.email ?? '');
+                      }
                       // Recarrega a lista
                       _userController.loadAllUsers();
                     }
