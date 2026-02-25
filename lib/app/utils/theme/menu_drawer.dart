@@ -68,7 +68,7 @@ class MenuPage extends StatelessWidget {
             ),
           ),
           Obx(() {
-            _userController.loadUserRole(_homeController.user.email);
+            _userController.loadUserRole(_homeController.user.id);
             if (_userController.isAdmin.value ||
                 _userController.isEditor.value) {
               return ListTile(
@@ -94,7 +94,7 @@ class MenuPage extends StatelessWidget {
             }
           }),
           Obx(() {
-            _userController.loadUserRole(_homeController.user.email);
+            _userController.loadUserRole(_homeController.user.id);
             if (_userController.isAdmin.value) {
               return ListTile(
                 leading: const Icon(Icons.person_outline, color: Colors.white),
@@ -118,7 +118,7 @@ class MenuPage extends StatelessWidget {
             }
           }),
           Obx(() {
-            _userController.loadUserRole(_homeController.user.email);
+            _userController.loadUserRole(_homeController.user.id);
             if (_userController.isEditor.value ||
                 _userController.isAdmin.value) {
               return ListTile(

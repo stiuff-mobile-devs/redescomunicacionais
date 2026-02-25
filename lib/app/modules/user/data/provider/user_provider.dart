@@ -146,35 +146,27 @@ class UserProvider {
     }
   }
 
-  Future<UserRole> getUserRole(String email) async {
+  Future<UserRole> getUserRole(String uid) async {
     try {
-      // Busca na coleção 'users' pelo campo 'email'
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .limit(1) // Pega apenas o primeiro resultado
-          .get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(uid).get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        // Pega o primeiro documento encontrado
-        DocumentSnapshot userDoc = querySnapshot.docs.first;
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
-        // Verifica o campo 'role'
-        String role = userData['role'] ?? 'user';
-
-        switch (role.toLowerCase()) {
-          case 'admin':
-            return UserRole.admin;
-          case 'editor':
-            return UserRole.editor;
-          default:
-            return UserRole.user;
-        }
+      if (!userDoc.exists) {
+        return UserRole.user;
       }
 
-      // Se não encontrou nenhum usuário com esse email
-      return UserRole.user;
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+      String role = userData['role'] ?? 'user';
+
+      switch (role.toLowerCase()) {
+        case 'admin':
+          return UserRole.admin;
+        case 'editor':
+          return UserRole.editor;
+        default:
+          return UserRole.user;
+      }
     } catch (e) {
       debugPrint("Erro ao buscar role do usuário: $e");
       return UserRole.user; // Retorna user como padrão em caso de erro

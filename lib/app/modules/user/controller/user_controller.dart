@@ -37,10 +37,10 @@ class UserController extends GetxController {
     }
   }
 
-  Future<void> loadUserRole(String email) async {
+  Future<void> loadUserRole(String uid) async {
     try {
       isLoading.value = true;
-      UserRole role = await _repository.getUserRole(email);
+      UserRole role = await _repository.getUserRole(uid);
       if (role == UserRole.admin) {
         isAdmin.value = true;
       } else if (role == UserRole.editor) {

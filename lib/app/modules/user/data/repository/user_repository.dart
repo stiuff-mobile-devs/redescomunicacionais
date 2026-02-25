@@ -14,8 +14,8 @@ class UserRepository {
     return _userProvider.addProfile(email, profile, adminEmail);
   }
 
-  Future<UserRole> getUserRole(String email) {
-    return _userProvider.getUserRole(email);
+  Future<UserRole> getUserRole(String uid) {
+    return _userProvider.getUserRole(uid);
   }
 
   Future<List<Map<String, dynamic>>> getAllUsers() {

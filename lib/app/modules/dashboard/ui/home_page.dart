@@ -362,7 +362,7 @@ class HomePage extends GetView<HomeController> {
                         // Criar Notícia (com verificação de permissão)
                         Obx(() {
                           controller.userController
-                              .loadUserRole(controller.user.email);
+                              .loadUserRole(controller.user.id);
                           return _buildMenuTile(
                             icon: controller.userController.isAdmin.value ||
                                     controller.userController.isEditor.value
@@ -386,7 +386,7 @@ class HomePage extends GetView<HomeController> {
                         // Admin (com verificação de permissão)
                         Obx(() {
                           controller.userController
-                              .loadUserRole(controller.user.email);
+                              .loadUserRole(controller.user.id);
                           return _buildMenuTile(
                             icon: controller.userController.isAdmin.value
                                 ? Icons.person_outline
