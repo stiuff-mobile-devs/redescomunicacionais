@@ -66,7 +66,5 @@
 		<string>Usamos sua biblioteca de fotos para que os editores possam selecionar e enviar imagens na noticia.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Usamos sua localizacao enquanto o app esta em uso para filtrar noticias mais proximas.</string>
-		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>Se voce permitir, podemos acessar a localizacao mesmo em segundo plano para continuar filtrando noticias proximas.</string>
 	</dict>
 </plist>

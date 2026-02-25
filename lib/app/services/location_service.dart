@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,45 +23,77 @@ class LocationService extends GetxService {
         user.lastLocationUpdatedAt == null ||
         DateTime.now().difference(user.lastLocationUpdatedAt!).inDays >= 7;
 
-    if (needsLocationUpdate) {
-      final completer = Completer<void>();
+    if (!needsLocationUpdate) {
+      await _getUserLocation(user);
+      return;
+    }
 
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final completer = Completer<void>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (Platform.isAndroid) {
         await Get.dialog(
           AlertDialog(
-            title: Text("Solicitação de Localização"),
-            content: Text(
+            title: const Text("Solicitação de Localização"),
+            content: const Text(
                 "O aplicativo gostaria de acessar sua localização para fornecer melhor informações sobre sua área. Se concorda, selecione 'Confirmar'. Caso contrário, selecione 'Continuar sem localização'."),
             actions: [
               TextButton(
                 onPressed: () {
                   city.value = "Localização não fornecida";
-                  Get.back();
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
                 },
-                child: Text("Continuar sem localização"),
+                child: const Text("Continuar sem localização"),
               ),
               TextButton(
                 onPressed: () async {
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
                   _showLocationLoadingDialog();
                   await _getUserLocation(user);
-                  Get.back();
-                  Get.back();
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
                 },
-                child: Text("Confirmar"),
+                child: const Text("Confirmar"),
               ),
             ],
           ),
         );
+      } else {
+        await Get.dialog(
+          AlertDialog(
+            title: const Text("Permitir localização"),
+            content: const Text(
+              "Usamos sua localização para mostrar notícias mais próximas de você.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
+                  _showLocationLoadingDialog();
+                  await _getUserLocation(user);
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
+                },
+                child: const Text("Continuar"),
+              ),
+            ],
+          ),
+          barrierDismissible: false,
+        );
+      }
 
-        completer.complete();
-      });
+      completer.complete();
+    });
 
-      await completer.future;
-    } else {
-      await _getUserLocation(user);
-      Get.back();
-      Get.back();
-    }
+    await completer.future;
   }
 
   Future<void> _getUserLocation(UserModel user) async {
