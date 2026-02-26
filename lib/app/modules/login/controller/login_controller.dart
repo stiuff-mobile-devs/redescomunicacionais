@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
@@ -27,12 +28,30 @@ class LoginController extends GetxController {
     }
   }
 
+  Future<void> _persistAndSyncUser(UserModel user) async {
+    await _userRepository.updateUserInHive(user);
+
+    if (Get.isRegistered<UserController>()) {
+      final userController = Get.find<UserController>();
+      userController.currentUser.value = user;
+      userController.nameController.text = user.name ?? '';
+    }
+  }
+
+  void _clearUserState() {
+    if (Get.isRegistered<UserController>()) {
+      final userController = Get.find<UserController>();
+      userController.currentUser.value = null;
+      userController.nameController.clear();
+    }
+  }
+
   void loginGoogle() async {
     try {
       _repository.logoutGoogle();
       final user = await _repository.signInGoogle();
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         // Espere o contexto estar disponível
@@ -66,7 +85,7 @@ class LoginController extends GetxController {
       _repository.logoutGoogle();
       final user = await _repository.signInMicrosoft();
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,7 +118,7 @@ class LoginController extends GetxController {
           .timeout(const Duration(seconds: 10), onTimeout: () => null);
 
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         Get.offNamed(Routes.LOGIN);
@@ -113,17 +132,18 @@ class LoginController extends GetxController {
   tryLoginMicrosoft() async {
     var hasLogged = await _repository.trySignInMicrosoft();
     if (hasLogged != null) {
-      _userRepository.updateUserInHive(hasLogged);
+      await _persistAndSyncUser(hasLogged);
       Get.offNamed(Routes.HOME, arguments: hasLogged);
     } else {
       Get.offNamed(Routes.LOGIN);
     }
   }
 
-  void logout() {
-    _repository.logoutMicrosoft();
-    _repository.logoutGoogle();
-    _userRepository.deleteCurrentUserFromHive();
+  void logout() async {
+    await _repository.logoutMicrosoft();
+    await _repository.logoutGoogle();
+    await _userRepository.deleteCurrentUserFromHive();
+    _clearUserState();
     Get.offAllNamed(Routes.LOGIN);
   }
 
@@ -131,7 +151,7 @@ class LoginController extends GetxController {
     try {
       final user = await _repository.signInAppleAuth();
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -157,8 +177,9 @@ class LoginController extends GetxController {
     }
   }
 
-  void loginAnonymous() {
-    _userRepository.updateUserInHive(UserModel.empty());
-    Get.offNamed(Routes.HOME, arguments: UserModel.empty());
+  void loginAnonymous() async {
+    final anonymousUser = UserModel.empty();
+    await _persistAndSyncUser(anonymousUser);
+    Get.offNamed(Routes.HOME, arguments: anonymousUser);
   }
 }
