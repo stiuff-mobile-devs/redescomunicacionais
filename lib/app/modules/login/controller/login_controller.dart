@@ -2,20 +2,29 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
-import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginController extends GetxController {
   final LoginRepository _repository = LoginRepository();
+  final RxString appVersion = 'Carregando...'.obs;
 
-  late final VersionService versionService;
   final UserRepository _userRepository = UserRepository();
 
   @override
   void onInit() {
-    versionService = Get.find<VersionService>();
     super.onInit();
+    _loadPackageInfo();
+  }
+
+  Future<void> _loadPackageInfo() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      appVersion.value = packageInfo.version;
+    } catch (_) {
+      appVersion.value = '--';
+    }
   }
 
   void loginGoogle() async {

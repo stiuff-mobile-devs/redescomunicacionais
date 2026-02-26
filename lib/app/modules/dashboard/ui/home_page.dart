@@ -89,7 +89,8 @@ class HomePage extends GetView<HomeController> {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        TextEditingController searchController = TextEditingController();
+                        TextEditingController searchController =
+                            TextEditingController();
                         return AlertDialog(
                           title: const Text('Filtrar Notícias'),
                           content: TextField(
@@ -107,7 +108,8 @@ class HomePage extends GetView<HomeController> {
                             ),
                             TextButton(
                               onPressed: () {
-                                controller.filterNewsByName(searchController.text);
+                                controller
+                                    .filterNewsByName(searchController.text);
                                 Navigator.of(context).pop();
                               },
                               child: const Text('Filtrar'),
@@ -312,7 +314,7 @@ class HomePage extends GetView<HomeController> {
                           iconSize: iconSize,
                           isTablet: isTablet,
                         ),
-                        
+
                         // Filtrar Notícias
                         _buildMenuTile(
                           icon: Icons.search,
@@ -321,7 +323,8 @@ class HomePage extends GetView<HomeController> {
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
-                                TextEditingController searchController = TextEditingController();
+                                TextEditingController searchController =
+                                    TextEditingController();
                                 return AlertDialog(
                                   title: const Text('Filtrar Notícias'),
                                   content: TextField(
@@ -339,7 +342,8 @@ class HomePage extends GetView<HomeController> {
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        controller.filterNewsByName(searchController.text);
+                                        controller.filterNewsByName(
+                                            searchController.text);
                                         Navigator.of(context).pop();
                                       },
                                       child: const Text('Filtrar'),
@@ -408,7 +412,7 @@ class HomePage extends GetView<HomeController> {
                             color: Colors.white.withOpacity(0.2),
                             thickness: 0.5),
                         SizedBox(height: isTablet ? 15.0 : 10.0),
-                        
+
                         // Sobre
                         _buildMenuTile(
                           icon: Icons.info_outline,
@@ -575,12 +579,14 @@ class HomePage extends GetView<HomeController> {
               ),
               const SizedBox(height: 16),
               Center(
-                child: Text(
-                  'Versão: ${controller.versionService.version}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                child: Obx(
+                  () => Text(
+                    'Versão: ${controller.appVersion.value}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

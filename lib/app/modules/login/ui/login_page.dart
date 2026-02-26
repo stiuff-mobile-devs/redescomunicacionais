@@ -148,14 +148,16 @@ class LoginPage extends GetView<LoginController> {
                     SizedBox(height: verticalSpacing * 1.2),
 
                     // Versão
-                    Text(
-                      "Versão: ${controller.versionService.version}",
-                      style: TextStyle(
-                        fontSize: versionFontSize,
-                        color: Colors.white.withOpacity(0.8),
-                        fontWeight: FontWeight.w500,
+                    Obx(
+                      () => Text(
+                        "Versão: ${controller.appVersion.value}",
+                        style: TextStyle(
+                          fontSize: versionFontSize,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -432,14 +434,16 @@ class LoginPage extends GetView<LoginController> {
                       top: verticalSpacing * 0.6,
                       bottom: verticalSpacing * 0.4,
                     ),
-                    child: Text(
-                      "Versão: ${controller.versionService.version}",
-                      style: TextStyle(
-                        fontSize: versionFontSize,
-                        color: Colors.white.withOpacity(0.8),
-                        fontWeight: FontWeight.w500,
+                    child: Obx(
+                      () => Text(
+                        "Versão: ${controller.appVersion.value}",
+                        style: TextStyle(
+                          fontSize: versionFontSize,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
