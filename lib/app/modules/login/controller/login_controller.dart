@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
@@ -145,5 +146,10 @@ class LoginController extends GetxController {
         }
       });
     }
+  }
+
+  void loginAnonymous() {
+    _userRepository.updateUserInHive(UserModel.empty());
+    Get.offNamed(Routes.HOME, arguments: UserModel.empty());
   }
 }

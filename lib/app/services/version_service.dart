@@ -2,10 +2,10 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class VersionService extends GetxService {
-  late String appName;
-  late String packageName;
-  late String version;
-  late String buildNumber;
+  late final String appName;
+  late final String packageName;
+  late final String version;
+  late final String buildNumber;
 
   VersionService();
 

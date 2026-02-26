@@ -239,6 +239,25 @@ class LoginPage extends GetView<LoginController> {
                         },
                       ),
                     ),
+
+                    SizedBox(height: verticalSpacing * 0.4),
+
+                    // Botão Anônimo
+                    Container(
+                      width: buttonWidth,
+                      margin: EdgeInsets.symmetric(
+                        vertical: verticalSpacing * 0.6,
+                      ),
+                      child: _buildMinimalLoginButton(
+                        label: 'Entrar anonimamente',
+                        badgeColor: Colors.white,
+                        iconData: FontAwesomeIcons.userSecret,
+                        iconColor: Colors.black,
+                        onPressed: controller.loginAnonymous,
+                        width: buttonWidth,
+                        verticalPadding: isTablet ? 18.0 : 14.0,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -376,6 +395,24 @@ class LoginPage extends GetView<LoginController> {
                           iconData: FontAwesomeIcons.apple,
                           iconColor: Colors.black,
                           onPressed: controller.loginApple,
+                          width: buttonWidth,
+                          verticalPadding: isTablet ? 18.0 : 14.0,
+                        ),
+                      ),
+
+                      SizedBox(height: verticalSpacing * 0.3),
+
+                      // Botão Anônimo
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          vertical: verticalSpacing * 0.4,
+                        ),
+                        child: _buildMinimalLoginButton(
+                          label: 'Entrar anonimamente',
+                          badgeColor: Colors.white,
+                          iconData: FontAwesomeIcons.userSecret,
+                          iconColor: Colors.black,
+                          onPressed: controller.loginAnonymous,
                           width: buttonWidth,
                           verticalPadding: isTablet ? 18.0 : 14.0,
                         ),

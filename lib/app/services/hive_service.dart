@@ -5,7 +5,6 @@ import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart
 class HiveInitializer {
   static Future<void> initialize() async {
     await Hive.initFlutter(); // Inicializa o Hive
-    print('Hive initialized');
 
     Hive.registerAdapter(UserModelAdapter());
     Hive.registerAdapter(NewsModelAdapter());
