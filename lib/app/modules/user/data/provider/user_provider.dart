@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -7,6 +8,7 @@ enum UserRole { user, admin, editor }
 
 class UserProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Armazena sempre na mesma chave para garantir apenas uma entrada
   final String hiveUserKey = 'current_user';
@@ -316,6 +318,67 @@ class UserProvider {
     } catch (e) {
       debugPrint("Erro ao remover usuário do Hive: $e");
       throw Exception("Erro ao remover usuário do Hive: $e");
+    }
+  }
+
+  Future<UserModel> updateCurrentUserName(String name) async {
+    try {
+      final currentUser = await getCurrentUserFromHive();
+
+      final updatedUser = UserModel(
+        id: currentUser.id,
+        name: name,
+        email: currentUser.email,
+        urlImage: currentUser.urlImage,
+        role: currentUser.role,
+        createdAt: currentUser.createdAt,
+        roleUpdatedAt: currentUser.roleUpdatedAt,
+        roleUpdatedBy: currentUser.roleUpdatedBy,
+        status: currentUser.status,
+        statusUpdatedAt: currentUser.statusUpdatedAt,
+        statusUpdatedBy: currentUser.statusUpdatedBy,
+        statusObservation: currentUser.statusObservation,
+        lastLocation: currentUser.lastLocation,
+        lastLocationUpdatedAt: currentUser.lastLocationUpdatedAt,
+      );
+
+      await updateUserInFirebase(updatedUser);
+      await updateUserInHive(updatedUser);
+
+      return updatedUser;
+    } catch (e) {
+      throw Exception("Erro ao atualizar nome do usuário: $e");
+    }
+  }
+
+  Future<void> deleteCurrentUserAccount() async {
+    final currentFirebaseUser = _auth.currentUser;
+    final currentUserFromHive = await getCurrentUserFromHive();
+
+    final String uid = currentFirebaseUser?.uid.isNotEmpty == true
+        ? currentFirebaseUser!.uid
+        : currentUserFromHive.id;
+
+    if (uid.isEmpty) {
+      throw Exception('Não foi possível identificar a conta para exclusão.');
+    }
+
+    if (currentFirebaseUser == null) {
+      throw Exception(
+          'Usuário não autenticado no Firebase. Faça login novamente.');
+    }
+
+    try {
+      await _firestore.collection('users').doc(uid).delete();
+      await currentFirebaseUser.delete();
+      await deleteCurrentUserFromHive();
+      await _auth.signOut();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw Exception(
+            'Por segurança, faça login novamente antes de excluir sua conta.');
+      }
+      throw Exception('Erro ao excluir conta: ${e.message ?? e.code}');
     }
   }
 }

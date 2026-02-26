@@ -154,6 +154,17 @@ class MenuPage extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.person_outline, color: Colors.white),
+            title: const Text(
+              'Dados',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              Get.offAllNamed(Routes.USER);
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.info_outline, color: Colors.white),
             title: const Text(
               'Sobre',

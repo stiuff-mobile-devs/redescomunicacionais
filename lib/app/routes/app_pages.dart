@@ -18,6 +18,7 @@ import 'package:redescomunicacionais/app/modules/splash/ui/splash_page.dart';
 import 'package:redescomunicacionais/app/modules/login/ui/login_page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_windows.page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
+import 'package:redescomunicacionais/app/modules/user/ui/user_page.dart';
 import 'package:redescomunicacionais/app/modules/web/ui/webview_page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
 
@@ -66,6 +67,11 @@ class AppPages {
       name: Routes.CENTRAL_DE_COMUNICACAO,
       page: () => CentralDeComunicacaoPage(),
       binding: CentralDeComunicacaoBinding(),
+    ),
+    GetPage(
+      name: Routes.USER,
+      page: () => const UserPage(),
+      binding: UserBinding(),
     ),
     GetPage(
         name: Routes.NEWS_REVISION,

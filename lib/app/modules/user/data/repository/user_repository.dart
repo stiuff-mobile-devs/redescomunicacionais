@@ -42,4 +42,12 @@ class UserRepository {
   Future<void> deleteCurrentUserFromHive() {
     return _userProvider.deleteCurrentUserFromHive();
   }
+
+  Future<UserModel> updateCurrentUserName(String name) {
+    return _userProvider.updateCurrentUserName(name);
+  }
+
+  Future<void> deleteCurrentUserAccount() {
+    return _userProvider.deleteCurrentUserAccount();
+  }
 }
