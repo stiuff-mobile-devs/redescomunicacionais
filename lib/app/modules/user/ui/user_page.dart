@@ -67,7 +67,6 @@ class UserPage extends GetView<UserController> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Dados'),
       ),
       body: Obx(
         () {
@@ -171,7 +170,7 @@ class UserPage extends GetView<UserController> {
                                   final UserModel? updatedUser =
                                       await controller.saveCurrentUserName();
                                   if (updatedUser != null) {
-                                    Get.offNamed(
+                                    Get.offAllNamed(
                                       Routes.HOME,
                                       arguments: updatedUser,
                                     );

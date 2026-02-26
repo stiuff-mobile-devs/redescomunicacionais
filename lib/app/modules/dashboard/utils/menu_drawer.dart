@@ -155,12 +155,12 @@ class MenuPage extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.person_outline, color: Colors.white),
             title: const Text(
-              'Dados',
+              'Seus Dados',
               style: TextStyle(color: Colors.white),
             ),
             onTap: () {
               Navigator.pop(context);
-              Get.offAllNamed(Routes.USER);
+              Get.toNamed(Routes.USER);
             },
           ),
           ListTile(

@@ -18,6 +18,16 @@ class LocationService extends GetxService {
     return this;
   }
 
+  void _closeDialogIfOpen() {
+    final overlayContext = Get.overlayContext;
+    if (overlayContext == null) return;
+
+    final navigator = Navigator.of(overlayContext, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.pop();
+    }
+  }
+
   Future<void> requestLocation(UserModel user) async {
     bool needsLocationUpdate = user.lastLocation == null ||
         user.lastLocationUpdatedAt == null ||
@@ -42,7 +52,7 @@ class LocationService extends GetxService {
                 onPressed: () {
                   city.value = "Localização não fornecida";
                   if (Get.isDialogOpen ?? false) {
-                    Get.back();
+                    _closeDialogIfOpen();
                   }
                 },
                 child: const Text("Continuar sem localização"),
@@ -50,12 +60,12 @@ class LocationService extends GetxService {
               TextButton(
                 onPressed: () async {
                   if (Get.isDialogOpen ?? false) {
-                    Get.back();
+                    _closeDialogIfOpen();
                   }
                   _showLocationLoadingDialog();
                   await _getUserLocation(user);
                   if (Get.isDialogOpen ?? false) {
-                    Get.back();
+                    _closeDialogIfOpen();
                   }
                 },
                 child: const Text("Confirmar"),
@@ -74,12 +84,12 @@ class LocationService extends GetxService {
               TextButton(
                 onPressed: () async {
                   if (Get.isDialogOpen ?? false) {
-                    Get.back();
+                    _closeDialogIfOpen();
                   }
                   _showLocationLoadingDialog();
                   await _getUserLocation(user);
                   if (Get.isDialogOpen ?? false) {
-                    Get.back();
+                    _closeDialogIfOpen();
                   }
                 },
                 child: const Text("Continuar"),

@@ -6,7 +6,7 @@ import 'package:redescomunicacionais/app/modules/news/ui/news_windows.page.dart'
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/theme/menu_drawer.dart';
+import 'package:redescomunicacionais/app/modules/dashboard/utils/menu_drawer.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});

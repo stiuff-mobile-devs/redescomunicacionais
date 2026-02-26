@@ -369,6 +369,7 @@ class UserProvider {
     }
 
     try {
+      await _firestore.collection('roles').doc(uid).delete();
       await _firestore.collection('users').doc(uid).delete();
       await currentFirebaseUser.delete();
       await deleteCurrentUserFromHive();

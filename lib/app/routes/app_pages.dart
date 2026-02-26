@@ -70,7 +70,7 @@ class AppPages {
     ),
     GetPage(
       name: Routes.USER,
-      page: () => const UserPage(),
+      page: () => UserPage(),
       binding: UserBinding(),
     ),
     GetPage(
