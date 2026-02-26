@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/controller/admin_controller.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class AdminPage extends GetView<AdminController> {
   const AdminPage({super.key});
@@ -71,7 +72,10 @@ class AdminPage extends GetView<AdminController> {
                 builder: (adminController) {
                   if (controller.isLoadingUserController().value) {
                     return const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                      child: BlinkingLoadingIcon(
+                        size: 36,
+                        color: Colors.white,
+                      ),
                     );
                   }
 

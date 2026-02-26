@@ -7,6 +7,7 @@ import 'package:redescomunicacionais/app/modules/news/controller/update_news_ont
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class EditNewsPage extends StatefulWidget {
   const EditNewsPage({super.key});
@@ -468,7 +469,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 : Colors.blue,
           ),
           child: _updateNewsController.isLoading.value
-              ? const CircularProgressIndicator(color: Colors.white)
+              ? const BlinkingLoadingIcon(
+                  size: 26,
+                  color: Colors.white,
+                )
               : const Text(
                   "Atualizar Notícia",
                   style: TextStyle(color: Colors.white),

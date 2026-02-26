@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class UserPage extends GetView<UserController> {
   const UserPage({super.key});
@@ -71,7 +72,11 @@ class UserPage extends GetView<UserController> {
       body: Obx(
         () {
           if (controller.isDataLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: BlinkingLoadingIcon(
+                size: 36,
+              ),
+            );
           }
 
           return SafeArea(
@@ -180,8 +185,9 @@ class UserPage extends GetView<UserController> {
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                  child: BlinkingLoadingIcon(
+                                    size: 16,
+                                    color: Colors.white,
                                   ),
                                 )
                               : const Icon(Icons.save_outlined),
@@ -216,8 +222,9 @@ class UserPage extends GetView<UserController> {
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                  child: BlinkingLoadingIcon(
+                                    size: 16,
+                                    color: Colors.red,
                                   ),
                                 )
                               : const Icon(Icons.delete_outline),

@@ -7,6 +7,7 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/utils/menu_drawer.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -135,7 +136,10 @@ class HomePage extends GetView<HomeController> {
                     gradient: AppColors.darkBlueToBlackGradient(),
                   ),
                   child: const Center(
-                    child: CircularProgressIndicator(),
+                    child: BlinkingLoadingIcon(
+                      size: 38,
+                      color: Colors.white,
+                    ),
                   ),
                 )
               : useHorizontalLayout

@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class LocationService extends GetxService {
   UserController userController = Get.find<UserController>();
@@ -157,45 +157,30 @@ class LocationService extends GetxService {
   }
 
   void _showLocationLoadingDialog() {
-    Timer? timer;
-    bool visible = true;
-
     Get.dialog(
       AlertDialog(
-        content: StatefulBuilder(
-          builder: (context, setState) {
-            timer ??= Timer.periodic(const Duration(milliseconds: 600), (_) {
-              setState(() => visible = !visible);
-            });
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedOpacity(
-                  opacity: visible ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: SvgPicture.asset(
-                    'assets/icons/new-icon-white.svg',
-                    width: 80,
-                    height: 80,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Aguarde enquanto verificamos sua localização",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 20),
-                const CircularProgressIndicator(),
-              ],
-            );
-          },
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BlinkingLoadingIcon(
+              size: 80,
+              color: Colors.black,
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Aguarde enquanto verificamos sua localização",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 20),
+            BlinkingLoadingIcon(
+              size: 36,
+              color: Colors.black,
+            ),
+          ],
         ),
       ),
       barrierDismissible: false,
-    ).then((_) {
-      timer?.cancel();
-    });
+    );
   }
 }
