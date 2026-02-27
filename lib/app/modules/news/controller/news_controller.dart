@@ -26,8 +26,7 @@ class NewsController extends GetxController {
   onInit() async {
     super.onInit();
     userController = Get.find<UserController>();
-    user = await userController.getCurrentUser() ??
-        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
+    user = await userController.getCurrentUser() ?? UserModel.empty();
     await syncHiveAndFirebase();
     getNewsFromHive();
   }
@@ -87,21 +86,8 @@ class NewsController extends GetxController {
       }
 
       newss.insert(0, news);
-      Get.snackbar(
-        'Sucesso',
-        'Matéria cadastrada com sucesso!',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.green,
-      );
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível cadastrar a matéria.',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
-      );
+      rethrow;
     } finally {
       isLoading(false);
     }

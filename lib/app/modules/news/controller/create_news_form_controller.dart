@@ -6,6 +6,7 @@ import 'package:redescomunicacionais/app/modules/news/controller/news_controller
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 
 class CreateNewsFormController extends GetxController {
   final _formKey = GlobalKey<FormState>();
@@ -125,7 +126,7 @@ class CreateNewsFormController extends GetxController {
   }
 
   // Validação e publicação
-  void validateAndPublish() {
+  Future<void> validateAndPublish() async {
     // Reset de erros
     _showCategoryError.value = _selectedCategories.isEmpty;
     _showCityError.value = _selectedCities.isEmpty;
@@ -135,11 +136,16 @@ class CreateNewsFormController extends GetxController {
         _selectedCategories.isNotEmpty &&
         _selectedCities.isNotEmpty &&
         _type.value != null) {
-      _publishNews();
+      await _publishNews();
+    } else {
+      PopUps.snackbar(
+        texto: 'Por favor, preencha todos os campos obrigatórios.',
+        cor: Colors.red,
+      );
     }
   }
 
-  void _publishNews() {
+  Future<void> _publishNews() async {
     final String title = _titleController.text;
     final String subtitle = _subtitleController.text;
     final String body = _getBodyText();
@@ -148,20 +154,33 @@ class CreateNewsFormController extends GetxController {
     final String email = _homeController.user.email;
     final String createdAt = DateTime.now().toString();
     final String videoUrl = _videoUrlController.text;
-    _newsController.addNews(
-      title,
-      subtitle,
-      _selectedCities.toList(),
-      _selectedCategories.toList(),
-      body,
-      urlImages,
-      author,
-      email,
-      createdAt,
-      _type.value ?? '',
-      NewsStates.emAnalise,
-      videoUrl,
-    );
+
+    try {
+      await _newsController.addNews(
+        title,
+        subtitle,
+        _selectedCities.toList(),
+        _selectedCategories.toList(),
+        body,
+        urlImages,
+        author,
+        email,
+        createdAt,
+        _type.value ?? '',
+        NewsStates.emAnalise,
+        videoUrl,
+      );
+      PopUps.snackbar(
+        texto: 'Notícia publicada com sucesso!',
+        cor: Colors.green,
+      );
+    } catch (e) {
+      PopUps.snackbar(
+        texto: 'Erro ao publicar notícia: $e',
+        cor: Colors.red,
+      );
+      return;
+    }
 
     // Limpar formulário
     _clearForm();
