@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/controller/cdc_controller.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -71,10 +72,9 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                                 await launchUrl(Uri.parse(url),
                                     mode: LaunchMode.externalApplication);
                               } else {
-                                Get.snackbar(
-                                  'Erro',
-                                  'Não foi possível abrir o chat.',
-                                  snackPosition: SnackPosition.BOTTOM,
+                                PopUps.snackbar(
+                                  texto: 'Não foi possível abrir o chat.',
+                                  cor: Colors.red,
                                 );
                               }
                             },

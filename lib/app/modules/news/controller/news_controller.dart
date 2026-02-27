@@ -10,6 +10,7 @@ import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 
 class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
@@ -101,8 +102,6 @@ class NewsController extends GetxController {
       newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
           .compareTo(DateTime.parse(a.createdAt.toString())));
     } catch (e) {
-      /*Get.snackbar('Erro', 'Não foi possível carregar as notícias.',
-          snackPosition: SnackPosition.BOTTOM);*/
     } finally {
       isLoading(false);
     }
@@ -134,33 +133,24 @@ class NewsController extends GetxController {
         if (result == "success") {
           newss.removeWhere(
               (news) => news.id == newsId); // Remove da lista local (interface)
-          Get.snackbar(
-            'Sucesso',
-            '$type excluída com sucesso!',
-            snackPosition: SnackPosition.BOTTOM,
-            colorText: Colors.white,
-            backgroundColor: Colors.green,
+          PopUps.snackbar(
+            texto: '$type excluída com sucesso!',
+            cor: Colors.green,
           );
         }
       } catch (e) {
-        Get.snackbar(
-          'Erro',
-          'Não foi possível excluir essa $type.',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
+        PopUps.snackbar(
+          texto: 'Não foi possível excluir essa $type.',
+          cor: Colors.red,
         );
       } finally {
         isLoading(false);
       }
       return result;
     } else {
-      Get.snackbar(
-        'Erro',
-        'Você não tem permissão para excluir esta $type.',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
+      PopUps.snackbar(
+        texto: 'Você não tem permissão para excluir esta $type.',
+        cor: Colors.red,
       );
       return "Você não tem permissão para excluir esta $type.";
     }
@@ -385,12 +375,9 @@ class NewsController extends GetxController {
     try {
       isLoading(true);
       if (validator == creator) {
-        Get.snackbar(
-          'Erro',
-          'Você não pode revisar sua própria matéria.',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
+        PopUps.snackbar(
+          texto: 'Você não pode revisar sua própria matéria.',
+          cor: Colors.red,
         );
         return;
       }
@@ -399,22 +386,16 @@ class NewsController extends GetxController {
       // Atualiza lista local
       await getNewsFromFirebase();
       homeController.forceRecreate();
-      Get.snackbar(
-        'Sucesso',
-        isApproved
+      PopUps.snackbar(
+        texto: isApproved
             ? 'Matéria aprovada com sucesso!'
             : 'Matéria rejeitada com sucesso!',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.green,
+        cor: Colors.green,
       );
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível revisar a matéria.',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
+      PopUps.snackbar(
+        texto: 'Não foi possível revisar a matéria.',
+        cor: Colors.red,
       );
     } finally {
       isLoading(false);

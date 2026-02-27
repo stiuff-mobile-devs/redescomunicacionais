@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_ontroller.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
@@ -531,11 +532,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
     }
 
     if (!isFormValid) {
-      Get.snackbar(
-        "Erro de Validação",
-        "Por favor, preencha todos os campos obrigatórios.",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      PopUps.snackbar(
+        texto: 'Por favor, preencha todos os campos obrigatórios.',
+        cor: Colors.red,
       );
       return;
     }
@@ -563,11 +562,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
           await _updateNewsController.updateNews(newsId, updatedData);
 
       if (result == "success") {
-        Get.snackbar(
-          "Sucesso",
-          "Notícia atualizada com sucesso",
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
+        PopUps.snackbar(
+          texto: 'Notícia atualizada com sucesso',
+          cor: Colors.green,
         );
 
         // Volta para a página anterior
@@ -575,19 +572,15 @@ class _EditNewsPageState extends State<EditNewsPage> {
           Navigator.of(context).pop();
         }
       } else {
-        Get.snackbar(
-          "Erro",
-          result,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        PopUps.snackbar(
+          texto: result,
+          cor: Colors.red,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        "Erro",
-        "Erro inesperado: $e",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      PopUps.snackbar(
+        texto: 'Erro inesperado: $e',
+        cor: Colors.red,
       );
     }
   }

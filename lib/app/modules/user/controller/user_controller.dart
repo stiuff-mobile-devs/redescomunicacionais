@@ -4,6 +4,7 @@ import 'package:redescomunicacionais/app/modules/user/data/provider/user_provide
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 
 class UserController extends GetxController {
   final UserRepository _repository = UserRepository();
@@ -36,20 +37,14 @@ class UserController extends GetxController {
     try {
       isLoading.value = true;
       await _repository.addProfile(email, profile, adminEmail);
-      Get.snackbar(
-        'Sucesso',
-        'Perfil adicionado com sucesso!',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.green,
+      PopUps.snackbar(
+        texto: 'Perfil adicionado com sucesso!',
+        cor: Colors.green,
       );
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível cadastrar o perfil!',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
+      PopUps.snackbar(
+        texto: 'Não foi possível cadastrar o perfil!',
+        cor: Colors.red,
       );
     } finally {
       isLoading.value = false;
@@ -87,7 +82,10 @@ class UserController extends GetxController {
       List<Map<String, dynamic>> users = await _repository.getAllUsers();
       allUsers.value = users;
     } catch (e) {
-      Get.snackbar("Erro", "Erro ao carregar usuários: $e");
+      PopUps.snackbar(
+        texto: 'Erro ao carregar usuários: $e',
+        cor: Colors.red,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -112,10 +110,9 @@ class UserController extends GetxController {
       currentUser.value = user;
       nameController.text = user.name ?? '';
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível carregar seus dados.',
-        snackPosition: SnackPosition.BOTTOM,
+      PopUps.snackbar(
+        texto: 'Não foi possível carregar seus dados.',
+        cor: Colors.red,
       );
     } finally {
       isDataLoading.value = false;
@@ -126,10 +123,9 @@ class UserController extends GetxController {
     final name = nameController.text.trim();
 
     if (name.isEmpty) {
-      Get.snackbar(
-        'Atenção',
-        'Informe um nome válido.',
-        snackPosition: SnackPosition.BOTTOM,
+      PopUps.snackbar(
+        texto: 'Informe um nome válido.',
+        cor: Colors.orange,
       );
       return null;
     }
@@ -138,17 +134,15 @@ class UserController extends GetxController {
       isSavingData.value = true;
       final updatedUser = await _repository.updateCurrentUserName(name);
       currentUser.value = updatedUser;
-      Get.snackbar(
-        'Sucesso',
-        'Nome atualizado com sucesso.',
-        snackPosition: SnackPosition.BOTTOM,
+      PopUps.snackbar(
+        texto: 'Nome atualizado com sucesso.',
+        cor: Colors.green,
       );
       return updatedUser;
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível atualizar o nome: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      PopUps.snackbar(
+        texto: 'Não foi possível atualizar o nome: $e',
+        cor: Colors.red,
       );
       return null;
     } finally {
@@ -161,16 +155,14 @@ class UserController extends GetxController {
       isDeletingAccount.value = true;
       await _repository.deleteCurrentUserAccount();
       Get.offAllNamed(Routes.LOGIN);
-      Get.snackbar(
-        'Conta excluída',
-        'Sua conta foi excluída com sucesso.',
-        snackPosition: SnackPosition.BOTTOM,
+      PopUps.snackbar(
+        texto: 'Sua conta foi excluída com sucesso.',
+        cor: Colors.green,
       );
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível excluir a conta: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      PopUps.snackbar(
+        texto: 'Não foi possível excluir a conta: $e',
+        cor: Colors.red,
       );
     } finally {
       isDeletingAccount.value = false;

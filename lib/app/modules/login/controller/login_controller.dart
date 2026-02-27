@@ -1,10 +1,11 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginController extends GetxController {
@@ -56,10 +57,9 @@ class LoginController extends GetxController {
       } else {
         // Espere o contexto estar disponível
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.snackbar(
-            "Erro de Login",
-            "Falha ao autenticar o usuário.",
-            snackPosition: SnackPosition.BOTTOM,
+          PopUps.snackbar(
+            texto: 'Falha ao autenticar o usuário.',
+            cor: Colors.red,
           );
         });
       }
@@ -70,10 +70,9 @@ class LoginController extends GetxController {
       // Só mostre snackbar se o contexto estiver disponível
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          Get.snackbar(
-            "Erro de Login",
-            e.toString(),
-            snackPosition: SnackPosition.BOTTOM,
+          PopUps.snackbar(
+            texto: e.toString(),
+            cor: Colors.red,
           );
         }
       });
@@ -89,10 +88,9 @@ class LoginController extends GetxController {
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.snackbar(
-            "Erro de Login",
-            "Falha ao autenticar o usuário.",
-            snackPosition: SnackPosition.BOTTOM,
+          PopUps.snackbar(
+            texto: 'Falha ao autenticar o usuário.',
+            cor: Colors.red,
           );
         });
       }
@@ -101,10 +99,9 @@ class LoginController extends GetxController {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          Get.snackbar(
-            "Erro de Login",
-            e.toString(),
-            snackPosition: SnackPosition.BOTTOM,
+          PopUps.snackbar(
+            texto: e.toString(),
+            cor: Colors.red,
           );
         }
       });
@@ -155,10 +152,9 @@ class LoginController extends GetxController {
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.snackbar(
-            "Erro de Login",
-            "Falha ao autenticar o usuário.",
-            snackPosition: SnackPosition.BOTTOM,
+          PopUps.snackbar(
+            texto: 'Falha ao autenticar o usuário.',
+            cor: Colors.red,
           );
         });
       }
@@ -167,10 +163,9 @@ class LoginController extends GetxController {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          Get.snackbar(
-            "Erro de Login",
-            e.toString(),
-            snackPosition: SnackPosition.BOTTOM,
+          PopUps.snackbar(
+            texto: e.toString(),
+            cor: Colors.red,
           );
         }
       });
