@@ -1,33 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
-import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/admin/controller/admin_controller.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
-
-  @override
-  State<AdminPage> createState() => _AdminPageState();
-}
-
-class _AdminPageState extends State<AdminPage> {
-  final UserController _userController = Get.find<UserController>();
-  UserModel? _user;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInitialData();
-  }
-
-  Future<void> _loadInitialData() async {
-    // Carrega a lista de usuários ao iniciar a página
-    _user = await _userController.getCurrentUser() ??
-        UserModel(id: '', email: '', role: '', createdAt: null, status: '');
-    _userController.loadAllUsers();
-    setState(() {}); // atualiza caso algo dependa de _user
-  }
+class AdminPage extends GetView<AdminController> {
+  const AdminPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +22,7 @@ class _AdminPageState extends State<AdminPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => _userController.loadAllUsers(),
+            onPressed: () => controller.loadAllUsers(),
           ),
         ],
       ),
@@ -69,33 +47,58 @@ class _AdminPageState extends State<AdminPage> {
               ),
             ),
 
+            // Filtros
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip('Todos', 'todos'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Usuários', 'user'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Editores', 'editor'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Admins', 'admin'),
+                  ],
+                ),
+              ),
+            ),
+
             // Lista de usuários
             Expanded(
-              child: Obx(() {
-                if (_userController.isLoading.value) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  );
-                }
+              child: GetBuilder<AdminController>(
+                builder: (adminController) {
+                  if (controller.isLoadingUserController().value) {
+                    return const Center(
+                      child: BlinkingLoadingIcon(
+                        size: 36,
+                        color: Colors.white,
+                      ),
+                    );
+                  }
 
-                if (_userController.allUsers.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "Nenhum usuário encontrado",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  );
-                }
+                  final filteredUsers = controller.getFilteredAndSortedUsers();
+                  if (filteredUsers.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Nenhum usuário encontrado",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    );
+                  }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _userController.allUsers.length,
-                  itemBuilder: (context, index) {
-                    final user = _userController.allUsers[index];
-                    return _buildUserCard(user);
-                  },
-                );
-              }),
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filteredUsers.length,
+                    itemBuilder: (context, index) {
+                      final user = filteredUsers[index];
+                      return _buildUserCard(user);
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -105,6 +108,7 @@ class _AdminPageState extends State<AdminPage> {
 
   Widget _buildUserCard(Map<String, dynamic> user) {
     String email = user['email'] ?? '';
+    String userId = user['id'] ?? '';
     String currentRole = user['role'] ?? 'user';
 
     // Gera iniciais do email
@@ -115,7 +119,7 @@ class _AdminPageState extends State<AdminPage> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.black.withOpacity(0.4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: roleColor, width: 1),
@@ -139,8 +143,6 @@ class _AdminPageState extends State<AdminPage> {
             ),
 
             const SizedBox(width: 16),
-
-            // REMOVIDO: Ícone da role
 
             // Informações do usuário
             Expanded(
@@ -181,7 +183,7 @@ class _AdminPageState extends State<AdminPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.black.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.white.withOpacity(0.3)),
               ),
@@ -197,15 +199,20 @@ class _AdminPageState extends State<AdminPage> {
                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
                 ],
                 onChanged: (newRole) async {
-                  if (newRole != null && newRole != currentRole) {
+                  if (newRole != null) {
                     // Confirma a alteração
                     bool? confirm =
                         await _showConfirmDialog(email, currentRole, newRole);
                     if (confirm == true) {
-                      await _userController.addProfile(
-                          email, newRole, _user?.email ?? '');
+                      controller.addProfile(
+                          email, newRole, controller.user?.email ?? '');
+                      // Atualiza documento de role
+                      if (userId.isNotEmpty) {
+                        await controller.updateRoleDocument(
+                            userId, newRole, controller.user?.email ?? '');
+                      }
                       // Recarrega a lista
-                      _userController.loadAllUsers();
+                      controller.loadAllUsers();
                     }
                   }
                 },
@@ -228,15 +235,30 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
-  IconData _getRoleIcon(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return Icons.admin_panel_settings;
-      case 'editor':
-        return Icons.edit;
-      default:
-        return Icons.person;
-    }
+  Widget _buildFilterChip(String label, String filterValue) {
+    return Obx(() {
+      final isSelected = controller.selectedRoleFilter.value == filterValue;
+      return FilterChip(
+        label: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        selected: isSelected,
+        onSelected: (selected) {
+          controller.setRoleFilter(filterValue);
+        },
+        backgroundColor:
+            isSelected ? Colors.blue : Colors.black.withOpacity(0.4),
+        selectedColor: Colors.blue,
+        side: BorderSide(
+          color: isSelected ? Colors.blue : Colors.white24,
+          width: 1,
+        ),
+      );
+    });
   }
 
   String _getRoleDisplayName(String role) {
@@ -253,7 +275,7 @@ class _AdminPageState extends State<AdminPage> {
   Future<bool?> _showConfirmDialog(
       String email, String currentRole, String newRole) {
     return showDialog<bool>(
-      context: context,
+      context: Get.context!,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.black87,
         title: const Text(

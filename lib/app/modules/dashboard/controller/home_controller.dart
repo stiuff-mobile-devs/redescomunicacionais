@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/services/location_service.dart';
-import 'package:redescomunicacionais/app/services/version_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
+import 'package:redescomunicacionais/app/services/location_service.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
@@ -9,10 +9,12 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 class HomeController extends GetxController {
   late UserModel user;
 
-  late final VersionService versionService;
-  late final LocationService locationService;
-  late final UserController userController;
-  late final NewsController newsController;
+  late LocationService locationService;
+  late UserController userController;
+  NewsController? _newsController;
+  NewsController get newsController => _newsController ??= Get.find<NewsController>();
+
+  final RxString appVersion = 'Carregando...'.obs;
 
   RxBool isLoadingLocation = false.obs;
   RxBool isRevisionMode = false.obs;
@@ -24,10 +26,9 @@ class HomeController extends GetxController {
 
   @override
   Future<void> onInit() async {
-    versionService = Get.find<VersionService>();
     locationService = Get.find<LocationService>();
     userController = Get.find<UserController>();
-    newsController = Get.find<NewsController>();
+    _loadPackageInfo();
 
     user = await userController.getCurrentUser();
 
@@ -36,6 +37,15 @@ class HomeController extends GetxController {
     isLoadingLocation.value = false;
 
     super.onInit();
+  }
+
+  Future<void> _loadPackageInfo() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      appVersion.value = packageInfo.version;
+    } catch (_) {
+      appVersion.value = '--';
+    }
   }
 
   void goInfo() {

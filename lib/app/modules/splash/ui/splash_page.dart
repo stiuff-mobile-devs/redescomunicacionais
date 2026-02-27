@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/splash/controller/splash_controller.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class SplashPage extends GetView<SplashController> {
   const SplashPage({super.key});
@@ -28,8 +29,10 @@ class SplashPage extends GetView<SplashController> {
                   height: 200,
                 ),
                 const SizedBox(height: 100),
-                const CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 5),
+                const BlinkingLoadingIcon(
+                  size: 44,
+                  color: Colors.white,
+                ),
                 const SizedBox(height: 20),
               ],
             ),

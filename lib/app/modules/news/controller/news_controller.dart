@@ -13,9 +13,10 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
-  late final UserController userController;
-  late final HomeController homeController;
-  late final UserModel user;
+  late UserController userController;
+  late UserModel user;
+
+  HomeController get homeController => Get.find<HomeController>();
 
   var newss = <NewsModel>[].obs;
   RxBool isLoading = false.obs;
@@ -25,7 +26,6 @@ class NewsController extends GetxController {
   onInit() async {
     super.onInit();
     userController = Get.find<UserController>();
-    homeController = Get.find<HomeController>();
     user = await userController.getCurrentUser() ??
         UserModel(id: '', email: '', role: '', createdAt: null, status: '');
     await syncHiveAndFirebase();

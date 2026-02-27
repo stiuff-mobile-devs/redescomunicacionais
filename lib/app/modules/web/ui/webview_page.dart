@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/web/controller/webview_controller.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart'; // Adicionado para kIsWeb
 
@@ -75,7 +76,12 @@ class WebViewPage extends StatelessWidget {
                   )
                 : (controller.wvc != null
                     ? WebViewWidget(controller: controller.wvc!)
-                    : const Center(child: CircularProgressIndicator())),
+                    : const Center(
+                        child: BlinkingLoadingIcon(
+                          size: 36,
+                          color: Colors.black54,
+                        ),
+                      )),
           ),
         );
       },

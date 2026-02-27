@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -7,13 +8,13 @@ enum UserRole { user, admin, editor }
 
 class UserProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Armazena sempre na mesma chave para garantir apenas uma entrada
   final String hiveUserKey = 'current_user';
 
   Future<UserModel> createUserDoc(
       String email, String name, String uid, String urlImage) async {
-
     UserModel user = UserModel(
       id: uid,
       name: name,
@@ -36,20 +37,21 @@ class UserProvider {
       debugPrint("Erro ao criar usuário no Hive: $e");
     }
 
-
     return user;
   }
 
-  Future<UserModel> _createUserDocInFirebase(UserModel user, String uid, String name, String urlImage) async {
+  Future<UserModel> _createUserDocInFirebase(
+      UserModel user, String uid, String name, String urlImage) async {
     try {
       DocumentSnapshot doc =
           await _firestore.collection('users').doc(user.id).get();
 
       if (doc.exists) {
-        print(UserModel.fromMapWithData(doc.data() as Map<String, dynamic>, uid, name, urlImage));
-        return UserModel.fromMapWithData(doc.data() as Map<String, dynamic>, uid, name, urlImage);
+        return UserModel.fromMapWithData(
+            doc.data() as Map<String, dynamic>, uid, name, urlImage);
       }
 
+      // Se o documento não existe, cria um novo
       await _firestore.collection('users').doc(user.id).set({
         'id': user.id,
         'urlImage': user.urlImage,
@@ -146,35 +148,43 @@ class UserProvider {
     }
   }
 
-  Future<UserRole> getUserRole(String email) async {
+  Future<void> updateRoleDocument(
+      String userId, String role, String updatedBy) async {
     try {
-      // Busca na coleção 'users' pelo campo 'email'
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .limit(1) // Pega apenas o primeiro resultado
-          .get();
+      await _firestore.collection('roles').doc(userId).set({
+        'userId': userId,
+        'role': role,
+        'updatedAt': DateTime.now(),
+        'updatedBy': updatedBy,
+      }, SetOptions(merge: true));
+      debugPrint(
+          "Documento de role atualizado: userId=$userId, role=$role, updatedBy=$updatedBy");
+    } catch (e) {
+      throw Exception("Erro ao atualizar documento de role: $e");
+    }
+  }
 
-      if (querySnapshot.docs.isNotEmpty) {
-        // Pega o primeiro documento encontrado
-        DocumentSnapshot userDoc = querySnapshot.docs.first;
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+  Future<UserRole> getUserRole(String uid) async {
+    try {
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(uid).get();
 
-        // Verifica o campo 'role'
-        String role = userData['role'] ?? 'user';
-
-        switch (role.toLowerCase()) {
-          case 'admin':
-            return UserRole.admin;
-          case 'editor':
-            return UserRole.editor;
-          default:
-            return UserRole.user;
-        }
+      if (!userDoc.exists) {
+        return UserRole.user;
       }
 
-      // Se não encontrou nenhum usuário com esse email
-      return UserRole.user;
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+      String role = userData['role'] ?? 'user';
+
+      switch (role.toLowerCase()) {
+        case 'admin':
+          return UserRole.admin;
+        case 'editor':
+          return UserRole.editor;
+        default:
+          return UserRole.user;
+      }
     } catch (e) {
       debugPrint("Erro ao buscar role do usuário: $e");
       return UserRole.user; // Retorna user como padrão em caso de erro
@@ -291,6 +301,85 @@ class UserProvider {
     } catch (e) {
       debugPrint("Erro ao atualizar informações do usuário: $e");
       throw Exception("Erro ao atualizar informações do usuário: $e");
+    }
+  }
+
+  Future<void> deleteCurrentUserFromHive() async {
+    try {
+      final box = await Hive.openBox<UserModel>('users');
+
+      if (box.containsKey(hiveUserKey)) {
+        await box.delete(hiveUserKey);
+        await box.flush();
+        debugPrint("Usuário removido do Hive com sucesso");
+      } else {
+        debugPrint("Nenhum usuário encontrado no Hive para remover");
+      }
+    } catch (e) {
+      debugPrint("Erro ao remover usuário do Hive: $e");
+      throw Exception("Erro ao remover usuário do Hive: $e");
+    }
+  }
+
+  Future<UserModel> updateCurrentUserName(String name) async {
+    try {
+      final currentUser = await getCurrentUserFromHive();
+
+      final updatedUser = UserModel(
+        id: currentUser.id,
+        name: name,
+        email: currentUser.email,
+        urlImage: currentUser.urlImage,
+        role: currentUser.role,
+        createdAt: currentUser.createdAt,
+        roleUpdatedAt: currentUser.roleUpdatedAt,
+        roleUpdatedBy: currentUser.roleUpdatedBy,
+        status: currentUser.status,
+        statusUpdatedAt: currentUser.statusUpdatedAt,
+        statusUpdatedBy: currentUser.statusUpdatedBy,
+        statusObservation: currentUser.statusObservation,
+        lastLocation: currentUser.lastLocation,
+        lastLocationUpdatedAt: currentUser.lastLocationUpdatedAt,
+      );
+
+      await updateUserInFirebase(updatedUser);
+      await updateUserInHive(updatedUser);
+
+      return updatedUser;
+    } catch (e) {
+      throw Exception("Erro ao atualizar nome do usuário: $e");
+    }
+  }
+
+  Future<void> deleteCurrentUserAccount() async {
+    final currentFirebaseUser = _auth.currentUser;
+    final currentUserFromHive = await getCurrentUserFromHive();
+
+    final String uid = currentFirebaseUser?.uid.isNotEmpty == true
+        ? currentFirebaseUser!.uid
+        : currentUserFromHive.id;
+
+    if (uid.isEmpty) {
+      throw Exception('Não foi possível identificar a conta para exclusão.');
+    }
+
+    if (currentFirebaseUser == null) {
+      throw Exception(
+          'Usuário não autenticado no Firebase. Faça login novamente.');
+    }
+
+    try {
+      await _firestore.collection('roles').doc(uid).delete();
+      await _firestore.collection('users').doc(uid).delete();
+      await currentFirebaseUser.delete();
+      await deleteCurrentUserFromHive();
+      await _auth.signOut();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw Exception(
+            'Por segurança, faça login novamente antes de excluir sua conta.');
+      }
+      throw Exception('Erro ao excluir conta: ${e.message ?? e.code}');
     }
   }
 }

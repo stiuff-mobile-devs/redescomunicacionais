@@ -1448,6 +1448,8 @@ PODS:
   - RecaptchaInterop (101.0.0)
   - rive_common (0.0.1):
     - Flutter
+  - sign_in_with_apple (0.0.1):
+    - Flutter
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
@@ -1471,6 +1473,7 @@ DEPENDENCIES:
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - quill_native_bridge_ios (from `.symlinks/plugins/quill_native_bridge_ios/ios`)
   - rive_common (from `.symlinks/plugins/rive_common/ios`)
+  - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
@@ -1536,6 +1539,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/quill_native_bridge_ios/ios"
   rive_common:
     :path: ".symlinks/plugins/rive_common/ios"
+  sign_in_with_apple:
+    :path: ".symlinks/plugins/sign_in_with_apple/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
@@ -1584,6 +1589,7 @@ SPEC CHECKSUMS:
   quill_native_bridge_ios: f47af4b14e7757968486641656c5d23250cee521
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   rive_common: dd421daaf9ae69f0125aa761dd96abd278399952
+  sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
 

@@ -1,20 +1,49 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
-import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginController extends GetxController {
   final LoginRepository _repository = LoginRepository();
+  final RxString appVersion = 'Carregando...'.obs;
 
-  late final VersionService versionService;
   final UserRepository _userRepository = UserRepository();
 
   @override
   void onInit() {
-    versionService = Get.find<VersionService>();
     super.onInit();
+    _loadPackageInfo();
+  }
+
+  Future<void> _loadPackageInfo() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      appVersion.value = packageInfo.version;
+    } catch (_) {
+      appVersion.value = '--';
+    }
+  }
+
+  Future<void> _persistAndSyncUser(UserModel user) async {
+    await _userRepository.updateUserInHive(user);
+
+    if (Get.isRegistered<UserController>()) {
+      final userController = Get.find<UserController>();
+      userController.currentUser.value = user;
+      userController.nameController.text = user.name ?? '';
+    }
+  }
+
+  void _clearUserState() {
+    if (Get.isRegistered<UserController>()) {
+      final userController = Get.find<UserController>();
+      userController.currentUser.value = null;
+      userController.nameController.clear();
+    }
   }
 
   void loginGoogle() async {
@@ -22,7 +51,7 @@ class LoginController extends GetxController {
       _repository.logoutGoogle();
       final user = await _repository.signInGoogle();
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         // Espere o contexto estar disponível
@@ -56,7 +85,7 @@ class LoginController extends GetxController {
       _repository.logoutGoogle();
       final user = await _repository.signInMicrosoft();
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -89,7 +118,7 @@ class LoginController extends GetxController {
           .timeout(const Duration(seconds: 10), onTimeout: () => null);
 
       if (user != null) {
-        _userRepository.updateUserInHive(user);
+        await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
         Get.offNamed(Routes.LOGIN);
@@ -103,16 +132,54 @@ class LoginController extends GetxController {
   tryLoginMicrosoft() async {
     var hasLogged = await _repository.trySignInMicrosoft();
     if (hasLogged != null) {
-      _userRepository.updateUserInHive(hasLogged);
+      await _persistAndSyncUser(hasLogged);
       Get.offNamed(Routes.HOME, arguments: hasLogged);
     } else {
       Get.offNamed(Routes.LOGIN);
     }
   }
 
-  void logout() {
-    _repository.logoutMicrosoft();
-    _repository.logoutGoogle();
+  void logout() async {
+    await _repository.logoutMicrosoft();
+    await _repository.logoutGoogle();
+    await _userRepository.deleteCurrentUserFromHive();
+    _clearUserState();
     Get.offAllNamed(Routes.LOGIN);
+  }
+
+  void loginApple() async {
+    try {
+      final user = await _repository.signInAppleAuth();
+      if (user != null) {
+        await _persistAndSyncUser(user);
+        Get.offNamed(Routes.HOME, arguments: user);
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.snackbar(
+            "Erro de Login",
+            "Falha ao autenticar o usuário.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint("Erro de Login Apple: $e");
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (Get.context != null) {
+          Get.snackbar(
+            "Erro de Login",
+            e.toString(),
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      });
+    }
+  }
+
+  void loginAnonymous() async {
+    final anonymousUser = UserModel.empty();
+    await _persistAndSyncUser(anonymousUser);
+    Get.offNamed(Routes.HOME, arguments: anonymousUser);
   }
 }

@@ -46,11 +46,35 @@
           }
         },
         {
+          "client_id": "792922518433-dl2lj1bkjl14qlh2je8uhslv146qc38u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "4e41c65e59263d754e20f3fc6b3ad2b43830b941"
+          }
+        },
+        {
+          "client_id": "792922518433-jltijd2koulaln5kvnth8bq4f8n71497.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "f6ed8948121eeeb9fc84c5d832507058f3c073b8"
+          }
+        },
+        {
           "client_id": "792922518433-jnblb1gkah70suip1fda7sed0sn5mt29.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "br.uff.redescomunicacionais",
             "certificate_hash": "29f639f8d9e5674bbdb7c9ba1c27892d7c3b3379"
+          }
+        },
+        {
+          "client_id": "792922518433-kc4vgskev4n8qttpjugclqklcfbnp8is.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.uff.redescomunicacionais",
+            "certificate_hash": "917e902e79ceb9170f63fbde8bc7aa04dbce8d4d"
           }
         },
         {
@@ -95,10 +119,10 @@
               "client_type": 3
             },
             {
-              "client_id": "792922518433-qjp00cfou7jadhop1j8qqseq0q83eu4l.apps.googleusercontent.com",
+              "client_id": "792922518433-2eueup5n0tiqvbc3jonpn71iciga2glo.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.redescomunicacionais"
+                "bundle_id": "br.uff.sti.redescomunicacionais"
               }
             }
           ]

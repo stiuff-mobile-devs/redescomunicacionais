@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/controller/cdc_controller.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
@@ -26,7 +27,12 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
       ),
       body: Obx(
         () => controller.isBusy.value
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: BlinkingLoadingIcon(
+                  size: 36,
+                  color: Colors.white,
+                ),
+              )
             : Container(
                 decoration: BoxDecoration(
                   gradient: AppColors.darkBlueToBlackGradient(),

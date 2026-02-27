@@ -56,11 +56,15 @@
 				<string>Editor</string>
 				<key>CFBundleURLSchemes</key>
 				<array>
-					<string>com.googleusercontent.apps.792922518433-qjp00cfou7jadhop1j8qqseq0q83eu4l</string>
+					<string>com.googleusercontent.apps.792922518433-2eueup5n0tiqvbc3jonpn71iciga2glo</string>
 				</array>
 			</dict>
 		</array>
 		<key>GIDClientID</key>
-		<string>792922518433-qjp00cfou7jadhop1j8qqseq0q83eu4l.apps.googleusercontent.com</string>
+		<string>792922518433-2eueup5n0tiqvbc3jonpn71iciga2glo.apps.googleusercontent.com</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Usamos sua biblioteca de fotos para que os editores possam selecionar e enviar imagens na noticia.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Usamos sua localizacao enquanto o app esta em uso para filtrar noticias mais proximas.</string>
 	</dict>
 </plist>

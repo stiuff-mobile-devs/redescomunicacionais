@@ -14,8 +14,13 @@ class UserRepository {
     return _userProvider.addProfile(email, profile, adminEmail);
   }
 
-  Future<UserRole> getUserRole(String email) {
-    return _userProvider.getUserRole(email);
+  Future<void> updateRoleDocument(
+      String userId, String role, String updatedBy) {
+    return _userProvider.updateRoleDocument(userId, role, updatedBy);
+  }
+
+  Future<UserRole> getUserRole(String uid) {
+    return _userProvider.getUserRole(uid);
   }
 
   Future<List<Map<String, dynamic>>> getAllUsers() {
@@ -32,5 +37,17 @@ class UserRepository {
 
   updateUserInHive(UserModel user) {
     return _userProvider.updateUserInHive(user);
+  }
+
+  Future<void> deleteCurrentUserFromHive() {
+    return _userProvider.deleteCurrentUserFromHive();
+  }
+
+  Future<UserModel> updateCurrentUserName(String name) {
+    return _userProvider.updateCurrentUserName(name);
+  }
+
+  Future<void> deleteCurrentUserAccount() {
+    return _userProvider.deleteCurrentUserAccount();
   }
 }

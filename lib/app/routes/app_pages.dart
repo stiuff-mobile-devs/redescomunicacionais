@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/admin/bindings/admin_binding.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
@@ -17,6 +18,7 @@ import 'package:redescomunicacionais/app/modules/splash/ui/splash_page.dart';
 import 'package:redescomunicacionais/app/modules/login/ui/login_page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_windows.page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
+import 'package:redescomunicacionais/app/modules/user/ui/user_page.dart';
 import 'package:redescomunicacionais/app/modules/web/ui/webview_page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
 
@@ -34,6 +36,7 @@ class AppPages {
     GetPage(
       name: Routes.ADMIN,
       page: () => AdminPage(),
+      binding: AdminBinding(),
     ),
     GetPage(
       name: Routes.HOME,
@@ -64,6 +67,11 @@ class AppPages {
       name: Routes.CENTRAL_DE_COMUNICACAO,
       page: () => CentralDeComunicacaoPage(),
       binding: CentralDeComunicacaoBinding(),
+    ),
+    GetPage(
+      name: Routes.USER,
+      page: () => UserPage(),
+      binding: UserBinding(),
     ),
     GetPage(
         name: Routes.NEWS_REVISION,

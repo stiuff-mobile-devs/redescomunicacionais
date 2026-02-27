@@ -6,6 +6,7 @@ import 'package:redescomunicacionais/app/modules/news/controller/news_controller
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:intl/intl.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart'; // Para formatar datas
+import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class NewsWindowsPage extends GetView<NewsController> {
   NewsWindowsPage({super.key, RxBool? isRevisionMode})
@@ -23,7 +24,12 @@ class NewsWindowsPage extends GetView<NewsController> {
         child: Obx(
           () {
             if (controller.isLoading.value) {
-              const Center(child: CircularProgressIndicator());
+              const Center(
+                child: BlinkingLoadingIcon(
+                  size: 36,
+                  color: Colors.white,
+                ),
+              );
             }
 
             if (controller.newss.isEmpty) {

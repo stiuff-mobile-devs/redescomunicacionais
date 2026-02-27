@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
-import 'package:redescomunicacionais/app/services/version_service.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 
 class MenuPage extends StatelessWidget {
   final HomeController _homeController = Get.find<HomeController>();
   final UserController _userController = Get.find<UserController>();
-  final VersionService _versionController = Get.find<VersionService>();
 
   MenuPage({super.key});
 
@@ -68,7 +67,7 @@ class MenuPage extends StatelessWidget {
             ),
           ),
           Obx(() {
-            _userController.loadUserRole(_homeController.user.email);
+            _userController.loadUserRole(_homeController.user.id);
             if (_userController.isAdmin.value ||
                 _userController.isEditor.value) {
               return ListTile(
@@ -94,7 +93,7 @@ class MenuPage extends StatelessWidget {
             }
           }),
           Obx(() {
-            _userController.loadUserRole(_homeController.user.email);
+            _userController.loadUserRole(_homeController.user.id);
             if (_userController.isAdmin.value) {
               return ListTile(
                 leading: const Icon(Icons.person_outline, color: Colors.white),
@@ -118,7 +117,7 @@ class MenuPage extends StatelessWidget {
             }
           }),
           Obx(() {
-            _userController.loadUserRole(_homeController.user.email);
+            _userController.loadUserRole(_homeController.user.id);
             if (_userController.isEditor.value ||
                 _userController.isAdmin.value) {
               return ListTile(
@@ -151,6 +150,17 @@ class MenuPage extends StatelessWidget {
             ),
             onTap: () {
               Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_outline, color: Colors.white),
+            title: const Text(
+              'Seus Dados',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              Get.toNamed(Routes.USER);
             },
           ),
           ListTile(
@@ -209,12 +219,14 @@ class MenuPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Center(
-                          child: Text(
-                            'Versão: ${_versionController.version}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                          child: Obx(
+                            () => Text(
+                              'Versão: ${_homeController.appVersion.value}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

@@ -63,6 +63,17 @@ class UserModel extends HiveObject {
     this.lastLocationUpdatedAt,
   });
 
+  // Factory para criar um usuário vazio com campos required
+  factory UserModel.empty() {
+    return UserModel(
+      id: '',
+      email: '',
+      role: 'user',
+      createdAt: DateTime.now(),
+      status: 'active',
+    );
+  }
+
   // fromMap (para Firestore)
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
@@ -91,7 +102,8 @@ class UserModel extends HiveObject {
     );
   }
 
-factory UserModel.fromMapWithData(Map<String, dynamic> map, String id, String name, String urlImage) {
+  factory UserModel.fromMapWithData(
+      Map<String, dynamic> map, String id, String name, String urlImage) {
     return UserModel(
       id: id ?? '',
       name: name,
@@ -117,7 +129,6 @@ factory UserModel.fromMapWithData(Map<String, dynamic> map, String id, String na
           : null,
     );
   }
-
 
   // toJson
   Map<String, dynamic> toJson() {

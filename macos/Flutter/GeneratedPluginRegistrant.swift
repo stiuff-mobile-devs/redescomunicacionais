@@ -17,6 +17,7 @@ import package_info_plus
 import path_provider_foundation
 import quill_native_bridge_macos
 import rive_common
+import sign_in_with_apple
 import url_launcher_macos
 import webview_flutter_wkwebview
 
@@ -33,6 +34,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   QuillNativeBridgePlugin.register(with: registry.registrar(forPlugin: "QuillNativeBridgePlugin"))
   RivePlugin.register(with: registry.registrar(forPlugin: "RivePlugin"))
+  SignInWithApplePlugin.register(with: registry.registrar(forPlugin: "SignInWithApplePlugin"))
   UrlLauncherPlugin.register(with: registry.registrar(forPlugin: "UrlLauncherPlugin"))
   WebViewFlutterPlugin.register(with: registry.registrar(forPlugin: "WebViewFlutterPlugin"))
 }
