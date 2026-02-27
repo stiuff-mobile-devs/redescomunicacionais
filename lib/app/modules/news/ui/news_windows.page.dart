@@ -401,6 +401,7 @@ class NewsWindowsPage extends GetView<NewsController> {
           ),
           TextButton(
             onPressed: () async {
+              Get.back();
               try {
                 String result = await controller.hideNews(
                     newsId, status, userEmail, authorEmail, type);
