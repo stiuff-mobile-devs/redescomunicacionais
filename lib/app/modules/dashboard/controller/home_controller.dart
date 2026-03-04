@@ -9,10 +9,13 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 class HomeController extends GetxController {
   late UserModel user;
 
+  bool get isAnonymousUser => user.id.isEmpty && user.email.isEmpty;
+
   late LocationService locationService;
   late UserController userController;
   NewsController? _newsController;
-  NewsController get newsController => _newsController ??= Get.find<NewsController>();
+  NewsController get newsController =>
+      _newsController ??= Get.find<NewsController>();
 
   final RxString appVersion = 'Carregando...'.obs;
 

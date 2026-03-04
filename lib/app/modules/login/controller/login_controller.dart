@@ -118,11 +118,11 @@ class LoginController extends GetxController {
         await _persistAndSyncUser(user);
         Get.offNamed(Routes.HOME, arguments: user);
       } else {
-        Get.offNamed(Routes.LOGIN);
+        loginAnonymous();
       }
     } catch (e) {
       debugPrint("Erro no tryLogin: $e");
-      Get.offNamed(Routes.LOGIN);
+      loginAnonymous();
     }
   }
 
@@ -132,7 +132,7 @@ class LoginController extends GetxController {
       await _persistAndSyncUser(hasLogged);
       Get.offNamed(Routes.HOME, arguments: hasLogged);
     } else {
-      Get.offNamed(Routes.LOGIN);
+      loginAnonymous();
     }
   }
 

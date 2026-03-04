@@ -195,6 +195,9 @@ class HomePage extends GetView<HomeController> {
     double appBarTitleSize,
     double iconSize,
   ) {
+    final isAnonymousUser =
+        controller.user.id.isEmpty && controller.user.email.isEmpty;
+
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.darkBlueToBlackGradient(),
@@ -426,10 +429,19 @@ class HomePage extends GetView<HomeController> {
                           isTablet: isTablet,
                         ),
 
+                        _buildMenuTile(
+                          icon: Icons.person_outline,
+                          title: "Seus Dados",
+                          onTap: () => Get.toNamed(Routes.USER),
+                          iconSize: iconSize,
+                          isTablet: isTablet,
+                        ),
+
                         // Sair
                         _buildMenuTile(
-                          icon: Icons.exit_to_app,
-                          title: "Sair",
+                          icon:
+                              isAnonymousUser ? Icons.login : Icons.exit_to_app,
+                          title: isAnonymousUser ? "Entrar" : "Sair",
                           onTap: () => LoginController().logout(),
                           iconSize: iconSize,
                           isTablet: isTablet,

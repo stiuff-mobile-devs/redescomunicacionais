@@ -238,10 +238,13 @@ class MenuPage extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.exit_to_app, color: Colors.white),
-            title: const Text(
-              'Sair',
-              style: TextStyle(color: Colors.white),
+            leading: Icon(
+              _homeController.isAnonymousUser ? Icons.login : Icons.exit_to_app,
+              color: Colors.white,
+            ),
+            title: Text(
+              _homeController.isAnonymousUser ? 'Entrar' : 'Sair',
+              style: const TextStyle(color: Colors.white),
             ),
             onTap: () {
               LoginController().logout();
