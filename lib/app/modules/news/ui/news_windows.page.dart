@@ -33,9 +33,9 @@ class NewsWindowsPage extends GetView<NewsController> {
             }
 
             if (controller.newss.isEmpty) {
-              return const Center(
+              return Center(
                   child: Text(
-                "Nenhuma Matéria encontrada",
+                'no_news_found'.tr,
                 selectionColor: Colors.white,
               ));
             }
@@ -45,9 +45,9 @@ class NewsWindowsPage extends GetView<NewsController> {
                 : controller.getValidNews();
 
             if (validNews.isEmpty) {
-              return const Center(
+              return Center(
                 child: Text(
-                  "Nenhuma Matéria encontrada",
+                  'no_news_found'.tr,
                   style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
@@ -110,7 +110,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                             ? _buildSafeImage(n.urlImages[0], 70.0)
                             : Image.asset(
                                 controller.getCityImageAsset(
-                                    (n.cities != null && n.cities.isNotEmpty)
+                                  n.cities.isNotEmpty
                                         ? n.cities[0]
                                         : 'default'),
                                 fit: BoxFit.cover,
@@ -183,7 +183,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.edit,
                                 color: Colors.white,
@@ -191,7 +191,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                               ),
                               SizedBox(width: 8.0),
                               Text(
-                                'Editar',
+                                'edit'.tr,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 25.0,
@@ -213,7 +213,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.delete,
                                 color: Colors.red,
@@ -221,7 +221,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                               ),
                               SizedBox(width: 8.0),
                               Text(
-                                'Excluir',
+                                'delete'.tr,
                                 style: TextStyle(
                                   color: Colors.red,
                                   fontSize: 25.0,
@@ -240,7 +240,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.rate_review,
                                   color: Colors.yellowAccent,
@@ -248,7 +248,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                                 ),
                                 SizedBox(width: 8.0),
                                 Text(
-                                  'Revisar',
+                                  'review'.tr,
                                   style: TextStyle(
                                     color: Colors.yellowAccent,
                                     fontSize: 25.0,
@@ -388,16 +388,18 @@ class NewsWindowsPage extends GetView<NewsController> {
     await Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
-        title:
-            Text("Excluir $type", style: const TextStyle(color: Colors.white)),
+        title: Text(
+          '${'delete'.tr} $type',
+          style: const TextStyle(color: Colors.white),
+        ),
         content: Text(
-          "Tem certeza que deseja excluir esta $type?",
+          '${'confirm_delete_this'.tr} $type?',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(Get.context!).pop(),
-            child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
+            child: Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
@@ -414,7 +416,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                     context: Get.context!,
                     builder: (context) => AlertDialog(
                       backgroundColor: Colors.grey[900],
-                      title: const Text("Erro",
+                        title: Text('error'.tr,
                           style: TextStyle(color: Colors.white)),
                       content: Text(
                         result,
@@ -423,7 +425,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("OK",
+                            child: Text('ok'.tr,
                               style: TextStyle(color: Colors.blue)),
                         ),
                       ],
@@ -432,7 +434,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                 }
               } catch (_) {}
             },
-            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
+            child: Text('delete'.tr, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -446,16 +448,16 @@ class NewsWindowsPage extends GetView<NewsController> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: const Text("Acesso Negado",
+          title: Text('access_denied'.tr,
               style: TextStyle(color: Colors.white)),
-          content: const Text(
-            "Você não pode editar esta notícia porque não é o autor. Apenas o autor original pode fazer alterações.",
+          content: Text(
+            'only_author_can_edit'.tr,
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK", style: TextStyle(color: Colors.blue)),
+              child: Text('ok'.tr, style: const TextStyle(color: Colors.blue)),
             ),
           ],
         );
@@ -471,11 +473,11 @@ class NewsWindowsPage extends GetView<NewsController> {
       final difference = now.difference(creationDate);
 
       if (difference.inSeconds < 60) {
-        return '${difference.inSeconds} segundos atrás';
+        return '${difference.inSeconds} ${'seconds_ago'.tr}';
       } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes} minutos atrás';
+        return '${difference.inMinutes} ${'minutes_ago'.tr}';
       } else if (difference.inHours < 24) {
-        return '${difference.inHours} horas atrás';
+        return '${difference.inHours} ${'hours_ago'.tr}';
       } else {
         return DateFormat('dd/MM/yyyy').format(creationDate);
       }
@@ -523,12 +525,12 @@ class NewsWindowsPage extends GetView<NewsController> {
     await Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text(
-          "Revisão da Matéria",
+        title: Text(
+          'news_review'.tr,
           style: TextStyle(color: Colors.white),
         ),
-        content: const Text(
-          "Escolha uma ação para esta matéria:",
+        content: Text(
+          'choose_action_for_news'.tr,
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -537,14 +539,14 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               await _showReasonDialog(news, true);
             },
-            child: const Text("Aceitar", style: TextStyle(color: Colors.green)),
+            child: Text('accept'.tr, style: const TextStyle(color: Colors.green)),
           ),
           TextButton(
             onPressed: () async {
               Get.back();
               await _showReasonDialog(news, false);
             },
-            child: const Text("Recusar", style: TextStyle(color: Colors.red)),
+            child: Text('reject'.tr, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -559,14 +561,14 @@ class NewsWindowsPage extends GetView<NewsController> {
       AlertDialog(
         backgroundColor: Colors.grey[900],
         title: Text(
-          accepted ? "Motivo para Aceitar" : "Motivo para Recusar",
+          accepted ? 'reason_to_accept'.tr : 'reason_to_reject'.tr,
           style: const TextStyle(color: Colors.white),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Escreva o motivo:",
+            Text(
+              'write_reason'.tr,
               style: TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 8.0),
@@ -575,7 +577,7 @@ class NewsWindowsPage extends GetView<NewsController> {
               maxLines: 4,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: "Escreva o motivo aqui",
+                hintText: 'write_reason_here'.tr,
                 hintStyle: TextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: Colors.grey[850],
@@ -590,7 +592,7 @@ class NewsWindowsPage extends GetView<NewsController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
+            child: Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
@@ -609,7 +611,7 @@ class NewsWindowsPage extends GetView<NewsController> {
               } catch (_) {}
             },
             child: Text(
-              accepted ? "Enviar" : "Enviar",
+              'send'.tr,
               style: TextStyle(color: accepted ? Colors.green : Colors.red),
             ),
           ),

@@ -11,7 +11,7 @@ class AdminPage extends GetView<AdminController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Gerenciar Usuários"),
+        title: Text('manage_users'.tr),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: AppColors.appBarTopGradient(),
@@ -35,10 +35,10 @@ class AdminPage extends GetView<AdminController> {
         child: Column(
           children: [
             // Cabeçalho
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                "Usuários Cadastrados",
+                'registered_users'.tr,
                 style: TextStyle(
                   fontSize: 24,
                   color: Colors.white,
@@ -54,13 +54,13 @@ class AdminPage extends GetView<AdminController> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildFilterChip('Todos', 'todos'),
+                    _buildFilterChip('filter_all'.tr, 'todos'),
                     const SizedBox(width: 8),
-                    _buildFilterChip('Usuários', 'user'),
+                    _buildFilterChip('filter_users'.tr, 'user'),
                     const SizedBox(width: 8),
-                    _buildFilterChip('Editores', 'editor'),
+                    _buildFilterChip('filter_editors'.tr, 'editor'),
                     const SizedBox(width: 8),
-                    _buildFilterChip('Admins', 'admin'),
+                    _buildFilterChip('filter_admins'.tr, 'admin'),
                   ],
                 ),
               ),
@@ -81,9 +81,9 @@ class AdminPage extends GetView<AdminController> {
 
                   final filteredUsers = controller.getFilteredAndSortedUsers();
                   if (filteredUsers.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        "Nenhum usuário encontrado",
+                        'no_user_found'.tr,
                         style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     );
@@ -193,10 +193,11 @@ class AdminPage extends GetView<AdminController> {
                 dropdownColor: Colors.black87,
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
                 style: const TextStyle(color: Colors.white),
-                items: const [
-                  DropdownMenuItem(value: 'user', child: Text('Usuário')),
-                  DropdownMenuItem(value: 'editor', child: Text('Editor')),
-                  DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                items: [
+                  DropdownMenuItem(value: 'user', child: Text('role_user'.tr)),
+                  DropdownMenuItem(
+                      value: 'editor', child: Text('role_editor'.tr)),
+                  DropdownMenuItem(value: 'admin', child: Text('role_admin'.tr)),
                 ],
                 onChanged: (newRole) async {
                   if (newRole != null) {
@@ -264,11 +265,11 @@ class AdminPage extends GetView<AdminController> {
   String _getRoleDisplayName(String role) {
     switch (role.toLowerCase()) {
       case 'admin':
-        return 'Administrador';
+        return 'role_admin'.tr;
       case 'editor':
-        return 'Editor';
+        return 'role_editor'.tr;
       default:
-        return 'Usuário';
+        return 'role_user'.tr;
     }
   }
 
@@ -278,25 +279,25 @@ class AdminPage extends GetView<AdminController> {
       context: Get.context!,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.black87,
-        title: const Text(
-          'Confirmar Alteração',
+        title: Text(
+          'confirm_change'.tr,
           style: TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Alterar role de $email\nDe: ${_getRoleDisplayName(currentRole)}\nPara: ${_getRoleDisplayName(newRole)}',
+          '${'change_role_of'.tr} $email\n${'from_label'.tr}: ${_getRoleDisplayName(currentRole)}\n${'to_label'.tr}: ${_getRoleDisplayName(newRole)}',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child:
-                const Text('Cancelar', style: TextStyle(color: Colors.white70)),
+                Text('cancel'.tr, style: const TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
             child:
-                const Text('Confirmar', style: TextStyle(color: Colors.black)),
+                Text('confirm'.tr, style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),

@@ -130,7 +130,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Editar Notícia"),
+        title: Text('edit_news'.tr),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -182,7 +182,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       controller: _titleController,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: "Título",
+        labelText: 'title'.tr,
         labelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
@@ -195,7 +195,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "O título é obrigatório.";
+          return 'title_required'.tr;
         }
         return null;
       },
@@ -207,7 +207,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       controller: _subtitleController,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: "Subtítulo (opcional)",
+        labelText: 'subtitle_optional'.tr,
         labelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
@@ -231,8 +231,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione as Categorias",
+                title: Text(
+                  'select_categories'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -266,10 +266,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
             ),
             if (showCategoryError.value)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos uma categoria.",
+                  'select_at_least_one_category'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -287,8 +287,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione a Cidade",
+                title: Text(
+                  'select_city'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -322,10 +322,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
             ),
             if (showCityError.value)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos uma cidade.",
+                  'select_at_least_one_city'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -343,8 +343,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione o Tipo",
+                title: Text(
+                  'select_type'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -372,10 +372,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
             ),
             if (showTypeError.value)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos um tipo.",
+                  'select_at_least_one_type'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -395,8 +395,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
       child: ElevatedButton.icon(
         onPressed: () => _imageController.pickImage(),
         icon: const Icon(Icons.image),
-        label: const Text(
-          "Alterar Imagem",
+        label: Text(
+          'change_image'.tr,
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -404,8 +404,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
   }
 
   Widget _buildImageInfo() {
-    return const Text(
-      "A imagem deve estar no formato JPG ou JPEG e, preferencialmente, ter um tamanho máximo de 500 KB. Imagens maiores serão comprimidas, o que pode causar perda de qualidade e lentidão no carregamento. Para uma melhor visualização, recomenda-se o uso de imagens com orientação paisagem.",
+    return Text(
+      'image_requirements'.tr,
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
@@ -474,8 +474,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                   size: 26,
                   color: Colors.white,
                 )
-              : const Text(
-                  "Atualizar Notícia",
+                : Text(
+                  'update_news'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
         ));
@@ -533,7 +533,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
     if (!isFormValid) {
       PopUps.snackbar(
-        texto: 'Por favor, preencha todos os campos obrigatórios.',
+        texto: 'fill_required_fields'.tr,
         cor: Colors.red,
       );
       return;
@@ -563,7 +563,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
       if (result == "success") {
         PopUps.snackbar(
-          texto: 'Notícia atualizada com sucesso',
+          texto: 'news_updated_success'.tr,
           cor: Colors.green,
         );
 
@@ -579,7 +579,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       }
     } catch (e) {
       PopUps.snackbar(
-        texto: 'Erro inesperado: $e',
+        texto: '${'unexpected_error'.tr}: $e',
         cor: Colors.red,
       );
     }

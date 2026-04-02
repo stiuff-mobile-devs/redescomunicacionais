@@ -5,15 +5,13 @@ import 'package:redescomunicacionais/app/modules/news_revision/controller/news_r
 class NewsRevisionPage extends GetView<NewsRevisionController> {
   const NewsRevisionPage({super.key});
 
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-    appBar: AppBar(title: Text('NewsRevisionPage')),
-
-    body: SafeArea(
-      child: Text('NewsRevisionPageController'))
+      appBar: AppBar(title: Text('news_revision'.tr)),
+      body: SafeArea(
+        child: Text('news_revision_controller'.tr),
+      ),
     );
   }
 }

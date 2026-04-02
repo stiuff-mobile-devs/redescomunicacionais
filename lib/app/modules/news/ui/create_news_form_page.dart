@@ -12,7 +12,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Adicionar Matéria"),
+        title: Text('add_news'.tr),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -71,7 +71,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       controller: controller.titleController,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: "Título",
+        labelText: 'title'.tr,
         labelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
@@ -84,7 +84,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "O título é obrigatório.";
+          return 'title_required'.tr;
         }
         return null;
       },
@@ -96,7 +96,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       controller: controller.subtitleController,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: "Subtítulo (opcional)",
+        labelText: 'subtitle_optional'.tr,
         labelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
@@ -120,8 +120,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione as Categorias",
+                title: Text(
+                  'select_categories'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -149,10 +149,10 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               ),
             ),
             if (controller.showCategoryError)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos uma categoria.",
+                  'select_at_least_one_category'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -170,8 +170,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione a Cidade",
+                title: Text(
+                  'select_city'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -199,10 +199,10 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               ),
             ),
             if (controller.showCityError)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos uma cidade.",
+                  'select_at_least_one_city'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -220,8 +220,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione o Tipo",
+                title: Text(
+                  'select_type'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -249,10 +249,10 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               ),
             ),
             if (controller.showTypeError)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos um tipo.",
+                  'select_at_least_one_type'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -268,7 +268,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           controller: controller.videoUrlController,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            labelText: "URL do YouTube (opcional)",
+            labelText: 'youtube_url_optional'.tr,
             labelStyle: const TextStyle(color: Colors.white),
             hintText: "https://www.youtube.com/watch?v=...",
             hintStyle: const TextStyle(color: Colors.white54),
@@ -292,8 +292,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          "Cole aqui um link do vídeo do YouTube",
+        Text(
+          'paste_youtube_link_here'.tr,
           style: TextStyle(
             color: Colors.white70,
             fontSize: 12,
@@ -314,8 +314,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       child: ElevatedButton.icon(
         onPressed: () => controller.imageController.pickImage(),
         icon: const Icon(Icons.image),
-        label: const Text(
-          "Adicionar Imagem",
+        label: Text(
+          'add_image'.tr,
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -323,8 +323,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   }
 
   Widget _buildImageInfo() {
-    return const Text(
-      "A imagem deve estar no formato JPG ou JPEG e, preferencialmente, ter um tamanho máximo de 500 KB. Imagens maiores serão comprimidas, o que pode causar perda de qualidade e lentidão no carregamento. Para uma melhor visualização, recomenda-se o uso de imagens com orientação paisagem.",
+    return Text(
+      'image_requirements'.tr,
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
@@ -369,8 +369,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         minimumSize: const Size(double.infinity, 50),
         backgroundColor: Colors.blue,
       ),
-      child: const Text(
-        "Publicar Matéria",
+      child: Text(
+        'publish_news'.tr,
         style: TextStyle(color: Colors.white),
       ),
     );

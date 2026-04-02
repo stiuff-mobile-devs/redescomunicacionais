@@ -16,7 +16,7 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
         centerTitle: true,
         elevation: 8,
         foregroundColor: Colors.white,
-        title: const Text("Central de Comunicação"),
+        title: Text('communication_center'.tr),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
         ),
@@ -42,10 +42,10 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
                       child: Text(
-                        'Chats',
+                        'chats'.tr,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 28,
@@ -73,7 +73,7 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                                     mode: LaunchMode.externalApplication);
                               } else {
                                 PopUps.snackbar(
-                                  texto: 'Não foi possível abrir o chat.',
+                                  texto: 'could_not_open_chat'.tr,
                                   cor: Colors.red,
                                 );
                               }

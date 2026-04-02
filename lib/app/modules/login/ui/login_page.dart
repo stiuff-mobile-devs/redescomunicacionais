@@ -112,7 +112,7 @@ class LoginPage extends GetView<LoginController> {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      "Redes Comunicacionais\nLocais",
+                      'app_name_multiline'.tr,
                       style: TextStyle(
                         fontSize: titleFontSize,
                         color: Colors.white,
@@ -145,7 +145,7 @@ class LoginPage extends GetView<LoginController> {
                 // Versão
                 Obx(
                   () => Text(
-                    "Versão: ${controller.appVersion.value}",
+                    '${'version_label'.tr}: ${controller.appVersion.value}',
                     style: TextStyle(
                       fontSize: versionFontSize,
                       color: Colors.white.withOpacity(0.8),
@@ -211,7 +211,7 @@ class LoginPage extends GetView<LoginController> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  "Redes Comunicacionais Locais",
+                  'app_name_full'.tr,
                   style: TextStyle(
                     fontSize: titleFontSize,
                     color: Colors.white,
@@ -275,7 +275,7 @@ class LoginPage extends GetView<LoginController> {
               ),
               child: Obx(
                 () => Text(
-                  "Versão: ${controller.appVersion.value}",
+                  '${'version_label'.tr}: ${controller.appVersion.value}',
                   style: TextStyle(
                     fontSize: versionFontSize,
                     color: Colors.white.withOpacity(0.8),
@@ -311,7 +311,7 @@ class LoginPage extends GetView<LoginController> {
         alignment: WrapAlignment.center,
         children: [
           _buildLoginCardButton(
-            label: 'Entrar com Google',
+            label: 'login_with_google'.tr,
             iconData: FontAwesomeIcons.google,
             badgeColor: Colors.white,
             iconColor: const Color(0xFFEA4335),
@@ -320,7 +320,7 @@ class LoginPage extends GetView<LoginController> {
             height: gridButtonHeight,
           ),
           _buildLoginCardButton(
-            label: 'Entrar com Microsoft',
+            label: 'login_with_microsoft'.tr,
             iconData: FontAwesomeIcons.microsoft,
             badgeColor: Colors.white,
             iconColor: const Color(0xFF00A4EF),
@@ -329,7 +329,7 @@ class LoginPage extends GetView<LoginController> {
             height: gridButtonHeight,
           ),
           _buildLoginCardButton(
-            label: 'Entrar com Apple',
+            label: 'login_with_apple'.tr,
             badgeColor: Colors.white,
             iconData: FontAwesomeIcons.apple,
             iconColor: Colors.black,
@@ -338,7 +338,7 @@ class LoginPage extends GetView<LoginController> {
             height: gridButtonHeight,
           ),
           _buildLoginCardButton(
-            label: 'Entrar anonimamente',
+            label: 'login_anonymously'.tr,
             badgeColor: Colors.white,
             iconData: FontAwesomeIcons.userSecret,
             iconColor: Colors.black,

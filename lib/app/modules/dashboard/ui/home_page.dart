@@ -45,8 +45,8 @@ class HomePage extends GetView<HomeController> {
                       controller.minutesSinceLastOnline.value,
                 );
                 final titleText = controller.isRevisionMode.value
-                    ? "Revisão de Matérias"
-                    : "RCL";
+                  ? 'news_review'.tr
+                  : 'app_short_name'.tr;
 
                 return Row(
                   children: [
@@ -94,7 +94,7 @@ class HomePage extends GetView<HomeController> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            'Última vez online: ${_onlineTimeLabel(controller.minutesSinceLastOnline.value)}',
+                            '${'last_online'.tr}: ${_onlineTimeLabel(controller.minutesSinceLastOnline.value)}',
                             style: TextStyle(
                               fontSize: isTablet ? 11.0 : 10.0,
                               color: Colors.white70,
@@ -149,11 +149,11 @@ class HomePage extends GetView<HomeController> {
                         TextEditingController searchController =
                             TextEditingController();
                         return AlertDialog(
-                          title: const Text('Filtrar Notícias'),
+                          title: Text('filter_news'.tr),
                           content: TextField(
                             controller: searchController,
-                            decoration: const InputDecoration(
-                              hintText: 'Digite o nome da notícia',
+                            decoration: InputDecoration(
+                              hintText: 'enter_news_name'.tr,
                             ),
                           ),
                           actions: [
@@ -161,7 +161,7 @@ class HomePage extends GetView<HomeController> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text('Cancelar'),
+                              child: Text('cancel'.tr),
                             ),
                             TextButton(
                               onPressed: () {
@@ -169,7 +169,7 @@ class HomePage extends GetView<HomeController> {
                                     .filterNewsByName(searchController.text);
                                 Navigator.of(context).pop();
                               },
-                              child: const Text('Filtrar'),
+                              child: Text('filter'.tr),
                             ),
                           ],
                         );
@@ -281,8 +281,8 @@ class HomePage extends GetView<HomeController> {
                   ),
                   child: Obx(() => Text(
                         controller.isRevisionMode.value
-                            ? "Revisão de Matérias"
-                            : "Redes Comunicacionais Locais",
+                          ? 'news_review'.tr
+                          : 'app_name_full'.tr,
                         style: TextStyle(
                           fontSize: isTablet ? 16.0 : 14.0,
                           fontWeight: FontWeight.bold,
@@ -326,7 +326,7 @@ class HomePage extends GetView<HomeController> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  controller.user.name ?? 'Usuário RCL',
+                                  controller.user.name ?? 'rcl_user'.tr,
                                   style: TextStyle(
                                     fontSize: isTablet ? 12.0 : 10.0,
                                     color: Colors.white,
@@ -371,7 +371,7 @@ class HomePage extends GetView<HomeController> {
                         // Ajuda
                         _buildMenuTile(
                           icon: Icons.help_outline,
-                          title: "Ajuda",
+                          title: 'help'.tr,
                           onTap: () => controller.goUserGuide(),
                           iconSize: iconSize,
                           isTablet: isTablet,
@@ -380,7 +380,7 @@ class HomePage extends GetView<HomeController> {
                         // Filtrar Notícias
                         _buildMenuTile(
                           icon: Icons.search,
-                          title: "Filtrar Notícias",
+                          title: 'filter_news'.tr,
                           onTap: () {
                             showDialog(
                               context: context,
@@ -388,11 +388,11 @@ class HomePage extends GetView<HomeController> {
                                 TextEditingController searchController =
                                     TextEditingController();
                                 return AlertDialog(
-                                  title: const Text('Filtrar Notícias'),
+                                  title: Text('filter_news'.tr),
                                   content: TextField(
                                     controller: searchController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Digite o nome da notícia',
+                                    decoration: InputDecoration(
+                                      hintText: 'enter_news_name'.tr,
                                     ),
                                   ),
                                   actions: [
@@ -400,7 +400,7 @@ class HomePage extends GetView<HomeController> {
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                       },
-                                      child: const Text('Cancelar'),
+                                      child: Text('cancel'.tr),
                                     ),
                                     TextButton(
                                       onPressed: () {
@@ -408,7 +408,7 @@ class HomePage extends GetView<HomeController> {
                                             searchController.text);
                                         Navigator.of(context).pop();
                                       },
-                                      child: const Text('Filtrar'),
+                                      child: Text('filter'.tr),
                                     ),
                                   ],
                                 );
@@ -434,7 +434,7 @@ class HomePage extends GetView<HomeController> {
                                     controller.userController.isEditor.value
                                 ? Icons.article_outlined
                                 : Icons.lock_outline,
-                            title: "Criar Matéria",
+                            title: 'Criar Matéria'.tr,
                             onTap: (controller.userController.isAdmin.value ||
                                     controller.userController.isEditor.value)
                                 ? () => Get.toNamed(Routes.CREATE_NEWS)
@@ -457,7 +457,7 @@ class HomePage extends GetView<HomeController> {
                             icon: controller.userController.isAdmin.value
                                 ? Icons.person_outline
                                 : Icons.lock_outline,
-                            title: "Admin",
+                            title: 'Admin'.tr,
                             onTap: controller.userController.isAdmin.value
                                 ? () => Get.toNamed(Routes.ADMIN)
                                 : null,
@@ -478,7 +478,7 @@ class HomePage extends GetView<HomeController> {
                         // Sobre
                         _buildMenuTile(
                           icon: Icons.info_outline,
-                          title: "Sobre",
+                          title: 'Sobre'.tr,
                           onTap: () => _showAboutDialog(context),
                           iconSize: iconSize,
                           isTablet: isTablet,
@@ -486,7 +486,7 @@ class HomePage extends GetView<HomeController> {
 
                         _buildMenuTile(
                           icon: Icons.person_outline,
-                          title: "Seus Dados",
+                          title: 'Seus Dados'.tr,
                           onTap: () => Get.toNamed(Routes.USER),
                           iconSize: iconSize,
                           isTablet: isTablet,
@@ -496,7 +496,7 @@ class HomePage extends GetView<HomeController> {
                         _buildMenuTile(
                           icon:
                               isAnonymousUser ? Icons.login : Icons.exit_to_app,
-                          title: isAnonymousUser ? "Entrar" : "Sair",
+                          title: isAnonymousUser ? 'Entrar'.tr : 'Sair'.tr,
                           onTap: () => LoginController().logout(),
                           iconSize: iconSize,
                           isTablet: isTablet,
@@ -607,35 +607,35 @@ class HomePage extends GetView<HomeController> {
     required int minutesSinceLastOnline,
   }) {
     if (!isOnline) {
-      return const _OnlineStatus(
+      return _OnlineStatus(
         color: Colors.red,
-        label: 'Offline',
+        label: 'offline'.tr,
       );
     }
 
     if (minutesSinceLastOnline <= 5) {
-      return const _OnlineStatus(
+      return _OnlineStatus(
         color: Colors.green,
-        label: 'Conexão recente',
+        label: 'recent_connection'.tr,
       );
     }
 
     if (minutesSinceLastOnline <= 15) {
-      return const _OnlineStatus(
+      return _OnlineStatus(
         color: Colors.amber,
-        label: 'Conexão moderada',
+        label: 'moderate_connection'.tr,
       );
     }
 
-    return const _OnlineStatus(
+    return _OnlineStatus(
       color: Colors.red,
-      label: 'Conexão desatualizada',
+      label: 'outdated_connection'.tr,
     );
   }
 
   String _onlineTimeLabel(int minutesSinceLastOnline) {
     if (minutesSinceLastOnline <= 0) {
-      return 'agora';
+      return 'now'.tr;
     }
 
     return '$minutesSinceLastOnline min';
@@ -667,9 +667,9 @@ class HomePage extends GetView<HomeController> {
             children: [
               Icon(Icons.wifi_rounded, color: status.color),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Status de Conexão',
+                  'connection_status'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -680,12 +680,12 @@ class HomePage extends GetView<HomeController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Última vez online: ${_onlineTimeLabel(minutesSinceLastOnline)}',
+                '${'last_online'.tr}: ${_onlineTimeLabel(minutesSinceLastOnline)}',
                 style: const TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 8),
               Text(
-                'Status atual: ${status.label}',
+                '${'current_status'.tr}: ${status.label}',
                 style: TextStyle(
                   color: status.color,
                   fontWeight: FontWeight.bold,
@@ -693,29 +693,29 @@ class HomePage extends GetView<HomeController> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Tipo de rede: ${controller.connectionTypeLabel.value}',
+                '${'network_type'.tr}: ${controller.connectionTypeLabel.value}',
                 style: const TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 4),
               Text(
-                'Última checagem: $lastCheckLabel',
+                '${'last_check'.tr}: $lastCheckLabel',
                 style: const TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 14),
-              const Text(
-                'Faixas:',
+              Text(
+                'ranges'.tr,
                 style: TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 6),
-              const Text('0-5 min: verde',
+                Text('0-5 min: verde'.tr,
                   style: TextStyle(color: Colors.green)),
-              const Text('6-15 min: amarelo',
+                Text('6-15 min: amarelo'.tr,
                   style: TextStyle(color: Colors.amber)),
-              const Text('> 15 min: vermelho',
+                Text('> 15 min: vermelho'.tr,
                   style: TextStyle(color: Colors.red)),
               const SizedBox(height: 10),
-              const Text(
-                'A conexão real é verificada automaticamente a cada 5 minutos.',
+              Text(
+                'real_connection_checked_every_5_min'.tr,
                 style: TextStyle(color: Colors.white54, fontSize: 12),
               ),
             ],
@@ -724,7 +724,7 @@ class HomePage extends GetView<HomeController> {
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child:
-                  const Text('Fechar', style: TextStyle(color: Colors.white)),
+                  Text('close'.tr, style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -738,8 +738,8 @@ class HomePage extends GetView<HomeController> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.black,
-          title: const Text(
-            'Sobre',
+          title: Text(
+            'Sobre'.tr,
             style: TextStyle(color: Colors.white),
           ),
           content: Column(
@@ -747,8 +747,8 @@ class HomePage extends GetView<HomeController> {
             children: [
               ListTile(
                 leading: const Icon(Icons.info, color: Colors.blue),
-                title: const Text(
-                  'Quem Somos?',
+                title: Text(
+                  'Quem Somos?'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 onTap: () {
@@ -758,8 +758,8 @@ class HomePage extends GetView<HomeController> {
               ),
               ListTile(
                 leading: const Icon(Icons.book, color: Colors.blue),
-                title: const Text(
-                  'Guia do Usuário',
+                title: Text(
+                  'Guia do Usuário'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 onTap: () {
@@ -769,8 +769,8 @@ class HomePage extends GetView<HomeController> {
               ),
               ListTile(
                 leading: const Icon(Icons.help, color: Colors.blue),
-                title: const Text(
-                  'Perguntas Frequentes',
+                title: Text(
+                  'Perguntas Frequentes'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 onTap: () {
@@ -782,7 +782,7 @@ class HomePage extends GetView<HomeController> {
               Center(
                 child: Obx(
                   () => Text(
-                    'Versão: ${controller.appVersion.value}',
+                    '${'version_label'.tr}: ${controller.appVersion.value}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,

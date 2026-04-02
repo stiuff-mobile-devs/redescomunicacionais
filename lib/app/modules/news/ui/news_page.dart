@@ -92,7 +92,7 @@ class _NewsPageState extends State<NewsPage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          "$type completa",
+          '${'full_type'.tr} $type',
           style: TextStyle(
             color: Colors.white,
             fontSize: ResponsiveUtils.calculateAppBarTitleSize(
@@ -250,7 +250,7 @@ class _NewsPageState extends State<NewsPage> {
                           ),
                           SizedBox(width: isTablet ? 8 : 6),
                           Text(
-                            "Informações da $type",
+                            '${'info_of'.tr} $type',
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: isTablet ? 16 : 14,
@@ -317,7 +317,7 @@ class _NewsPageState extends State<NewsPage> {
                   // Título da seção do conteúdo
                   Container(
                     child: Text(
-                      "Conteúdo da $type",
+                      '${'content_of'.tr} $type',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: isTablet ? 24 : 20,
@@ -526,7 +526,7 @@ class _NewsPageState extends State<NewsPage> {
                   ),
                   SizedBox(width: isTablet ? 8 : 6),
                   Text(
-                    "Informações da $type",
+                    '${'info_of'.tr} $type',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: isTablet ? 16 : 14,
@@ -685,7 +685,7 @@ class _NewsPageState extends State<NewsPage> {
         // Primeira linha: Autor
         _buildInfoItem(
           icon: Icons.person_outline,
-          label: "Autor",
+          label: 'author'.tr,
           value: autor,
           isTablet: isTablet,
         ),
@@ -694,7 +694,7 @@ class _NewsPageState extends State<NewsPage> {
         // Segunda linha: Data
         _buildInfoItem(
           icon: Icons.schedule,
-          label: "Data",
+          label: 'date'.tr,
           value: formatData(dataCriacao),
           isTablet: isTablet,
         ),
@@ -703,7 +703,7 @@ class _NewsPageState extends State<NewsPage> {
         // Terceira linha: Cidade
         _buildInfoItem(
           icon: Icons.location_city,
-          label: "Cidade",
+          label: 'city'.tr,
           value: cidade,
           isTablet: isTablet,
         ),
@@ -712,14 +712,14 @@ class _NewsPageState extends State<NewsPage> {
         // Quarta linha: Tipo
         _buildInfoItem(
           icon: Icons.category,
-          label: "Tipo",
+          label: 'type'.tr,
           value: type,
           isTablet: isTablet,
         ),
         SizedBox(height: isTablet ? 12 : 10),
         _buildInfoItem(
           icon: Icons.category,
-          label: "Tipo",
+          label: 'type'.tr,
           value: type,
           isTablet: isTablet,
         ),
@@ -753,7 +753,7 @@ class _NewsPageState extends State<NewsPage> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.person_outline,
-                label: "Autor",
+                label: 'author'.tr,
                 value: autor,
                 isTablet: isTablet,
               ),
@@ -762,7 +762,7 @@ class _NewsPageState extends State<NewsPage> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.schedule,
-                label: "Data",
+                label: 'date'.tr,
                 value: formatData(dataCriacao),
                 isTablet: isTablet,
               ),
@@ -777,7 +777,7 @@ class _NewsPageState extends State<NewsPage> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.location_city,
-                label: "Cidade",
+                label: 'city'.tr,
                 value: cidade,
                 isTablet: isTablet,
               ),
@@ -786,7 +786,7 @@ class _NewsPageState extends State<NewsPage> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.category,
-                label: "Tipo",
+                label: 'type'.tr,
                 value: type,
                 isTablet: isTablet,
               ),
@@ -803,7 +803,7 @@ class _NewsPageState extends State<NewsPage> {
             Expanded(
               child: _buildInfoItem(
                   icon: Icons.supervisor_account,
-                  label: 'Revisor',
+                  label: 'reviewer'.tr,
                   value: validateBy,
                   isTablet: isTablet),
             )
@@ -893,7 +893,7 @@ class _NewsPageState extends State<NewsPage> {
               ),
               SizedBox(width: isTablet ? 6 : 4),
               Text(
-                "Categoria${categorias.length > 1 ? 's' : ''}",
+                categorias.length > 1 ? 'categories'.tr : 'category'.tr,
                 style: TextStyle(
                   color: Colors.white60,
                   fontSize: isTablet ? 12 : 10,
@@ -983,10 +983,10 @@ class _NewsPageState extends State<NewsPage> {
       builder: (context) {
         return ResponsiveUtils.createResponsiveDialog(
           context: context,
-          title: "Todas as Categorias",
+          title: 'all_categories'.tr,
           content: categorias.join(", "),
           onConfirm: () => Navigator.of(context).pop(),
-          confirmText: "Fechar",
+          confirmText: 'close'.tr,
         );
       },
     );
