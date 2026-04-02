@@ -270,7 +270,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           decoration: InputDecoration(
             labelText: 'youtube_url_optional'.tr,
             labelStyle: const TextStyle(color: Colors.white),
-            hintText: "https://www.youtube.com/watch?v=...",
+            hintText: 'youtube_url_placeholder'.tr,
             hintStyle: const TextStyle(color: Colors.white54),
             prefixIcon: const Icon(Icons.video_library, color: Colors.white),
             enabledBorder: OutlineInputBorder(

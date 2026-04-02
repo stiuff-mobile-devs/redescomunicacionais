@@ -18,27 +18,26 @@ class ImageBase64Service extends GetxController {
         await picker.pickImage(source: ImageSource.gallery);
 
     if (imageFile == null) {
-      _message.value = "Nenhuma imagem selecionada.";
+      _message.value = 'no_image_selected'.tr;
       return;
     }
 
     _base64String.value = null;
-    _message.value =
-        "Processando sua imagem... Isso pode levar alguns segundos.";
+    _message.value = 'processing_image_message'.tr;
 
     // MUDANÇA: Verificar tipo MIME em vez da extensão do arquivo
     String? mimeType = imageFile.mimeType;
     if (mimeType != null) {
       // Verificar pelo tipo MIME
       if (mimeType != 'image/jpeg' && mimeType != 'image/jpg') {
-        _message.value = "A imagem deve ser no formato JPG ou JPEG.";
+        _message.value = 'image_format_invalid'.tr;
         return;
       }
     } else {
       // Fallback: verificar extensão (para compatibilidade)
       String fileName = imageFile.name.toLowerCase();
       if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg')) {
-        _message.value = "A imagem deve ser no formato JPG ou JPEG.";
+        _message.value = 'image_format_invalid'.tr;
         return;
       }
     }
@@ -46,13 +45,13 @@ class ImageBase64Service extends GetxController {
     Uint8List imageBytes = await imageFile.readAsBytes();
     if (imageBytes.lengthInBytes <= maxSizeBytes) {
       _base64String.value = base64Encode(imageBytes);
-      _message.value = "Imagem selecionada com sucesso!";
+      _message.value = 'image_selected_success'.tr;
       return;
     }
 
     img.Image? image = img.decodeImage(imageBytes);
     if (image == null) {
-      _message.value = "Erro ao processar a imagem.";
+      _message.value = 'error_processing_image'.tr;
       return;
     }
 
@@ -60,11 +59,10 @@ class ImageBase64Service extends GetxController {
         Uint8List.fromList(img.encodeJpg(image, quality: 10));
 
     if (compressedImage.lengthInBytes > maxSizeBytes) {
-      _message.value = "A imagem ainda é muito grande!";
+      _message.value = 'image_too_large'.tr;
     } else {
       _base64String.value = base64Encode(compressedImage);
-      _message.value =
-          "A imagem ultrapassou o limite de 500KB e foi comprimida. Esse processo pode resultar em perda de qualidade na imagem.";
+      _message.value = 'image_compressed'.tr;
     }
   }
 }

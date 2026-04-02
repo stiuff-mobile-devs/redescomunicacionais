@@ -98,7 +98,7 @@ class YouTubeMiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(
+    Get.put(
       YouTubeController(
         videoUrl: videoUrl,
         autoPlay: autoPlay,
@@ -120,10 +120,10 @@ class YouTubeMiniPlayer extends StatelessWidget {
               color: Colors.grey[800],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'URL do YouTube inválida',
-                style: TextStyle(color: Colors.white),
+                'invalid_youtube_url'.tr,
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           );
@@ -176,7 +176,7 @@ class YouTubeMiniPlayer extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.open_in_new),
-              label: const Text('Assistir no YouTube'),
+              label: Text('watch_on_youtube'.tr),
               onPressed: () async {
                 final url =
                     'https://www.youtube.com/watch?v=${controller.videoId}';
