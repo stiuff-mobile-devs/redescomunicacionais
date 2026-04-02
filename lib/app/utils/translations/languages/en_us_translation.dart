@@ -153,4 +153,5 @@ final Map<String, String> enUsTranslation = {
   'youtube_url_placeholder': 'https://www.youtube.com/watch?v=...',
   'processing_image_message': 'Processing your image... This may take a few seconds.',
   'invalid_youtube_url': 'Invalid YouTube URL',
+  'crop_image_title': 'Edit image',
 };

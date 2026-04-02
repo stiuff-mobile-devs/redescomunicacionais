@@ -153,4 +153,5 @@ final Map<String, String> itItTranslation = {
   'youtube_url_placeholder': 'https://www.youtube.com/watch?v=...',
   'processing_image_message': 'Elaborazione della tua immagine... Questo puo richiedere alcuni secondi.',
   'invalid_youtube_url': 'URL YouTube non valido',
+  'crop_image_title': 'Modifica immagine',
 };

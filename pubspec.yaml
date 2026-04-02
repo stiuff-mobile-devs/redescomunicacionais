@@ -50,6 +50,7 @@ dependencies:
   flutter_markdown: ^0.7.6
   flutter_quill: ^11.4.2
   image_picker: ^1.1.2
+  image_cropper: 12.1.1
   image: ^4.5.4
   intl: ^0.20.2
   package_info_plus: ^8.3.0

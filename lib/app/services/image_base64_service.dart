@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_cropper/image_cropper.dart';
 
 class ImageBase64Service extends GetxController {
   final RxnString _base64String = RxnString();
@@ -42,7 +44,35 @@ class ImageBase64Service extends GetxController {
       }
     }
 
-    Uint8List imageBytes = await imageFile.readAsBytes();
+    final CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 85,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'crop_image_title'.tr,
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(
+          title: 'crop_image_title'.tr,
+          aspectRatioLockEnabled: false,
+          resetAspectRatioEnabled: true,
+        ),
+      ],
+    );
+
+    if (croppedFile == null) {
+      _message.value = 'no_image_selected'.tr;
+      return;
+    }
+
+    Uint8List imageBytes = await croppedFile.readAsBytes();
     if (imageBytes.lengthInBytes <= maxSizeBytes) {
       _base64String.value = base64Encode(imageBytes);
       _message.value = 'image_selected_success'.tr;

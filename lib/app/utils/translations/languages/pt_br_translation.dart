@@ -153,4 +153,5 @@ final Map<String, String> ptBrTranslation = {
   'youtube_url_placeholder': 'https://www.youtube.com/watch?v=...',
   'processing_image_message': 'Processando sua imagem... Isso pode levar alguns segundos.',
   'invalid_youtube_url': 'URL do YouTube invalida',
+  'crop_image_title': 'Editar imagem',
 };

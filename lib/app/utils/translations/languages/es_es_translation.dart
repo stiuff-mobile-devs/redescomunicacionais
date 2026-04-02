@@ -153,4 +153,5 @@ final Map<String, String> esEsTranslation = {
   'youtube_url_placeholder': 'https://www.youtube.com/watch?v=...',
   'processing_image_message': 'Procesando tu imagen... Esto puede tomar algunos segundos.',
   'invalid_youtube_url': 'URL de YouTube invalida',
+  'crop_image_title': 'Editar imagen',
 };
