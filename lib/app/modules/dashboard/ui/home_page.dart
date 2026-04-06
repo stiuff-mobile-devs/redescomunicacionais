@@ -45,8 +45,10 @@ class HomePage extends GetView<HomeController> {
                       controller.minutesSinceLastOnline.value,
                 );
                 final titleText = controller.isRevisionMode.value
-                  ? 'news_review'.tr
-                  : 'app_short_name'.tr;
+                    ? 'news_review'.tr
+                    : controller.isDraftMode.value
+                        ? 'Meus Rascunhos'.tr
+                        : 'app_short_name'.tr;
 
                 return Row(
                   children: [
@@ -123,10 +125,12 @@ class HomePage extends GetView<HomeController> {
               ),
               toolbarHeight: isTablet ? 82.0 : 74.0,
               actions: [
-                Obx(() => controller.isRevisionMode.value
+                Obx(() => controller.isRevisionMode.value ||
+                        controller.isDraftMode.value
                     ? IconButton(
                         onPressed: () {
                           controller.isRevisionMode.value = false;
+                          controller.isDraftMode.value = false;
                         },
                         icon:
                             const Icon(Icons.arrow_back, color: Colors.orange),
@@ -280,9 +284,11 @@ class HomePage extends GetView<HomeController> {
                     horizontal: isTablet ? 15.0 : 10.0,
                   ),
                   child: Obx(() => Text(
-                        controller.isRevisionMode.value
-                          ? 'news_review'.tr
-                          : 'app_name_full'.tr,
+                          controller.isRevisionMode.value
+                              ? 'news_review'.tr
+                              : controller.isDraftMode.value
+                                  ? 'Meus Rascunhos'.tr
+                                  : 'app_name_full'.tr,
                         style: TextStyle(
                           fontSize: isTablet ? 16.0 : 14.0,
                           fontWeight: FontWeight.bold,
@@ -543,6 +549,7 @@ class HomePage extends GetView<HomeController> {
             child: NewsWindowsPage(
               key: ValueKey(controller.recreateKey),
               isRevisionMode: controller.isRevisionMode,
+              isDraftMode: controller.isDraftMode,
             ),
           ),
         ],
@@ -563,6 +570,7 @@ class HomePage extends GetView<HomeController> {
       child: NewsWindowsPage(
         key: ValueKey(controller.recreateKey),
         isRevisionMode: controller.isRevisionMode,
+        isDraftMode: controller.isDraftMode,
       ),
     );
   }

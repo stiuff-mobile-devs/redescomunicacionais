@@ -363,16 +363,62 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   }
 
   Widget _buildPublishButton(CreateNewsFormController controller) {
-    return ElevatedButton(
-      onPressed: controller.validateAndPublish,
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
-        backgroundColor: Colors.blue,
-      ),
-      child: Text(
-        'publish_news'.tr,
-        style: TextStyle(color: Colors.white),
-      ),
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => controller.validateAndPublish(true),
+            icon: const Icon(Icons.save_outlined, color: Colors.white),
+            label: Text(
+              'save_draft_news'.tr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 52),
+              side: const BorderSide(color: Colors.white70, width: 1.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x663B82F6),
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () => controller.validateAndPublish(false),
+              icon: const Icon(Icons.rocket_launch, color: Colors.white),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 52),
+                backgroundColor: const Color(0xFF2563EB),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              label: Text(
+                'publish_news'.tr,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

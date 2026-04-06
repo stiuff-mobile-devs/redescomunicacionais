@@ -64,6 +64,7 @@ final Map<String, String> enUsTranslation = {
   'change_image': 'Change image',
   'image_requirements': 'The image must be in JPG or JPEG format and preferably have a maximum size of 500 KB. Larger images will be compressed, which can reduce quality and slow loading. For best visualization, landscape-oriented images are recommended.',
   'publish_news': 'Publish news',
+  'save_draft_news': 'Save draft',
   'update_news': 'Update news',
   'fill_required_fields': 'Please fill in all required fields.',
   'news_updated_success': 'News updated successfully',

@@ -27,6 +27,8 @@ class HomeController extends GetxController {
 
   RxBool isLoadingLocation = false.obs;
   RxBool isRevisionMode = false.obs;
+  RxBool isDraftMode = false.obs;
+  RxBool isMyDraftsMode = false.obs;
   final RxBool isOnline = false.obs;
 
   final Rxn<DateTime> lastConnectivityCheckAt = Rxn<DateTime>();

@@ -146,6 +146,7 @@ class MenuPage extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   _homeController.isRevisionMode.value = true;
+                  _homeController.isDraftMode.value = false;
                 },
               );
             } else {
@@ -153,6 +154,32 @@ class MenuPage extends StatelessWidget {
                 leading: Icon(Icons.reviews_outlined, color: Colors.red),
                 title: Text(
                   'Matérias para Revisão'.tr,
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+          }),
+          Obx(() {
+            _userController.loadUserRole(_homeController.user.id);
+            if (_userController.isEditor.value ||
+                _userController.isAdmin.value) {
+              return ListTile(
+                leading: const Icon(Icons.drafts_outlined, color: Colors.white),
+                title: Text(
+                  'Meus Rascunhos'.tr,
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _homeController.isDraftMode.value = true;
+                  _homeController.isRevisionMode.value = false;
+                },
+              );
+            } else {
+              return ListTile(
+                leading: Icon(Icons.drafts_outlined, color: Colors.red),
+                title: Text(
+                  'Meus Rascunhos'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
               );

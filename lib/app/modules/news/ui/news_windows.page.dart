@@ -9,10 +9,15 @@ import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart'; // Par
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class NewsWindowsPage extends GetView<NewsController> {
-  NewsWindowsPage({super.key, RxBool? isRevisionMode})
-      : isRevisionMode = isRevisionMode ?? false.obs;
+  NewsWindowsPage({
+    super.key,
+    RxBool? isRevisionMode,
+    RxBool? isDraftMode,
+  })  : isRevisionMode = isRevisionMode ?? false.obs,
+        isDraftMode = isDraftMode ?? false.obs;
 
   final RxBool isRevisionMode;
+  final RxBool isDraftMode;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +46,9 @@ class NewsWindowsPage extends GetView<NewsController> {
             }
             // Filtra notícias válidas com base no modo de revisão
             final validNews = isRevisionMode.value
-                ? controller.getInAnalysis()
+              ? controller.getInAnalysis()
+              : isDraftMode.value
+                ? controller.getMyDrafts()
                 : controller.getValidNews();
 
             if (validNews.isEmpty) {

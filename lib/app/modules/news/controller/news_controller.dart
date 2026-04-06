@@ -184,6 +184,21 @@ class NewsController extends GetxController {
     }).toList();
   }
 
+  List<dynamic> getMyDrafts() {
+    return newss.where((news) {
+      if (news.status != NewsStates.rascunho) return false;
+      if (news.createdBy != user.email) return false;
+      try {
+        if (news.urlImages[0] != "") {
+          base64Decode(news.urlImages[0]);
+        }
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }).toList();
+  }
+
   // Prepara o map de argumentos usado nas rotas de detalhe
   Map<String, dynamic> toNewsArguments(NewsModel news) {
     return {

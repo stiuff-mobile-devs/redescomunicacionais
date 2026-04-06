@@ -64,6 +64,7 @@ final Map<String, String> itItTranslation = {
   'change_image': 'Cambia immagine',
   'image_requirements': 'L immagine deve essere in formato JPG o JPEG e preferibilmente avere una dimensione massima di 500 KB. Immagini piu grandi saranno compresse, con possibile perdita di qualita e rallentamento del caricamento. Per una migliore visualizzazione, si consiglia l uso di immagini in orientamento orizzontale.',
   'publish_news': 'Pubblica notizia',
+  'save_draft_news': 'Salva bozza',
   'update_news': 'Aggiorna notizia',
   'fill_required_fields': 'Compila tutti i campi obbligatori.',
   'news_updated_success': 'Notizia aggiornata con successo',

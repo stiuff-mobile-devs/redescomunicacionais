@@ -126,7 +126,11 @@ class CreateNewsFormController extends GetxController {
   }
 
   // Validação e publicação
-  Future<void> validateAndPublish() async {
+  Future<void> validateAndPublish(bool draft) async {
+    if (draft) {
+      await _publishNews(draft);
+      return;
+    }
     // Reset de erros
     _showCategoryError.value = _selectedCategories.isEmpty;
     _showCityError.value = _selectedCities.isEmpty;
@@ -136,7 +140,7 @@ class CreateNewsFormController extends GetxController {
         _selectedCategories.isNotEmpty &&
         _selectedCities.isNotEmpty &&
         _type.value != null) {
-      await _publishNews();
+      await _publishNews(draft);
     } else {
       PopUps.snackbar(
         texto: 'Por favor, preencha todos os campos obrigatórios.',
@@ -145,7 +149,7 @@ class CreateNewsFormController extends GetxController {
     }
   }
 
-  Future<void> _publishNews() async {
+  Future<void> _publishNews(bool draft) async {
     final String title = _titleController.text;
     final String subtitle = _subtitleController.text;
     final String body = _getBodyText();
@@ -154,6 +158,8 @@ class CreateNewsFormController extends GetxController {
     final String email = _homeController.user.email;
     final String createdAt = DateTime.now().toString();
     final String videoUrl = _videoUrlController.text;
+
+    final String newsState = draft ? NewsStates.rascunho : NewsStates.emAnalise;
 
     try {
       await _newsController.addNews(
@@ -167,7 +173,7 @@ class CreateNewsFormController extends GetxController {
         email,
         createdAt,
         _type.value ?? '',
-        NewsStates.emAnalise,
+        newsState,
         videoUrl,
       );
       PopUps.snackbar(

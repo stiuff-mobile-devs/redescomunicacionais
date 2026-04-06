@@ -166,7 +166,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                   const SizedBox(height: 16),
                   _buildImageMessage(),
                   const SizedBox(height: 16),
-                  _buildUpdateButton(),
+                  _buildActionButtons(),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -459,26 +459,75 @@ class _EditNewsPageState extends State<EditNewsPage> {
         ));
   }
 
-  Widget _buildUpdateButton() {
-    return Obx(() => ElevatedButton(
-          onPressed:
-              _updateNewsController.isLoading.value ? null : _validateAndUpdate,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50),
-            backgroundColor: _updateNewsController.isLoading.value
-                ? Colors.grey
-                : Colors.blue,
-          ),
-          child: _updateNewsController.isLoading.value
-              ? const BlinkingLoadingIcon(
-                  size: 26,
+  Widget _buildActionButtons() {
+    return Obx(() {
+      final isLoading = _updateNewsController.isLoading.value;
+
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: isLoading ? null : () => _validateAndUpdate(true),
+              icon: const Icon(Icons.save_outlined, color: Colors.white),
+              label: Text(
+                'save_draft_news'.tr,
+                style: const TextStyle(
                   color: Colors.white,
-                )
-                : Text(
-                  'update_news'.tr,
-                  style: TextStyle(color: Colors.white),
+                  fontWeight: FontWeight.w600,
                 ),
-        ));
+              ),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 52),
+                side: const BorderSide(color: Colors.white70, width: 1.4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x663B82F6),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed: isLoading ? null : () => _validateAndUpdate(false),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                  backgroundColor: isLoading
+                      ? Colors.grey
+                      : const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: isLoading
+                    ? const BlinkingLoadingIcon(
+                        size: 22,
+                        color: Colors.white,
+                      )
+                    : const Icon(Icons.update, color: Colors.white),
+                label: Text(
+                  'update_news'.tr,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   // Métodos de toggle
@@ -506,11 +555,16 @@ class _EditNewsPageState extends State<EditNewsPage> {
   }
 
   // Validação e atualização
-  void _validateAndUpdate() async {
+  void _validateAndUpdate(bool draft) async {
     // Reset erros
     showCategoryError.value = false;
     showCityError.value = false;
     showTypeError.value = false;
+
+    if (draft) {
+      await _submitUpdate(NewsStates.rascunho);
+      return;
+    }
 
     // Validação do formulário
     bool isFormValid = _formKey.currentState?.validate() ?? false;
@@ -539,6 +593,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
       return;
     }
 
+    await _submitUpdate(NewsStates.emAnalise);
+  }
+
+  Future<void> _submitUpdate(String status) async {
     try {
       // Prepara os dados atualizados
       final updatedData = {
@@ -548,7 +606,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
         'cities': selectedCities.toList(),
         'categories': selectedCategories.toList(),
         'type': selectedType.value,
-        'status': NewsStates.emAnalise,
+        'status': status,
         'updatedAt': DateTime.now(),
       };
 
@@ -563,11 +621,12 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
       if (result == "success") {
         PopUps.snackbar(
-          texto: 'news_updated_success'.tr,
+          texto: status == NewsStates.rascunho
+              ? 'save_draft_news'.tr
+              : 'news_updated_success'.tr,
           cor: Colors.green,
         );
 
-        // Volta para a página anterior
         if (mounted) {
           Navigator.of(context).pop();
         }

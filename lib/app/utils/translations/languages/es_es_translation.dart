@@ -64,6 +64,7 @@ final Map<String, String> esEsTranslation = {
   'change_image': 'Cambiar imagen',
   'image_requirements': 'La imagen debe estar en formato JPG o JPEG y, preferiblemente, tener un tamano maximo de 500 KB. Las imagenes mayores se comprimiran, lo que puede causar perdida de calidad y lentitud en la carga. Para una mejor visualizacion, se recomienda usar imagenes en orientacion horizontal.',
   'publish_news': 'Publicar noticia',
+  'save_draft_news': 'Guardar borrador',
   'update_news': 'Actualizar noticia',
   'fill_required_fields': 'Por favor, complete todos los campos obligatorios.',
   'news_updated_success': 'Noticia actualizada con exito',
