@@ -51,7 +51,6 @@ class HomeController extends GetxController {
   Future<void> onInit() async {
     locationService = Get.find<LocationService>();
     userController = Get.find<UserController>();
-    _applyNewsModeFromArguments();
     _loadPackageInfo();
 
     user = await userController.getCurrentUser();
@@ -67,35 +66,6 @@ class HomeController extends GetxController {
     super.onInit();
   }
 
-  void _applyNewsModeFromArguments() {
-    isRevisionMode.value = false;
-    isDraftMode.value = false;
-    isMyDraftsMode.value = false;
-    isRejectedMode.value = false;
-    isDeletedMode.value = false;
-
-    final arguments = Get.arguments;
-    if (arguments is! Map) {
-      return;
-    }
-
-    final mode = arguments['newsMode']?.toString();
-    switch (mode) {
-      case 'revision':
-        isRevisionMode.value = true;
-        break;
-      case 'drafts':
-        isDraftMode.value = true;
-        isMyDraftsMode.value = true;
-        break;
-      case 'rejected':
-        isRejectedMode.value = true;
-        break;
-      case 'deleted':
-        isDeletedMode.value = true;
-        break;
-    }
-  }
 
   @override
   Future<void> onReady() async {

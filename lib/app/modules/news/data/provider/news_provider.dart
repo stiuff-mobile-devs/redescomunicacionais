@@ -69,6 +69,21 @@ class NewsProvider {
         Map<String, dynamic> updatedMap =
             existing != null ? existing.toMap() : <String, dynamic>{};
 
+        // Normaliza datas para String ISO para evitar erro de String/DateTime.
+        const dateKeys = [
+          'createdAt',
+          'validatedAt',
+          'editedAt',
+          'excluedAt',
+          'rejectedAt',
+        ];
+        for (final key in dateKeys) {
+          final value = updatedMap[key];
+          if (value is DateTime) {
+            updatedMap[key] = value.toIso8601String();
+          }
+        }
+
         updatedMap['status'] = status;
         updatedMap['excluedAt'] = DateTime.now().toIso8601String();
         updatedMap['excluedBy'] = userEmail;
