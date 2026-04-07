@@ -13,11 +13,17 @@ class NewsWindowsPage extends GetView<NewsController> {
     super.key,
     RxBool? isRevisionMode,
     RxBool? isDraftMode,
+    RxBool? isRejectedMode,
+    RxBool? isDeletedMode,
   })  : isRevisionMode = isRevisionMode ?? false.obs,
-        isDraftMode = isDraftMode ?? false.obs;
+        isDraftMode = isDraftMode ?? false.obs,
+        isRejectedMode = isRejectedMode ?? false.obs,
+        isDeletedMode = isDeletedMode ?? false.obs;
 
   final RxBool isRevisionMode;
   final RxBool isDraftMode;
+  final RxBool isRejectedMode;
+  final RxBool isDeletedMode;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,7 @@ class NewsWindowsPage extends GetView<NewsController> {
         child: Obx(
           () {
             if (controller.isLoading.value) {
-              const Center(
+              return const Center(
                 child: BlinkingLoadingIcon(
                   size: 36,
                   color: Colors.white,
@@ -45,11 +51,15 @@ class NewsWindowsPage extends GetView<NewsController> {
               ));
             }
             // Filtra notícias válidas com base no modo de revisão
-            final validNews = isRevisionMode.value
-              ? controller.getInAnalysis()
-              : isDraftMode.value
-                ? controller.getMyDrafts()
-                : controller.getValidNews();
+            final validNews = isDeletedMode.value
+                ? controller.getDeletedNews()
+                : isRejectedMode.value
+                    ? controller.getRejectedNews()
+                    : isRevisionMode.value
+                        ? controller.getInAnalysis()
+                        : isDraftMode.value
+                            ? controller.getMyDrafts()
+                            : controller.getValidNews();
 
             if (validNews.isEmpty) {
               return Center(
@@ -116,10 +126,9 @@ class NewsWindowsPage extends GetView<NewsController> {
                                 n.urlImages[0].isNotEmpty
                             ? _buildSafeImage(n.urlImages[0], 70.0)
                             : Image.asset(
-                                controller.getCityImageAsset(
-                                  n.cities.isNotEmpty
-                                        ? n.cities[0]
-                                        : 'default'),
+                                controller.getCityImageAsset(n.cities.isNotEmpty
+                                    ? n.cities[0]
+                                    : 'default'),
                                 fit: BoxFit.cover,
                                 width: 120.0,
                                 height: 70.0,
@@ -406,7 +415,8 @@ class NewsWindowsPage extends GetView<NewsController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(Get.context!).pop(),
-            child: Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
+            child:
+                Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
@@ -423,7 +433,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                     context: Get.context!,
                     builder: (context) => AlertDialog(
                       backgroundColor: Colors.grey[900],
-                        title: Text('error'.tr,
+                      title: Text('error'.tr,
                           style: TextStyle(color: Colors.white)),
                       content: Text(
                         result,
@@ -432,7 +442,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                            child: Text('ok'.tr,
+                          child: Text('ok'.tr,
                               style: TextStyle(color: Colors.blue)),
                         ),
                       ],
@@ -455,8 +465,8 @@ class NewsWindowsPage extends GetView<NewsController> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: Text('access_denied'.tr,
-              style: TextStyle(color: Colors.white)),
+          title:
+              Text('access_denied'.tr, style: TextStyle(color: Colors.white)),
           content: Text(
             'only_author_can_edit'.tr,
             style: TextStyle(color: Colors.white70),
@@ -546,7 +556,8 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               await _showReasonDialog(news, true);
             },
-            child: Text('accept'.tr, style: const TextStyle(color: Colors.green)),
+            child:
+                Text('accept'.tr, style: const TextStyle(color: Colors.green)),
           ),
           TextButton(
             onPressed: () async {
@@ -599,7 +610,8 @@ class NewsWindowsPage extends GetView<NewsController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
+            child:
+                Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {

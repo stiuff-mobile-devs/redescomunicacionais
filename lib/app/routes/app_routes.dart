@@ -12,4 +12,5 @@ abstract class Routes {
   static const CENTRAL_DE_COMUNICACAO = '/central-de-comunicacao';
   static const NEWS_REVISION = '/news-revision';
   static const USER = '/user';
+  static const NEWSCENTER = '/newscenter';
 }

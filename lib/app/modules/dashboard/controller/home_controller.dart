@@ -24,17 +24,18 @@ class HomeController extends GetxController {
   final RxString appVersion = 'Carregando...'.obs;
   final RxString connectionTypeLabel = 'Sem conexão'.obs;
 
-
   RxBool isLoadingLocation = false.obs;
   RxBool isRevisionMode = false.obs;
   RxBool isDraftMode = false.obs;
   RxBool isMyDraftsMode = false.obs;
+  RxBool isRejectedMode = false.obs;
+  RxBool isDeletedMode = false.obs;
   final RxBool isOnline = false.obs;
 
   final Rxn<DateTime> lastConnectivityCheckAt = Rxn<DateTime>();
   final Rxn<DateTime> lastOnlineAt = Rxn<DateTime>();
   final RxInt minutesSinceLastOnline = 0.obs;
-  
+
   Timer? _onlineTimer;
   Timer? _connectivityTimer;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
@@ -50,6 +51,7 @@ class HomeController extends GetxController {
   Future<void> onInit() async {
     locationService = Get.find<LocationService>();
     userController = Get.find<UserController>();
+    _applyNewsModeFromArguments();
     _loadPackageInfo();
 
     user = await userController.getCurrentUser();
@@ -63,6 +65,36 @@ class HomeController extends GetxController {
     _startOnlineTimer();
 
     super.onInit();
+  }
+
+  void _applyNewsModeFromArguments() {
+    isRevisionMode.value = false;
+    isDraftMode.value = false;
+    isMyDraftsMode.value = false;
+    isRejectedMode.value = false;
+    isDeletedMode.value = false;
+
+    final arguments = Get.arguments;
+    if (arguments is! Map) {
+      return;
+    }
+
+    final mode = arguments['newsMode']?.toString();
+    switch (mode) {
+      case 'revision':
+        isRevisionMode.value = true;
+        break;
+      case 'drafts':
+        isDraftMode.value = true;
+        isMyDraftsMode.value = true;
+        break;
+      case 'rejected':
+        isRejectedMode.value = true;
+        break;
+      case 'deleted':
+        isDeletedMode.value = true;
+        break;
+    }
   }
 
   @override

@@ -27,7 +27,7 @@ class NewsController extends GetxController {
   onInit() async {
     super.onInit();
     userController = Get.find<UserController>();
-    user = await userController.getCurrentUser() ?? UserModel.empty();
+    user = await userController.getCurrentUser();
     await syncHiveAndFirebase();
     getNewsFromHive();
   }
@@ -159,28 +159,14 @@ class NewsController extends GetxController {
   List<dynamic> getValidNews() {
     return newss.where((news) {
       if (news.status != NewsStates.publicado) return false;
-      try {
-        if (news.urlImages[0] != "") {
-          base64Decode(news.urlImages[0]);
-        }
-        return true;
-      } catch (_) {
-        return false;
-      }
+      return _hasRenderableImage(news);
     }).toList();
   }
 
   List<dynamic> getInAnalysis() {
     return newss.where((news) {
       if (news.status != NewsStates.emAnalise) return false;
-      try {
-        if (news.urlImages[0] != "") {
-          base64Decode(news.urlImages[0]);
-        }
-        return true;
-      } catch (_) {
-        return false;
-      }
+      return _hasRenderableImage(news);
     }).toList();
   }
 
@@ -188,15 +174,35 @@ class NewsController extends GetxController {
     return newss.where((news) {
       if (news.status != NewsStates.rascunho) return false;
       if (news.createdBy != user.email) return false;
-      try {
-        if (news.urlImages[0] != "") {
-          base64Decode(news.urlImages[0]);
-        }
-        return true;
-      } catch (_) {
-        return false;
-      }
+      return _hasRenderableImage(news);
     }).toList();
+  }
+
+  List<dynamic> getRejectedNews() {
+    return newss.where((news) {
+      if (news.status != NewsStates.rejeitado) return false;
+      if (news.createdBy != user.email) return false;
+      return _hasRenderableImage(news);
+    }).toList();
+  }
+
+  List<dynamic> getDeletedNews() {
+    return newss.where((news) {
+      if (news.status != NewsStates.deletado) return false;
+      if (news.createdBy != user.email) return false;
+      return _hasRenderableImage(news);
+    }).toList();
+  }
+
+  bool _hasRenderableImage(NewsModel news) {
+    try {
+      if (news.urlImages.isNotEmpty && news.urlImages[0] != "") {
+        base64Decode(news.urlImages[0]);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   // Prepara o map de argumentos usado nas rotas de detalhe
@@ -359,6 +365,7 @@ class NewsController extends GetxController {
       parseDynamic(n.createdAt),
       parseDynamic(n.editedAt),
       parseDynamic(n.validatedAt),
+      parseDynamic(n.rejectedAt),
       parseDynamic(n.excluedAt),
     ];
     candidates.removeWhere((c) => c == null);

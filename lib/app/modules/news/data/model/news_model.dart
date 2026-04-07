@@ -72,6 +72,15 @@ class NewsModel {
   @HiveField(22)
   String? validatedByName;
 
+  @HiveField(23)
+  String? rejectedBy;
+
+  @HiveField(24)
+  DateTime? rejectedAt;
+
+  @HiveField(25)
+  String? rejectedObservation;
+
   NewsModel({
     required this.id,
     required this.title,
@@ -96,6 +105,9 @@ class NewsModel {
     this.excludedObservation,
     this.videoUrl,
     this.validatedByName,
+    this.rejectedBy,
+    this.rejectedAt,
+    this.rejectedObservation,
   });
 
   Map<String, dynamic> toMap() {
@@ -123,6 +135,9 @@ class NewsModel {
       'excludedObservation': excludedObservation,
       'videoUrl': videoUrl,
       'validatedByName': validatedByName,
+      'rejectedBy': rejectedBy,
+      'rejectedAt': rejectedAt,
+      'rejectedObservation': rejectedObservation,
     };
   }
 
@@ -158,6 +173,11 @@ class NewsModel {
       excludedObservation: data['excludedObservation'],
       videoUrl: data['videoUrl'],
       validatedByName: data['validatedByName'],
+      rejectedBy: data['rejectedBy'],
+      rejectedAt: data['rejectedAt'] != null
+          ? DateTime.parse(data['rejectedAt'])
+          : DateTime.now(),
+      rejectedObservation: data['rejectedObservation'],
     );
   }
 }
