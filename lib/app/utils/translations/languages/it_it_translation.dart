@@ -103,6 +103,8 @@ final Map<String, String> itItTranslation = {
   'edit': 'Modifica',
   'delete': 'Elimina',
   'review': 'Revisione',
+  'observations': 'Osservazioni',
+  'no_observation_available': 'Nessuna osservazione disponibile',
   'confirm_delete_this': 'Sei sicuro di voler eliminare questo',
   'error': 'Errore',
   'ok': 'OK',

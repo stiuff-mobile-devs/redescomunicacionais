@@ -103,6 +103,8 @@ final Map<String, String> esEsTranslation = {
   'edit': 'Editar',
   'delete': 'Eliminar',
   'review': 'Revisar',
+  'observations': 'Observaciones',
+  'no_observation_available': 'No hay observaciones disponibles',
   'confirm_delete_this': 'Estas seguro de que deseas eliminar este',
   'error': 'Error',
   'ok': 'OK',

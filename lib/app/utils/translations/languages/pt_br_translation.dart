@@ -103,6 +103,8 @@ final Map<String, String> ptBrTranslation = {
   'edit': 'Editar',
   'delete': 'Excluir',
   'review': 'Revisar',
+  'observations': 'Observacoes',
+  'no_observation_available': 'Nenhuma observacao disponivel',
   'confirm_delete_this': 'Tem certeza que deseja excluir esta',
   'error': 'Erro',
   'ok': 'OK',

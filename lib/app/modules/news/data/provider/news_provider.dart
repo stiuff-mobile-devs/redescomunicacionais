@@ -112,18 +112,27 @@ class NewsProvider {
   }
 
   reviewNews(String newsId, bool isApproved, String reason, String validator,
-      String validatorName) async {
+      String validatorName, String newsType) async {
     try {
       final status = isApproved ? NewsStates.publicado : NewsStates.rejeitado;
+      final isDeleted = newsType == NewsStates.deletado;
       await _firestore.collection(collectionPath).doc(newsId).update({
-        'status': status,
+        'status': isDeleted ? NewsStates.deletado : status,
         'validatedAt': isApproved ? DateTime.now().toIso8601String() : null,
         'validatedObservation': isApproved ? reason : null,
         'validatedBy': isApproved ? validator : null,
         'validatedByName': isApproved ? validatorName : null,
-        'rejectedAt': isApproved ? null : DateTime.now().toIso8601String(),
-        'rejectedObservation': isApproved ? null : reason,
-        'rejectedBy': isApproved ? null : validator,
+        'excludedObservation': (!isApproved && isDeleted) ? reason : null,
+        'excluedBy': (!isApproved && isDeleted) ? validator : null,
+        'excluedAt': (!isApproved && isDeleted)
+            ? DateTime.now().toIso8601String()
+            : null,
+        'rejectedAt': (!isApproved && !isDeleted)
+            ? DateTime.now().toIso8601String()
+            : null,
+        'rejectedObservation': (!isApproved && !isDeleted) ? reason : null,
+        'rejectedBy': (!isApproved && !isDeleted) ? validator : null,
+        'type': newsType,
       });
     } catch (e) {
       throw Exception("Erro ao revisar notícia no Firebase: $e");

@@ -182,8 +182,10 @@ class NewsWindowsPage extends GetView<NewsController> {
                       topRight: Radius.circular(12.0),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8.0,
+                    runSpacing: 4.0,
                     children: [
                       // Ícone de editar (lápis)
                       GestureDetector(
@@ -218,38 +220,37 @@ class NewsWindowsPage extends GetView<NewsController> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8.0),
-                      // Ícone de excluir (lixeira)
-                      GestureDetector(
-                        onTap: () {
-                          hideNewsPopup(news.id, NewsStates.deletado,
-                              controller.user.email, news.createdBy, news.type);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                                size: 30,
-                              ),
-                              SizedBox(width: 8.0),
-                              Text(
-                                'delete'.tr,
-                                style: TextStyle(
+                      if (controller.canDelete(news))
+                        GestureDetector(
+                          onTap: () {
+                            hideNewsPopup(news.id, NewsStates.deletado,
+                                controller.user.email, news.createdBy, news.type);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.delete,
                                   color: Colors.red,
-                                  fontSize: 25.0,
-                                  fontWeight: FontWeight.w600,
+                                  size: 30,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'delete'.tr,
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      if (isRevisionMode.value)
+                      if (isRevisionMode.value || controller.canReReview(news))
                         GestureDetector(
                           onTap: () => _showReviewDialog(news),
                           child: Container(
@@ -267,6 +268,64 @@ class NewsWindowsPage extends GetView<NewsController> {
                                   'review'.tr,
                                   style: TextStyle(
                                     color: Colors.yellowAccent,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      if (isDeletedMode.value)
+                        GestureDetector(
+                          onTap: () => _showObservationDialog(
+                            news.excludedObservation,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.sticky_note_2_outlined,
+                                  color: Colors.orangeAccent,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'observations'.tr,
+                                  style: TextStyle(
+                                    color: Colors.orangeAccent,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      if (isRejectedMode.value)
+                        GestureDetector(
+                          onTap: () => _showObservationDialog(
+                            news.rejectedObservation,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.sticky_note_2_outlined,
+                                  color: Colors.orangeAccent,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'observations'.tr,
+                                  style: TextStyle(
+                                    color: Colors.orangeAccent,
                                     fontSize: 25.0,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -399,8 +458,8 @@ class NewsWindowsPage extends GetView<NewsController> {
     ).toList();
   }
 
-  Future<void> hideNewsPopup(String newsId, String status, String userEmail,
-      String authorEmail, String type) async {
+      Future<void> hideNewsPopup(String newsId, String status, String userEmail,
+        String authorEmail, String type) async {
     await Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
@@ -423,7 +482,7 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               try {
                 String result = await controller.hideNews(
-                    newsId, status, userEmail, authorEmail, type);
+                  newsId, status, userEmail, authorEmail, type);
                 if (result == "sucess" || result == "success") {
                   // Recarrega as notícias
                   await controller.getNewsFromFirebase();
@@ -572,6 +631,32 @@ class NewsWindowsPage extends GetView<NewsController> {
     );
   }
 
+  Future<void> _showObservationDialog(String? observation) async {
+    final text = (observation ?? '').trim();
+
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'observations'.tr,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          text.isEmpty ? 'no_observation_available'.tr : text,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child:
+                Text('close'.tr, style: const TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+      barrierDismissible: true,
+    );
+  }
+
   Future<void> _showReasonDialog(NewsModel news, bool accepted) async {
     final TextEditingController _reasonController = TextEditingController();
 
@@ -625,7 +710,8 @@ class NewsWindowsPage extends GetView<NewsController> {
                     reason,
                     controller.user.email,
                     news.createdBy,
-                    controller.user.name ?? '');
+                    controller.user.name ?? '',
+                    news.type);
                 controller.homeController.forceRecreate();
               } catch (_) {}
             },

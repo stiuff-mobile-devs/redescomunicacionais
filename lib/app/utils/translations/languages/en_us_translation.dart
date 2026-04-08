@@ -103,6 +103,8 @@ final Map<String, String> enUsTranslation = {
   'edit': 'Edit',
   'delete': 'Delete',
   'review': 'Review',
+  'observations': 'Observations',
+  'no_observation_available': 'No observation available',
   'confirm_delete_this': 'Are you sure you want to delete this',
   'error': 'Error',
   'ok': 'OK',

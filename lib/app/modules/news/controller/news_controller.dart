@@ -165,7 +165,9 @@ class NewsController extends GetxController {
 
   List<dynamic> getInAnalysis() {
     return newss.where((news) {
-      if (news.status != NewsStates.emAnalise) return false;
+      final isInReviewFlow =
+          news.status == NewsStates.emAnalise || news.status == NewsStates.publicado;
+      if (!isInReviewFlow) return false;
       return _hasRenderableImage(news);
     }).toList();
   }
@@ -248,6 +250,19 @@ class NewsController extends GetxController {
   // Verifica se o usuário atual é o autor (p/ habilitar editar/excluir)
   bool canEdit(NewsModel news) {
     return user.email == news.createdBy;
+  }
+
+  bool canDelete(NewsModel news) {
+    return user.email == news.createdBy;
+  }
+
+  bool canReReview(NewsModel news) {
+    final isEditorOrAdmin = user.role == 'editor' || user.role == 'admin';
+    final isNotAuthor = user.email != news.createdBy;
+    final isRevisableStatus =
+        news.status == NewsStates.publicado || news.status == NewsStates.emAnalise;
+
+    return isEditorOrAdmin && isNotAuthor && isRevisableStatus;
   }
 
   // Controla seleção de cards (toggle)
@@ -393,7 +408,7 @@ class NewsController extends GetxController {
   }
 
   reviewNews(String newsId, bool isApproved, String reason, String validator,
-      String creator, String validatorName) async {
+      String creator, String validatorName, String newsType) async {
     try {
       isLoading(true);
       if (validator == creator) {
@@ -404,7 +419,7 @@ class NewsController extends GetxController {
         return;
       }
       await _repository.reviewNews(
-          newsId, isApproved, reason, validator, validatorName);
+          newsId, isApproved, reason, validator, validatorName, newsType);
       // Atualiza lista local
       await getNewsFromFirebase();
       homeController.forceRecreate();
