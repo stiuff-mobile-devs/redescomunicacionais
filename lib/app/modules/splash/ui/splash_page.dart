@@ -29,11 +29,6 @@ class SplashPage extends GetView<SplashController> {
                   height: 200,
                 ),
                 const SizedBox(height: 100),
-                const BlinkingLoadingIcon(
-                  size: 44,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 20),
               ],
             ),
           ),

@@ -26,7 +26,6 @@ Future<void> main() async {
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
       initialRoute: Routes.INITIAL,
-      translations: AppTranslation(),
       theme: appThemeData,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -34,6 +33,7 @@ Future<void> main() async {
         GlobalCupertinoLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
+      translations: AppTranslation(),
       supportedLocales: AppTranslation.supportedLocales,
       locale: AppTranslation.normalizeLocale(Get.deviceLocale),
       fallbackLocale: AppTranslation.fallback,

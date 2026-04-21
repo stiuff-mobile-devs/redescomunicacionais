@@ -99,39 +99,30 @@ class MenuPage extends StatelessWidget {
           ),
           _buildCreateNewsItem(context, isDrawer: true),
           _buildAdminItem(context, isDrawer: true),
-        //  _buildReviewItem(context, isDrawer: true),
-        //  _buildDraftsItem(context, isDrawer: true),
-         ListTile(
-            leading: const Icon(Icons.newspaper, color: Colors.white),
-            title: Text(
-              'Central da notícia'.tr,
-              style: const TextStyle(color: Colors.white),
-            ),
-            onTap: () {
-              Get.toNamed(Routes.NEWSCENTER);
-            },
+          _buildRestrictedMenuItem(
+            context,
+            icon: Icons.newspaper,
+            title: 'Central da notícia'.tr,
+            onTap: () => Get.toNamed(Routes.NEWSCENTER),
           ),
-          ListTile(
-            leading: const Icon(Icons.chat_bubble_outline, color: Colors.white),
-            title: Text(
-              'Central de Comnunicação'.tr,
-              style: const TextStyle(color: Colors.white),
-            ),
-            onTap: () {
-              Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO);
-            },
+          _buildRestrictedMenuItem(
+            context,
+            icon: Icons.chat_bubble_outline,
+            title: 'Central de Comnunicação'.tr,
+            onTap: () => Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO),
           ),
-          ListTile(
-            leading: const Icon(Icons.person_outline, color: Colors.white),
-            title: Text(
-              'Seus Dados'.tr,
-              style: const TextStyle(color: Colors.white),
+          if (!_homeController.isAnonymousUser)
+            ListTile(
+              leading: const Icon(Icons.person_outline, color: Colors.white),
+              title: Text(
+                'Seus Dados'.tr,
+                style: const TextStyle(color: Colors.white),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Get.toNamed(Routes.USER);
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              Get.toNamed(Routes.USER);
-            },
-          ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: Colors.white),
             title: Text(
@@ -282,17 +273,17 @@ class MenuPage extends StatelessWidget {
                 SizedBox(height: isTablet! ? 15.0 : 10.0),
                 _buildCreateNewsItem(context, isDrawer: false),
                 _buildAdminItem(context, isDrawer: false),
-               // _buildReviewItem(context, isDrawer: false),
+                // _buildReviewItem(context, isDrawer: false),
                 //_buildDraftsItem(context, isDrawer: false),
                 SizedBox(height: isTablet! ? 15.0 : 10.0),
                 Divider(color: Colors.white.withOpacity(0.2), thickness: 0.5),
                 SizedBox(height: isTablet! ? 15.0 : 10.0),
-                _buildHorizontalMenuTile(
+                _buildRestrictedHorizontalMenuTile(
                   icon: Icons.chat_bubble_outline,
                   title: 'Central da notícia'.tr,
                   onTap: () => Get.toNamed(Routes.NEWSCENTER),
                 ),
-                _buildHorizontalMenuTile(
+                _buildRestrictedHorizontalMenuTile(
                   icon: Icons.chat_bubble_outline,
                   title: 'Central de Comnunicação'.tr,
                   onTap: () => Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO),
@@ -302,11 +293,12 @@ class MenuPage extends StatelessWidget {
                   title: 'Sobre'.tr,
                   onTap: () => _showAboutDialog(context),
                 ),
-                _buildHorizontalMenuTile(
-                  icon: Icons.person_outline,
-                  title: 'Seus Dados'.tr,
-                  onTap: () => Get.toNamed(Routes.USER),
-                ),
+                if (!_homeController.isAnonymousUser)
+                  _buildHorizontalMenuTile(
+                    icon: Icons.person_outline,
+                    title: 'Seus Dados'.tr,
+                    onTap: () => Get.toNamed(Routes.USER),
+                  ),
                 _buildHorizontalMenuTile(
                   icon: Icons.language,
                   title: 'language'.tr,
@@ -337,29 +329,31 @@ class MenuPage extends StatelessWidget {
       final hasPermission =
           _userController.isAdmin.value || _userController.isEditor.value;
 
+      if (!hasPermission) {
+        return const SizedBox.shrink();
+      }
+
       if (isDrawer) {
         return ListTile(
           leading: Icon(
-            hasPermission ? Icons.article_outlined : Icons.lock_outline,
-            color: hasPermission ? Colors.white : Colors.red,
+            Icons.article_outlined,
+            color: Colors.white,
           ),
           title: Text(
             'Criar Matéria'.tr,
             style: const TextStyle(color: Colors.white),
           ),
-          onTap: hasPermission
-              ? () {
-                  Navigator.pop(context);
-                  Get.toNamed(Routes.CREATE_NEWS);
-                }
-              : null,
+          onTap: () {
+            Navigator.pop(context);
+            Get.toNamed(Routes.CREATE_NEWS);
+          },
         );
       } else {
         return _buildHorizontalMenuTile(
-          icon: hasPermission ? Icons.article_outlined : Icons.lock_outline,
+          icon: Icons.article_outlined,
           title: 'Criar Matéria'.tr,
-          onTap: hasPermission ? () => Get.toNamed(Routes.CREATE_NEWS) : null,
-          iconColor: hasPermission ? Colors.white : Colors.red,
+          onTap: () => Get.toNamed(Routes.CREATE_NEWS),
+          iconColor: Colors.white,
         );
       }
     });
@@ -371,113 +365,84 @@ class MenuPage extends StatelessWidget {
       _userController.loadUserRole(_homeController.user.id);
       final isAdmin = _userController.isAdmin.value;
 
+      if (!isAdmin) {
+        return const SizedBox.shrink();
+      }
+
       if (isDrawer) {
         return ListTile(
-          leading: Icon(
-            isAdmin ? Icons.person_outline : Icons.lock_outline,
-            color: isAdmin ? Colors.white : Colors.red,
-          ),
+          leading: const Icon(Icons.person_outline, color: Colors.white),
           title: Text(
             'Admin'.tr,
             style: const TextStyle(color: Colors.white),
           ),
-          onTap: isAdmin
-              ? () {
-                  Navigator.pop(context);
-                  Get.toNamed(Routes.ADMIN);
-                }
-              : null,
+          onTap: () {
+            Navigator.pop(context);
+            Get.toNamed(Routes.ADMIN);
+          },
         );
       } else {
         return _buildHorizontalMenuTile(
-          icon: isAdmin ? Icons.person_outline : Icons.lock_outline,
+          icon: Icons.person_outline,
           title: 'Admin'.tr,
-          onTap: isAdmin ? () => Get.toNamed(Routes.ADMIN) : null,
-          iconColor: isAdmin ? Colors.white : Colors.red,
+          onTap: () => Get.toNamed(Routes.ADMIN),
+          iconColor: Colors.white,
         );
       }
     });
   }
 
-  /// Build item para Matérias para Revisão com verificação de permissão
-  Widget _buildReviewItem(BuildContext context, {required bool isDrawer}) {
+  /// Itens que só aparecem para admin/editor
+  Widget _buildRestrictedMenuItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return Obx(() {
       _userController.loadUserRole(_homeController.user.id);
       final hasPermission =
-          _userController.isEditor.value || _userController.isAdmin.value;
+          _userController.isAdmin.value || _userController.isEditor.value;
 
-      if (isDrawer) {
-        return ListTile(
-          leading: Icon(
-            Icons.reviews_outlined,
-            color: hasPermission ? Colors.white : Colors.red,
-          ),
-          title: Text(
-            'Matérias para Revisão'.tr,
-            style: const TextStyle(color: Colors.white),
-          ),
-          onTap: hasPermission
-              ? () {
-                  Navigator.pop(context);
-                  _homeController.isRevisionMode.value = true;
-                  _homeController.isDraftMode.value = false;
-                }
-              : null,
-        );
-      } else {
-        return _buildHorizontalMenuTile(
-          icon: Icons.reviews_outlined,
-          title: 'Matérias para Revisão'.tr,
-          onTap: hasPermission
-              ? () {
-                  _homeController.isRevisionMode.value = true;
-                  _homeController.isDraftMode.value = false;
-                }
-              : null,
-          iconColor: hasPermission ? Colors.white : Colors.red,
-        );
+      if (!hasPermission) {
+        return const SizedBox.shrink();
       }
+
+      return ListTile(
+        leading: Icon(icon, color: Colors.white),
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+          onTap();
+        },
+      );
     });
   }
 
-  /// Build item para Meus Rascunhos com verificação de permissão
-  Widget _buildDraftsItem(BuildContext context, {required bool isDrawer}) {
+  /// Itens horizontais que só aparecem para admin/editor
+  Widget _buildRestrictedHorizontalMenuTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return Obx(() {
       _userController.loadUserRole(_homeController.user.id);
       final hasPermission =
-          _userController.isEditor.value || _userController.isAdmin.value;
+          _userController.isAdmin.value || _userController.isEditor.value;
 
-      if (isDrawer) {
-        return ListTile(
-          leading: Icon(
-            Icons.drafts_outlined,
-            color: hasPermission ? Colors.white : Colors.red,
-          ),
-          title: Text(
-            'Meus Rascunhos'.tr,
-            style: const TextStyle(color: Colors.white),
-          ),
-          onTap: hasPermission
-              ? () {
-                  Navigator.pop(context);
-                  _homeController.isDraftMode.value = true;
-                  _homeController.isRevisionMode.value = false;
-                }
-              : null,
-        );
-      } else {
-        return _buildHorizontalMenuTile(
-          icon: Icons.drafts_outlined,
-          title: 'Meus Rascunhos'.tr,
-          onTap: hasPermission
-              ? () {
-                  _homeController.isDraftMode.value = true;
-                  _homeController.isRevisionMode.value = false;
-                }
-              : null,
-          iconColor: hasPermission ? Colors.white : Colors.red,
-        );
+      if (!hasPermission) {
+        return const SizedBox.shrink();
       }
+
+      return _buildHorizontalMenuTile(
+        icon: icon,
+        title: title,
+        onTap: onTap,
+        iconColor: Colors.white,
+      );
     });
   }
 
