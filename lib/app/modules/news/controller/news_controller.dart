@@ -165,9 +165,7 @@ class NewsController extends GetxController {
 
   List<dynamic> getInAnalysis() {
     return newss.where((news) {
-      final isInReviewFlow =
-          news.status == NewsStates.emAnalise || news.status == NewsStates.publicado;
-      if (!isInReviewFlow) return false;
+      if (news.status != NewsStates.emAnalise) return false;
       return _hasRenderableImage(news);
     }).toList();
   }
@@ -259,8 +257,8 @@ class NewsController extends GetxController {
   bool canReReview(NewsModel news) {
     final isEditorOrAdmin = user.role == 'editor' || user.role == 'admin';
     final isNotAuthor = user.email != news.createdBy;
-    final isRevisableStatus =
-        news.status == NewsStates.publicado || news.status == NewsStates.emAnalise;
+    final isRevisableStatus = news.status == NewsStates.publicado ||
+        news.status == NewsStates.emAnalise;
 
     return isEditorOrAdmin && isNotAuthor && isRevisableStatus;
   }
