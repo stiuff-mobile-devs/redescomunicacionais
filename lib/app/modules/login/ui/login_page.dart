@@ -354,7 +354,7 @@ class LoginPage extends GetView<LoginController> {
   Widget _buildLoginCardButton({
     required String label,
     required Color badgeColor,
-    required IconData iconData,
+    required FaIconData iconData,
     required Color iconColor,
     required VoidCallback onPressed,
     required double width,
