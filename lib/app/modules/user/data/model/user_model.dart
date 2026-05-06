@@ -20,7 +20,7 @@ class UserModel extends HiveObject {
   String role;
 
   @HiveField(5)
-  DateTime? createdAt;
+  DateTime createdAt;
 
   @HiveField(6)
   DateTime? roleUpdatedAt;
@@ -41,10 +41,8 @@ class UserModel extends HiveObject {
   String? statusObservation;
 
   @HiveField(12)
-  String? lastLocation;
+  DateTime? lastUpdated;
 
-  @HiveField(13)
-  DateTime? lastLocationUpdatedAt;
 
   UserModel({
     required this.id,
@@ -59,8 +57,7 @@ class UserModel extends HiveObject {
     this.statusUpdatedAt,
     this.statusUpdatedBy,
     this.statusObservation,
-    this.lastLocation,
-    this.lastLocationUpdatedAt,
+    this.lastUpdated,
   });
 
   // Factory para criar um usuário vazio com campos required
@@ -70,21 +67,19 @@ class UserModel extends HiveObject {
       email: '',
       role: 'user',
       createdAt: DateTime.now(),
-      status: 'active',
+      status: 'anonymous',
     );
   }
 
-  // fromMap (para Firestore)
+  // fromMap (do Firestore)
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['id'] ?? '',
+      id: map['id'],
       name: map['name'],
-      email: map['email'] ?? '',
+      email: map['email'],
       urlImage: map['urlImage'],
       role: map['role'] ?? 'user',
-      createdAt: map['createdAt'] != null
-          ? (map['createdAt'] as Timestamp).toDate()
-          : null,
+      createdAt: (map['createdAt'] as Timestamp).toDate(),
       roleUpdatedAt: map['roleUpdatedAt'] != null
           ? (map['roleUpdatedAt'] as Timestamp).toDate()
           : null,
@@ -95,24 +90,22 @@ class UserModel extends HiveObject {
           : null,
       statusUpdatedBy: map['statusUpdatedBy'],
       statusObservation: map['statusObservation'],
-      lastLocation: map['lastLocation'],
-      lastLocationUpdatedAt: map['lastLocationUpdatedAt'] != null
-          ? (map['lastLocationUpdatedAt'] as Timestamp).toDate()
+      lastUpdated: map['lastUpdated'] != null
+          ? (map['lastUpdated'] as Timestamp).toDate()
           : null,
     );
   }
 
+
   factory UserModel.fromMapWithData(
-      Map<String, dynamic> map, String id, String name, String urlImage) {
+      Map<String, dynamic> map, String id, String name, String urlImage, DateTime lastUpdated) {
     return UserModel(
-      id: id ?? '',
+      id: id,
       name: name,
-      email: map['email'] ?? '',
+      email: map['email'],
       urlImage: urlImage,
       role: map['role'] ?? 'user',
-      createdAt: map['createdAt'] != null
-          ? (map['createdAt'] as Timestamp).toDate()
-          : null,
+      createdAt: (map['createdAt'] as Timestamp).toDate(),
       roleUpdatedAt: map['roleUpdatedAt'] != null
           ? (map['roleUpdatedAt'] as Timestamp).toDate()
           : null,
@@ -121,12 +114,8 @@ class UserModel extends HiveObject {
       statusUpdatedAt: map['statusUpdatedAt'] != null
           ? (map['statusUpdatedAt'] as Timestamp).toDate()
           : null,
-      statusUpdatedBy: map['statusUpdatedBy'],
       statusObservation: map['statusObservation'],
-      lastLocation: map['lastLocation'],
-      lastLocationUpdatedAt: map['lastLocationUpdatedAt'] != null
-          ? (map['lastLocationUpdatedAt'] as Timestamp).toDate()
-          : null,
+      lastUpdated: lastUpdated,
     );
   }
 
@@ -138,7 +127,7 @@ class UserModel extends HiveObject {
       'email': email,
       'urlImage': urlImage,
       'role': role,
-      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'createdAt':  Timestamp.fromDate(createdAt),
       'roleUpdatedAt':
           roleUpdatedAt != null ? Timestamp.fromDate(roleUpdatedAt!) : null,
       'roleUpdatedBy': roleUpdatedBy,
@@ -147,10 +136,7 @@ class UserModel extends HiveObject {
           statusUpdatedAt != null ? Timestamp.fromDate(statusUpdatedAt!) : null,
       'statusUpdatedBy': statusUpdatedBy,
       'statusObservation': statusObservation,
-      'lastLocation': lastLocation,
-      'lastLocationUpdatedAt': lastLocationUpdatedAt != null
-          ? Timestamp.fromDate(lastLocationUpdatedAt!)
-          : null,
+      'lastUpdated': lastUpdated != null ? Timestamp.fromDate(lastUpdated!) : null,
     };
   }
 
@@ -163,7 +149,7 @@ class UserModel extends HiveObject {
       urlImage: json['urlImage'],
       role: json['role'] ?? 'user',
       createdAt:
-          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+          json['createdAt'] = DateTime.parse(json['createdAt']),
       roleUpdatedAt: json['roleUpdatedAt'] != null
           ? DateTime.parse(json['roleUpdatedAt'])
           : null,
@@ -174,10 +160,9 @@ class UserModel extends HiveObject {
           : null,
       statusUpdatedBy: json['statusUpdatedBy'],
       statusObservation: json['statusObservation'],
-      lastLocation: json['lastLocation'],
-      lastLocationUpdatedAt: json['lastLocationUpdatedAt'] != null
-          ? DateTime.parse(json['lastLocationUpdatedAt'])
+      lastUpdated: json['lastUpdated'] != null
+          ? DateTime.parse(json['lastUpdated'])
           : null,
-    );
+     );
   }
 }

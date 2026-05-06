@@ -29,14 +29,7 @@ class LocationService extends GetxService {
   }
 
   Future<void> requestLocation(UserModel user) async {
-    bool needsLocationUpdate = user.lastLocation == null ||
-        user.lastLocationUpdatedAt == null ||
-        DateTime.now().difference(user.lastLocationUpdatedAt!).inDays >= 7;
-
-    if (!needsLocationUpdate) {
-      await _getUserLocation(user);
-      return;
-    }
+    
 
     final completer = Completer<void>();
 
@@ -126,11 +119,6 @@ class LocationService extends GetxService {
 
       if (placemarks.isNotEmpty) {
         city.value = placemarks.first.subAdministrativeArea ?? 'city_not_found'.tr;
-        user.lastLocation = placemarks.first.subAdministrativeArea;
-        user.lastLocationUpdatedAt = DateTime.now();
-
-        debugPrint(
-            "Atualizando localização: ${user.lastLocation} - ${user.lastLocationUpdatedAt}");
 
         try {
           await userController.updateUserInFirebase(user);

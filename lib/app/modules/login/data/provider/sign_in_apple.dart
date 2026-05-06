@@ -11,7 +11,7 @@ class SignInApple {
     _firebaseAuth = FirebaseAuth.instance;
   }
 
-  Future<UserModel?> signInWithApple() async {
+  Future<UserModel> signInWithApple() async {
     try {
       // Usa o provider nativo do Firebase em todas as plataformas
       final appleProvider = AppleAuthProvider();
@@ -36,7 +36,7 @@ class SignInApple {
       rethrow;
     }
 
-    return null;
+      throw Exception("Erro ao fazer login com Apple");
   }
 
   Future<void> _onAppleSignIn(UserCredential credential) async {
@@ -52,7 +52,7 @@ class SignInApple {
     }
   }
 
-  Future<UserModel?> _createUserDoc(User userCredential) async {
+  Future<UserModel> _createUserDoc(User userCredential) async {
     try {
       return await _userRepository.createUserDoc(
         userCredential.email ?? '',
@@ -62,7 +62,7 @@ class SignInApple {
       );
     } catch (err) {
       debugPrint("Erro ao criar documento do usuário: $err");
-      return null;
+      throw Exception("Erro ao criar documento do usuário");
     }
   }
 }
