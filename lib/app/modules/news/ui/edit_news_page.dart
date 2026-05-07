@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
-import 'package:redescomunicacionais/app/modules/news/controller/update_news_ontroller.dart';
+import 'package:redescomunicacionais/app/modules/news/controller/update_news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';

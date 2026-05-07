@@ -20,36 +20,35 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       id: fields[0] as String,
       title: fields[1] as String,
       subtitle: fields[2] as String?,
+      body: fields[5] as String,
       cities: (fields[3] as List).cast<String>(),
       categories: (fields[4] as List).cast<String>(),
-      body: fields[5] as String,
       urlImages: (fields[6] as List).cast<String>(),
+      videoUrl: fields[21] as String?,
+      type: fields[10] as String,
+      status: fields[11] as String,
+      lastUpdated: fields[26] as DateTime?,
       author: fields[7] as String,
       createdBy: fields[8] as String,
       createdAt: fields[9] as DateTime,
-      type: fields[10] as String,
-      status: fields[11] as String,
       validatedBy: fields[12] as String?,
+      validatedByName: fields[30] as String?,
       validatedAt: fields[13] as DateTime?,
-      editedBy: fields[14] as String?,
-      editedAt: fields[15] as DateTime?,
-      excluedBy: fields[16] as String?,
-      excluedAt: fields[17] as DateTime?,
-      editedObservation: fields[18] as String?,
       validatedObservation: fields[19] as String?,
-      excludedObservation: fields[20] as String?,
-      videoUrl: fields[21] as String?,
-      validatedByName: fields[22] as String?,
       rejectedBy: fields[23] as String?,
       rejectedAt: fields[24] as DateTime?,
       rejectedObservation: fields[25] as String?,
+      editedAt: fields[15] as DateTime?,
+      excludedBy: fields[16] as String?,
+      excludedAt: fields[17] as DateTime?,
+      excludedObservation: fields[20] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, NewsModel obj) {
     writer
-      ..writeByte(26)
+      ..writeByte(25)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -64,44 +63,42 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       ..write(obj.body)
       ..writeByte(6)
       ..write(obj.urlImages)
+      ..writeByte(10)
+      ..write(obj.type)
+      ..writeByte(21)
+      ..write(obj.videoUrl)
+      ..writeByte(11)
+      ..write(obj.status)
+      ..writeByte(26)
+      ..write(obj.lastUpdated)
       ..writeByte(7)
       ..write(obj.author)
       ..writeByte(8)
       ..write(obj.createdBy)
       ..writeByte(9)
       ..write(obj.createdAt)
-      ..writeByte(10)
-      ..write(obj.type)
-      ..writeByte(11)
-      ..write(obj.status)
       ..writeByte(12)
       ..write(obj.validatedBy)
+      ..writeByte(30)
+      ..write(obj.validatedByName)
       ..writeByte(13)
       ..write(obj.validatedAt)
-      ..writeByte(14)
-      ..write(obj.editedBy)
-      ..writeByte(15)
-      ..write(obj.editedAt)
-      ..writeByte(16)
-      ..write(obj.excluedBy)
-      ..writeByte(17)
-      ..write(obj.excluedAt)
-      ..writeByte(18)
-      ..write(obj.editedObservation)
       ..writeByte(19)
       ..write(obj.validatedObservation)
-      ..writeByte(20)
-      ..write(obj.excludedObservation)
-      ..writeByte(21)
-      ..write(obj.videoUrl)
-      ..writeByte(22)
-      ..write(obj.validatedByName)
       ..writeByte(23)
       ..write(obj.rejectedBy)
       ..writeByte(24)
       ..write(obj.rejectedAt)
       ..writeByte(25)
-      ..write(obj.rejectedObservation);
+      ..write(obj.rejectedObservation)
+      ..writeByte(15)
+      ..write(obj.editedAt)
+      ..writeByte(16)
+      ..write(obj.excludedBy)
+      ..writeByte(17)
+      ..write(obj.excludedAt)
+      ..writeByte(20)
+      ..write(obj.excludedObservation);
   }
 
   @override

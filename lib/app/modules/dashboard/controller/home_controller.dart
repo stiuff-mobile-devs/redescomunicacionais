@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
+import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/services/location_service.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -20,6 +21,7 @@ class HomeController extends GetxController {
   NewsController? _newsController;
   NewsController get newsController =>
       _newsController ??= Get.find<NewsController>();
+  NewsRepository _newsRepository = NewsRepository();
 
   final RxString appVersion = 'Carregando...'.obs;
   final RxString connectionTypeLabel = 'Sem conexão'.obs;
@@ -154,14 +156,15 @@ class HomeController extends GetxController {
   }
 
   void filterNewsByName(String name) {
-    newsController.newss.value = newsController.newss
+    newsController.newsList.value = newsController.newsList
         .where((news) => news.title.toLowerCase().contains(name.toLowerCase()))
         .toList();
   }
 
   Future<void> refreshDashboardData() async {
     try {
-      await newsController.getNewsFromFirebase();
+      await _newsRepository.syncHiveAndFirebase();
+      await newsController.getNewsFromHive();
       forceRecreate();
     } finally {
       // Garante checagem real de conexão em todo pull-to-refresh.

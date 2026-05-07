@@ -39,6 +39,16 @@ class NewsRepository {
   Future<void> reviewNews(String newsId, bool isApproved, String reason,
       String validator, String validatorName, String newsType) async {
     await newsProvider.reviewNews(
-        newsId, isApproved, reason, validator, validatorName, newsType);
+      newsId: newsId,
+      isApproved: isApproved,
+      reason: reason,
+      validator: validator,
+      validatorName: validatorName,
+      newsType: newsType,
+    );
+  }
+
+  Future<void> syncHiveAndFirebase() async {
+    await newsProvider.syncHiveAndFirebase();
   }
 }

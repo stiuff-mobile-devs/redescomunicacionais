@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 part 'news_model.g.dart';
 
 @HiveType(typeId: 1)
 class NewsModel {
+  // ==========================================
+  // 1. INFORMAÇÕES DO CONTEÚDO (Core Data)
+  // ==========================================
+
   @HiveField(0)
   String id;
 
@@ -24,6 +29,27 @@ class NewsModel {
   @HiveField(6)
   List<String> urlImages;
 
+  @HiveField(10)
+  String type;
+
+  @HiveField(21)
+  String? videoUrl;
+
+
+  // ==========================================
+  // 2. STATUS E CONTROLE DE ESTADO
+  // ==========================================
+
+  @HiveField(11)
+  String status;
+
+  @HiveField(26)
+  DateTime? lastUpdated;
+
+  // ==========================================
+  // 3. CRIAÇÃO E AUTORIA
+  // ==========================================
+
   @HiveField(7)
   String author;
 
@@ -33,44 +59,25 @@ class NewsModel {
   @HiveField(9)
   DateTime createdAt;
 
-  @HiveField(10)
-  String type;
-
-  @HiveField(11)
-  String status;
+  // ==========================================
+  // 4. FLUXO DE VALIDAÇÃO / APROVAÇÃO
+  // ==========================================
 
   @HiveField(12)
   String? validatedBy;
 
+  @HiveField(30)
+  String? validatedByName;
+
   @HiveField(13)
   DateTime? validatedAt;
-
-  @HiveField(14)
-  String? editedBy;
-
-  @HiveField(15)
-  DateTime? editedAt;
-
-  @HiveField(16)
-  String? excluedBy;
-
-  @HiveField(17)
-  DateTime? excluedAt;
-
-  @HiveField(18)
-  String? editedObservation;
 
   @HiveField(19)
   String? validatedObservation;
 
-  @HiveField(20)
-  String? excludedObservation;
-
-  @HiveField(21)
-  String? videoUrl;
-
-  @HiveField(22)
-  String? validatedByName;
+  // ==========================================
+  // 5. FLUXO DE REJEIÇÃO
+  // ==========================================
 
   @HiveField(23)
   String? rejectedBy;
@@ -81,103 +88,245 @@ class NewsModel {
   @HiveField(25)
   String? rejectedObservation;
 
-  NewsModel({
+  // ==========================================
+  // 6. HISTÓRICO DE EDIÇÃO E EXCLUSÃO
+  // ==========================================
+
+  @HiveField(15)
+  DateTime? editedAt;
+
+  @HiveField(16)
+  String? excludedBy; 
+
+  @HiveField(17)
+  DateTime? excludedAt; 
+
+  @HiveField(20)
+  String? excludedObservation;
+
+ NewsModel({
+    // --- Conteúdo Principal ---
     required this.id,
     required this.title,
     this.subtitle,
+    required this.body,
     required this.cities,
     required this.categories,
-    required this.body,
     required this.urlImages,
+    this.videoUrl,
+    required this.type,
+
+    // --- Status e Controle ---
+    required this.status,
+    this.lastUpdated,
+
+    // --- Criação e Autoria ---
     required this.author,
     required this.createdBy,
     required this.createdAt,
-    required this.type,
-    required this.status,
+
+    // --- Fluxo de Validação ---
     this.validatedBy,
-    this.validatedAt,
-    this.editedBy,
-    this.editedAt,
-    this.excluedBy,
-    this.excluedAt,
-    this.editedObservation,
-    this.validatedObservation,
-    this.excludedObservation,
-    this.videoUrl,
     this.validatedByName,
+    this.validatedAt,
+    this.validatedObservation,
+
+    // --- Fluxo de Rejeição ---
     this.rejectedBy,
     this.rejectedAt,
     this.rejectedObservation,
-  });
 
+    // --- Histórico de Edição e Exclusão ---
+    this.editedAt,
+    this.excludedBy,
+    this.excludedAt,
+    this.excludedObservation,
+  });
+ 
+ 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'subtitle': subtitle,
-      'cities': cities,
-      'categories': categories,
-      'body': body,
-      'urlImages': urlImages,
-      'autor': author,
-      'createdBy': createdBy,
-      'createdAt': createdAt.toIso8601String(),
-      'type': type,
-      'status': status,
-      'validatedBy': validatedBy,
-      'validatedAt': validatedAt?.toIso8601String(),
-      'editedBy': editedBy,
-      'editedAt': editedAt?.toIso8601String(),
-      'excluedBy': excluedBy,
-      'excluedAt': excluedAt?.toIso8601String(),
-      'editedObservation': editedObservation,
-      'validatedObservation': validatedObservation,
-      'excludedObservation': excludedObservation,
-      'videoUrl': videoUrl,
-      'validatedByName': validatedByName,
-      'rejectedBy': rejectedBy,
-      'rejectedAt': rejectedAt,
-      'rejectedObservation': rejectedObservation,
-    };
+  return {
+    // --- Conteúdo ---
+    'id': id,
+    'title': title,
+    'subtitle': subtitle,
+    'body': body,
+    'cities': cities,
+    'categories': categories,
+    'urlImages': urlImages,
+    'videoUrl': videoUrl,
+    'type': type,
+
+    // --- Status ---
+    'status': status,
+    // Converte DateTime? para Timestamp?
+    'lastUpdated': lastUpdated != null ? Timestamp.fromDate(lastUpdated!) : null,
+
+    // --- Autoria ---
+    'autor': author,
+    'createdBy': createdBy,
+    // Converte DateTime para Timestamp (obrigatório)
+    'createdAt': Timestamp.fromDate(createdAt),
+
+    // --- Validação ---
+    'validatedBy': validatedBy,
+    'validatedByName': validatedByName,
+    'validatedAt': validatedAt != null ? Timestamp.fromDate(validatedAt!) : null,
+    'validatedObservation': validatedObservation,
+
+    // --- Rejeição ---
+    'rejectedBy': rejectedBy,
+    'rejectedAt': rejectedAt != null ? Timestamp.fromDate(rejectedAt!) : null,
+    'rejectedObservation': rejectedObservation,
+
+    // --- Edição e Exclusão ---
+    'editedAt': editedAt != null ? Timestamp.fromDate(editedAt!) : null,
+    'excludedBy': excludedBy,
+    'excludedAt': excludedAt != null ? Timestamp.fromDate(excludedAt!) : null,
+    'excludedObservation': excludedObservation,
+  };
+}
+
+ factory NewsModel.fromMap(Map<String, dynamic> map) {
+    return NewsModel(
+      // ==========================================
+      // 1. INFORMAÇÕES DO CONTEÚDO
+      // ==========================================
+      id: map['id'] ?? '',
+      title: map['title'] ?? '',
+      subtitle: map['subtitle'],
+      body: map['body'] ?? '',
+      cities: List<String>.from(map['cities'] ?? []),
+      categories: List<String>.from(map['categories'] ?? []),
+      urlImages: List<String>.from(map['urlImages'] ?? []),
+      videoUrl: map['videoUrl'],
+      type: map['type'] ?? '',
+
+      // ==========================================
+      // 2. STATUS E CONTROLE DE ESTADO
+      // ==========================================
+      status: map['status'] ?? '',
+      lastUpdated: map['lastUpdated'] is Timestamp 
+          ? (map['lastUpdated'] as Timestamp).toDate() 
+          : null,
+
+      // ==========================================
+      // 3. CRIAÇÃO E AUTORIA
+      // ==========================================
+      author: map['autor'] ?? '',
+      createdBy: map['createdBy'] ?? '',
+      createdAt: map['createdAt'] is Timestamp 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.now(), // Fallback caso createdAt venha corrompido
+
+      // ==========================================
+      // 4. FLUXO DE VALIDAÇÃO
+      // ==========================================
+      validatedBy: map['validatedBy'],
+      validatedByName: map['validatedByName'],
+      validatedAt: map['validatedAt'] is Timestamp 
+          ? (map['validatedAt'] as Timestamp).toDate() 
+          : null,
+      validatedObservation: map['validatedObservation'],
+
+      // ==========================================
+      // 5. FLUXO DE REJEIÇÃO
+      // ==========================================
+      rejectedBy: map['rejectedBy'],
+      rejectedAt: map['rejectedAt'] is Timestamp 
+          ? (map['rejectedAt'] as Timestamp).toDate() 
+          : null,
+      rejectedObservation: map['rejectedObservation'],
+
+      // ==========================================
+      // 6. HISTÓRICO DE EDIÇÃO E EXCLUSÃO
+      // ==========================================
+      editedAt: map['editedAt'] is Timestamp 
+          ? (map['editedAt'] as Timestamp).toDate() 
+          : null,
+      excludedBy: map['excludedBy'],
+      excludedAt: map['excludedAt'] is Timestamp 
+          ? (map['excludedAt'] as Timestamp).toDate() 
+          : null,
+      excludedObservation: map['excludedObservation'],
+    );
   }
 
-  // Criar um objeto NewsModel a partir de um documento do Firestore
-  factory NewsModel.fromMap(String id, Map<String, dynamic> data) {
+  NewsModel copyWith({
+    // --- Conteúdo ---
+    String? id,
+    String? title,
+    String? subtitle,
+    List<String>? cities,
+    List<String>? categories,
+    String? body,
+    List<String>? urlImages,
+    String? videoUrl,
+    String? type,
+
+    // --- Status ---
+    String? status,
+    DateTime? lastUpdated,
+
+    // --- Autoria ---
+    String? author,
+    String? createdBy,
+    DateTime? createdAt,
+
+    // --- Validação ---
+    String? validatedBy,
+    String? validatedByName,
+    DateTime? validatedAt,
+    String? validatedObservation,
+
+    // --- Rejeição ---
+    String? rejectedBy,
+    DateTime? rejectedAt,
+    String? rejectedObservation,
+
+    // --- Edição e Exclusão ---
+    DateTime? editedAt,
+    String? excludedBy,
+    DateTime? excludedAt,
+    String? excludedObservation,
+  }) {
     return NewsModel(
-      id: id,
-      title: data['title'] ?? '',
-      subtitle: data['subtitle'],
-      cities: List<String>.from(data['cities'] ?? []),
-      categories: List<String>.from(data['categories'] ?? []),
-      body: data['body'] ?? '',
-      urlImages: List<String>.from(data['urlImages'] ?? []),
-      author: data['autor'] ?? '',
-      createdBy: data['createdBy'] ?? '',
-      createdAt: data['createdAt'] != null
-          ? DateTime.parse(data['createdAt'])
-          : DateTime.now(),
-      type: data['type'] ?? '',
-      status: data['status'] ?? '',
-      validatedBy: data['validatedBy'],
-      validatedAt: data['validatedAt'] != null
-          ? DateTime.parse(data['validatedAt'])
-          : null,
-      editedBy: data['editedBy'],
-      editedAt:
-          data['editedAt'] != null ? DateTime.parse(data['editedAt']) : null,
-      excluedBy: data['excluedBy'],
-      excluedAt:
-          data['excluedAt'] != null ? DateTime.parse(data['excluedAt']) : null,
-      editedObservation: data['editedObservation'],
-      validatedObservation: data['validatedObservation'],
-      excludedObservation: data['excludedObservation'],
-      videoUrl: data['videoUrl'],
-      validatedByName: data['validatedByName'],
-      rejectedBy: data['rejectedBy'],
-      rejectedAt: data['rejectedAt'] != null
-          ? DateTime.parse(data['rejectedAt'])
-          : DateTime.now(),
-      rejectedObservation: data['rejectedObservation'],
+      // --- Conteúdo ---
+      id: id ?? this.id,
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle, // Pode ser null nativamente, mas o ?? prioriza o valor passado se não for nulo
+      cities: cities ?? this.cities,
+      categories: categories ?? this.categories,
+      body: body ?? this.body,
+      urlImages: urlImages ?? this.urlImages,
+      videoUrl: videoUrl ?? this.videoUrl,
+      type: type ?? this.type,
+
+      // --- Status ---
+      status: status ?? this.status,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+
+      // --- Autoria ---
+      author: author ?? this.author,
+      createdBy: createdBy ?? this.createdBy,
+      createdAt: createdAt ?? this.createdAt,
+
+      // --- Validação ---
+      validatedBy: validatedBy ?? this.validatedBy,
+      validatedByName: validatedByName ?? this.validatedByName,
+      validatedAt: validatedAt ?? this.validatedAt,
+      validatedObservation: validatedObservation ?? this.validatedObservation,
+
+      // --- Rejeição ---
+      rejectedBy: rejectedBy ?? this.rejectedBy,
+      rejectedAt: rejectedAt ?? this.rejectedAt,
+      rejectedObservation: rejectedObservation ?? this.rejectedObservation,
+
+      // --- Edição e Exclusão ---
+      editedAt: editedAt ?? this.editedAt,
+      excludedBy: excludedBy ?? this.excludedBy,
+      excludedAt: excludedAt ?? this.excludedAt,
+      excludedObservation: excludedObservation ?? this.excludedObservation,
     );
   }
 }

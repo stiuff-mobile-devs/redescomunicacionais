@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' show Colors, debugPrint;
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
@@ -16,10 +15,12 @@ class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
   late UserController userController;
   late UserModel user;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   HomeController get homeController => Get.find<HomeController>();
 
-  var newss = <NewsModel>[].obs;
+  var newsList = <NewsModel>[].obs;
+
   RxBool isLoading = false.obs;
   RxnInt selectedCardIndex = RxnInt();
 
@@ -28,14 +29,14 @@ class NewsController extends GetxController {
     super.onInit();
     userController = Get.find<UserController>();
     user = await userController.getCurrentUser();
-    await syncHiveAndFirebase();
+    await _repository.syncHiveAndFirebase(); // Sincroniza dados ao iniciar
     getNewsFromHive();
   }
 
   // Add news - save to both Hive and Firebase
   Future<void> addNews(
     String title,
-    String subtitle,
+    String? subtitle,
     List<String> cities,
     List<String> categories,
     String body,
@@ -45,10 +46,15 @@ class NewsController extends GetxController {
     String createdAt,
     String type,
     String status,
-    String videoUrl,
+    String? videoUrl,
   ) async {
+    isLoading(true);
+
+    bool savedOnFirebase = false;
+    bool savedOnHive = false;
+
     try {
-      isLoading(true);
+
       NewsModel news = NewsModel(
         id: DateTime.now().toIso8601String(),
         title: title,
@@ -62,134 +68,151 @@ class NewsController extends GetxController {
         createdAt: DateTime.now(),
         type: type,
         status: status,
-        validatedBy: null,
-        validatedAt: null,
-        editedBy: null,
-        editedAt: null,
-        excluedBy: null,
-        excluedAt: null,
-        editedObservation: null,
-        validatedObservation: null,
-        excludedObservation: null,
         videoUrl: videoUrl,
+        lastUpdated: DateTime.now(),
       );
 
-      try {
-        await _repository.saveNewsToHive(news);
-      } catch (e) {
-        debugPrint("Erro ao salvar notícia no Hive: $e");
-      }
-
+      // 2. Tentar salvar no Firebase
       try {
         await _repository.saveNewsToFirebase(news);
+        savedOnFirebase = true;
       } catch (e) {
-        debugPrint("Erro ao salvar notícia no Firebase: $e");
+        debugPrint("Firebase falhou: $e. Sincronização pendente.");
+        // Não lançamos erro aqui, apenas logamos.
+      }
+      // 3. Tentar salvar no Hive
+      try {
+        await _repository.saveNewsToHive(news);
+        savedOnHive = true;
+      } catch (e) {
+        debugPrint("Hive falhou: $e.");
       }
 
-      newss.insert(0, news);
+      // 4. Lógica de decisão: só avisa erro se NENHUM dos dois funcionou
+      if (!savedOnFirebase && !savedOnHive) {
+        throw Exception(
+            "Não foi possível salvar os dados localmente nem na nuvem.");
+      }
     } catch (e) {
-      rethrow;
+      throw Exception("Erro ao salvar notícia: $e");
     } finally {
       isLoading(false);
     }
   }
 
-  // Get news from Firebase only
   Future<void> getNewsFromFirebase() async {
     try {
       isLoading(true);
-      newss.value = await _repository.getNewsFromFirebase();
-      newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
-          .compareTo(DateTime.parse(a.createdAt.toString())));
+
+      //  Busca os dados (que já devem vir ordenados do Repository)
+      final fetchedNews = await _repository.getNewsFromFirebase();
+
+      newsList.assignAll(
+          fetchedNews); // Se estiver usando GetX, o assignAll é mais eficiente
     } catch (e) {
+      debugPrint("Erro ao buscar notícias: $e");
     } finally {
       isLoading(false);
     }
   }
 
-  // Get news from Hive only
   Future<void> getNewsFromHive() async {
     try {
       isLoading(true);
-      newss.value = await _repository.getNewsFromHive();
-      newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
-          .compareTo(DateTime.parse(a.createdAt.toString())));
+
+      //  O Repository já entrega a lista filtrada e ordenada!
+      final fetchedNews = await _repository.getNewsFromHive();
+
+      //  Apenas atribui à lista reativa
+      newsList.assignAll(fetchedNews);
     } catch (e) {
-      debugPrint("Erro ao carregar as notícias do Hive: $e");
+      debugPrint("Erro no Controller (Hive): $e");
     } finally {
       isLoading(false);
     }
   }
 
-  Future<String> hideNews(String newsId, String status, String userEmail,
-      String authorEmail, String type) async {
-    if (userEmail == authorEmail) {
-      String result = "";
-      try {
-        isLoading(true);
-
-        result = await _repository.hideNews(newsId, status, userEmail);
-
-        if (result == "success") {
-          newss.removeWhere(
-              (news) => news.id == newsId); // Remove da lista local (interface)
-          PopUps.snackbar(
-            texto: '$type excluída com sucesso!',
-            cor: Colors.green,
-          );
-        }
-      } catch (e) {
-        PopUps.snackbar(
-          texto: 'Não foi possível excluir essa $type.',
-          cor: Colors.red,
-        );
-      } finally {
-        isLoading(false);
-      }
-      return result;
-    } else {
+  Future<String> hideNews({
+    required String newsId,
+    required String status,
+    required String userEmail,
+    required String authorEmail,
+    required String type,
+  }) async {
+    //  Verificação de permissão logo no início
+    if (userEmail != authorEmail) {
       PopUps.snackbar(
         texto: 'Você não tem permissão para excluir esta $type.',
         cor: Colors.red,
       );
-      return "Você não tem permissão para excluir esta $type.";
+      return "sem_permissao";
+    }
+
+    try {
+      isLoading(true);
+
+      String result = await _repository.hideNews(newsId, status, userEmail);
+
+      if (result == "success") {
+        // Remove da lista reativa para sumir da tela instantaneamente
+        newsList.removeWhere((news) => news.id == newsId);
+
+        PopUps.snackbar(
+          texto: '$type excluída com sucesso!',
+          cor: Colors.green,
+        );
+        return "success";
+      } else {
+        // Caso o repositório retorne algo diferente de sucesso sem lançar exception
+        PopUps.snackbar(
+          texto: 'Erro ao tentar excluir a $type.',
+          cor: Colors.red,
+        );
+        return "error";
+      }
+    } catch (e) {
+      debugPrint("Erro no hideNews: $e");
+      PopUps.snackbar(
+        texto: 'Não foi possível excluir essa $type no momento.',
+        cor: Colors.red,
+      );
+      return "error";
+    } finally {
+      isLoading(false);
     }
   }
 
-  List<dynamic> getValidNews() {
-    return newss.where((news) {
-      if (news.status != NewsStates.publicado) return false;
-      return _hasRenderableImage(news);
-    }).toList();
+  List<NewsModel> getValidNews() {
+    return _filterByStatus(NewsStates.publicado);
   }
 
-  List<dynamic> getInAnalysis() {
-    return newss.where((news) {
-      if (news.status != NewsStates.emAnalise) return false;
-      return _hasRenderableImage(news);
-    }).toList();
+  List<NewsModel> getInAnalysis() {
+    return _filterByStatus(NewsStates.emAnalise);
   }
 
-  List<dynamic> getMyDrafts() {
-    return newss.where((news) {
-      if (news.status != NewsStates.rascunho) return false;
-      if (news.createdBy != user.email) return false;
-      return _hasRenderableImage(news);
-    }).toList();
+  List<NewsModel> getMyDrafts() {
+    return _filterByStatus(NewsStates.rascunho, onlyMine: true);
   }
 
-  List<dynamic> getRejectedNews() {
-    return newss.where((news) {
-      if (news.status != NewsStates.rejeitado) return false;
-      if (news.createdBy != user.email) return false;
-      return _hasRenderableImage(news);
-    }).toList();
+  List<NewsModel> getRejectedNews() {
+    return _filterByStatus(NewsStates.rejeitado, onlyMine: true);
   }
 
-  List<dynamic> getDeletedNews() {
-    return newss.where((news) {
-      if (news.status != NewsStates.deletado) return false;
-      if (news.createdBy != user.email) return false;
+  List<NewsModel> getDeletedNews() {
+    return _filterByStatus(NewsStates.deletado, onlyMine: true);
+  }
+
+  // --- FUNÇÃO DE FILTRAGEM ---
+  // Centraliza a lógica para facilitar a manutenção
+  List<NewsModel> _filterByStatus(String status, {bool onlyMine = false}) {
+    return newsList.where((news) {
+      // 1. Filtro de Status
+      if (news.status != status) return false;
+
+      // 2. Filtro de Autoria (se solicitado)
+      if (onlyMine && news.createdBy != user.email) return false;
+
+      // 3. Filtro de Imagem (regra global de renderização)
       return _hasRenderableImage(news);
     }).toList();
   }
@@ -203,6 +226,11 @@ class NewsController extends GetxController {
     } catch (_) {
       return false;
     }
+  }
+
+  // Abre a página de detalhe
+  void openNews(NewsModel news) {
+    Get.toNamed(Routes.NEWS_PAGE, arguments: toNewsArguments(news));
   }
 
   // Prepara o map de argumentos usado nas rotas de detalhe
@@ -221,11 +249,6 @@ class NewsController extends GetxController {
       "validatedBy": news.validatedBy ?? '',
       "validatedByName": news.validatedByName ?? '',
     };
-  }
-
-  // Abre a página de detalhe
-  void openNews(NewsModel news) {
-    Get.toNamed(Routes.NEWS_PAGE, arguments: toNewsArguments(news));
   }
 
   // Abre a página de edição (usada quando o usuário pode editar)
@@ -274,119 +297,6 @@ class NewsController extends GetxController {
 
   bool isSelected(int index) => selectedCardIndex.value == index;
 
-  /// Sincroniza Hive <-> Firebase
-  Future<void> syncHiveAndFirebase() async {
-    try {
-      isLoading(true);
-
-      // Busca dados
-      final List<NewsModel> firebaseList =
-          await _repository.getNewsFromFirebase();
-      final List<NewsModel> hiveList = await _repository.getNewsFromHive();
-
-      // Cria maps para acesso rápido por ID
-      final Map<String, NewsModel> fbMap = {
-        for (var n in firebaseList) n.id: n,
-      };
-      final Map<String, NewsModel> hiveMap = {
-        for (var n in hiveList) n.id: n,
-      };
-
-      final Set<String> allIds = {...fbMap.keys, ...hiveMap.keys};
-
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      final WriteBatch batch = firestore.batch();
-      final CollectionReference collRef = firestore.collection('news');
-
-      var hiveBox = await Hive.openBox<NewsModel>('news');
-
-      for (final id in allIds) {
-        final fb = fbMap[id];
-        final hv = hiveMap[id];
-
-        if (fb != null && hv == null) {
-          // existe só no firebase -> salva no Hive
-          try {
-            await hiveBox.put(id, fb);
-          } catch (e) {
-            debugPrint("Erro ao salvar no Hive (from Firebase): $e");
-          }
-        } else if (hv != null && fb == null) {
-          // existe só no hive -> envia para Firebase (batch)
-          final docRef = collRef.doc(id);
-          batch.set(docRef, hv.toMap());
-        } else if (fb != null && hv != null) {
-          // existe nos dois -> comparar última modificação
-          final DateTime? fbLast = _lastModifiedFromModel(fb);
-          final DateTime? hvLast = _lastModifiedFromModel(hv);
-
-          if ((hvLast ?? DateTime.fromMillisecondsSinceEpoch(0))
-              .isAfter(fbLast ?? DateTime.fromMillisecondsSinceEpoch(0))) {
-            // Hive mais novo -> envia para Firebase
-            final docRef = collRef.doc(id);
-            batch.set(docRef, hv.toMap());
-          } else if ((fbLast ?? DateTime.fromMillisecondsSinceEpoch(0))
-              .isAfter(hvLast ?? DateTime.fromMillisecondsSinceEpoch(0))) {
-            // Firebase mais novo -> atualiza Hive
-            try {
-              await hiveBox.put(id, fb);
-            } catch (e) {
-              debugPrint("Erro ao atualizar Hive (from Firebase): $e");
-            }
-          } // se iguais, nada a fazer
-        }
-      }
-
-      // Commit batch se houver operações
-      try {
-        await batch.commit();
-      } catch (e) {
-        debugPrint("Erro ao commitar batch no Firestore: $e");
-      }
-
-      // Atualiza lista local do controller com os dados mais recentes (re-fetch do Hive)
-      try {
-        newss.value = await _repository.getNewsFromHive();
-        newss.sort((a, b) => DateTime.parse(b.createdAt.toString())
-            .compareTo(DateTime.parse(a.createdAt.toString())));
-      } catch (e) {
-        debugPrint("Erro ao recarregar notícias após sync: $e");
-      }
-    } catch (e) {
-      debugPrint("Erro na sincronização: $e");
-    } finally {
-      isLoading(false);
-    }
-  }
-
-  // helper para extrair última modificação de um NewsModel
-  DateTime? _lastModifiedFromModel(NewsModel n) {
-    DateTime? parseDynamic(dynamic d) {
-      if (d == null) return null;
-      if (d is DateTime) return d;
-      if (d is String) {
-        try {
-          return DateTime.tryParse(d);
-        } catch (_) {
-          return null;
-        }
-      }
-      return null;
-    }
-
-    final List<DateTime?> candidates = [
-      parseDynamic(n.createdAt),
-      parseDynamic(n.editedAt),
-      parseDynamic(n.validatedAt),
-      parseDynamic(n.rejectedAt),
-      parseDynamic(n.excluedAt),
-    ];
-    candidates.removeWhere((c) => c == null);
-    if (candidates.isEmpty) return null;
-    candidates.sort((a, b) => a!.compareTo(b!));
-    return candidates.last;
-  }
-
   // Mapeamento city -> asset path (adicione as imagens em assets/ e registre no pubspec.yaml)
   final Map<String, String> _cityImageAssets = {
     'São Sebastião do Alto': 'assets/images/cidades/saosebastiaodoalto.jpg',
@@ -405,22 +315,46 @@ class NewsController extends GetxController {
     return _cityImageAssets[key] ?? _cityImageAssets['default']!;
   }
 
-  reviewNews(String newsId, bool isApproved, String reason, String validator,
-      String creator, String validatorName, String newsType) async {
+  Future<void> reviewNews({
+    required String newsId,
+    required bool isApproved,
+    required String reason,
+    required String validator,
+    required String creator,
+    required String validatorName,
+    required String newsType,
+  }) async {
+    // 1. Regra de negócio: Impede auto-revisão
+    if (validator == creator) {
+      PopUps.snackbar(
+        texto: 'Você não pode revisar sua própria matéria.',
+        cor: Colors.red,
+      );
+      return;
+    }
+
     try {
       isLoading(true);
-      if (validator == creator) {
-        PopUps.snackbar(
-          texto: 'Você não pode revisar sua própria matéria.',
-          cor: Colors.red,
-        );
-        return;
-      }
+
+      // 2. Chama o Repository (que agora atualiza Firebase e Hive com os try-catchs)
       await _repository.reviewNews(
-          newsId, isApproved, reason, validator, validatorName, newsType);
-      // Atualiza lista local
-      await getNewsFromFirebase();
+        newsId,
+        isApproved,
+        reason,
+        validator,
+        validatorName,
+        newsType,
+      );
+
+      int index = newsList.indexWhere((n) => n.id == newsId);
+      if (index != -1) {
+        newsList[index].status =
+            isApproved ? NewsStates.publicado : NewsStates.rejeitado;
+      }
+
+      // 4. Sincroniza o resto do app
       homeController.forceRecreate();
+
       PopUps.snackbar(
         texto: isApproved
             ? 'Matéria aprovada com sucesso!'
@@ -428,6 +362,7 @@ class NewsController extends GetxController {
         cor: Colors.green,
       );
     } catch (e) {
+      debugPrint("Erro no Controller (reviewNews): $e");
       PopUps.snackbar(
         texto: 'Não foi possível revisar a matéria.',
         cor: Colors.red,

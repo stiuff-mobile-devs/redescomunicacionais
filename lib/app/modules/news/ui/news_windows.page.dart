@@ -43,7 +43,7 @@ class NewsWindowsPage extends GetView<NewsController> {
               );
             }
 
-            if (controller.newss.isEmpty) {
+            if (controller.newsList.isEmpty) {
               return Center(
                   child: Text(
                 'no_news_found'.tr,
@@ -51,7 +51,7 @@ class NewsWindowsPage extends GetView<NewsController> {
               ));
             }
             // Filtra notícias válidas com base no modo de revisão
-            final validNews = isDeletedMode.value
+            final List<NewsModel> validNews = isDeletedMode.value
                 ? controller.getDeletedNews()
                 : isRejectedMode.value
                     ? controller.getRejectedNews()
@@ -97,14 +97,13 @@ class NewsWindowsPage extends GetView<NewsController> {
     );
   }
 
-  Widget _buildHorizontalCards(List<dynamic> validNews) {
+  Widget _buildHorizontalCards(List<NewsModel> validNews) {
     return SizedBox(
       height: 120.0,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: validNews.map<Widget>((news) {
-            final NewsModel n = news as NewsModel;
+          children: validNews.map<Widget>((n) {
             return GestureDetector(
               onTap: () => controller.openNews(n),
               child: Card(
@@ -158,11 +157,11 @@ class NewsWindowsPage extends GetView<NewsController> {
     );
   }
 
-  List<Widget> _buildNewsList(List<dynamic> validNews) {
+  List<Widget> _buildNewsList(List<NewsModel> validNews) {
     return validNews.asMap().entries.map<Widget>(
       (entry) {
         final index = entry.key;
-        final news = entry.value as NewsModel;
+        final news = entry.value;
 
         return Obx(() {
           final isSelected = controller.isSelected(index);
@@ -473,42 +472,20 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(Get.context!).pop(),
+            onPressed: () => Get.back(),
             child:
                 Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
               Get.back();
-              try {
-                String result = await controller.hideNews(
-                  newsId, status, userEmail, authorEmail, type);
-                if (result == "sucess" || result == "success") {
-                  // Recarrega as notícias
-                  await controller.getNewsFromFirebase();
-                  controller.homeController.forceRecreate();
-                } else {
-                  showDialog(
-                    context: Get.context!,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: Colors.grey[900],
-                      title: Text('error'.tr,
-                          style: TextStyle(color: Colors.white)),
-                      content: Text(
-                        result,
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text('ok'.tr,
-                              style: TextStyle(color: Colors.blue)),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              } catch (_) {}
+              await controller.hideNews(
+                newsId: newsId,
+                status: status,
+                userEmail: userEmail,
+                authorEmail: authorEmail,
+                type: type,
+              );
             },
             child: Text('delete'.tr, style: const TextStyle(color: Colors.red)),
           ),
@@ -702,18 +679,15 @@ class NewsWindowsPage extends GetView<NewsController> {
             onPressed: () async {
               final reason = _reasonController.text.trim();
               Get.back();
-              try {
-                // envia o motivo junto com a revisão
-                await controller.reviewNews(
-                    news.id,
-                    accepted,
-                    reason,
-                    controller.user.email,
-                    news.createdBy,
-                    controller.user.name ?? '',
-                    news.type);
-                controller.homeController.forceRecreate();
-              } catch (_) {}
+              await controller.reviewNews(
+                newsId: news.id,
+                isApproved: accepted,
+                reason: reason,
+                validator: controller.user.email,
+                creator: news.createdBy,
+                validatorName: controller.user.name ?? '',
+                newsType: news.type,
+              );
             },
             child: Text(
               'send'.tr,
