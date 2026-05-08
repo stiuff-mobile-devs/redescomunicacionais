@@ -156,7 +156,6 @@ class CreateNewsFormController extends GetxController {
     List<String> urlImages = [_imageController.base64String ?? ""];
     final String author = _homeController.user.name!;
     final String email = _homeController.user.email;
-    final String createdAt = DateTime.now().toString();
     final String videoUrl = _videoUrlController.text;
 
     final String newsState = draft ? NewsStates.rascunho : NewsStates.emAnalise;
@@ -171,7 +170,6 @@ class CreateNewsFormController extends GetxController {
         urlImages,
         author,
         email,
-        createdAt,
         _type.value ?? '',
         newsState,
         videoUrl,

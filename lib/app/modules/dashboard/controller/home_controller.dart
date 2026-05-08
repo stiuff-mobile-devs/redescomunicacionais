@@ -68,7 +68,6 @@ class HomeController extends GetxController {
     super.onInit();
   }
 
-
   @override
   Future<void> onReady() async {
     // Revalida quando a Home fica visível.
@@ -156,15 +155,15 @@ class HomeController extends GetxController {
   }
 
   void filterNewsByName(String name) {
-    newsController.newsList.value = newsController.newsList
+    newsController.publishedNewsList.value = newsController.publishedNewsList
         .where((news) => news.title.toLowerCase().contains(name.toLowerCase()))
         .toList();
   }
 
   Future<void> refreshDashboardData() async {
     try {
-      await _newsRepository.syncHiveAndFirebase();
-      await newsController.getNewsFromHive();
+      await _newsRepository.syncNewsHiveAndFirebase();
+      await newsController.getAllNewsFromHive();
       forceRecreate();
     } finally {
       // Garante checagem real de conexão em todo pull-to-refresh.

@@ -35,7 +35,6 @@ class NewsModel {
   @HiveField(21)
   String? videoUrl;
 
-
   // ==========================================
   // 2. STATUS E CONTROLE DE ESTADO
   // ==========================================
@@ -96,15 +95,15 @@ class NewsModel {
   DateTime? editedAt;
 
   @HiveField(16)
-  String? excludedBy; 
+  String? excludedBy;
 
   @HiveField(17)
-  DateTime? excludedAt; 
+  DateTime? excludedAt;
 
   @HiveField(20)
   String? excludedObservation;
 
- NewsModel({
+  NewsModel({
     // --- Conteúdo Principal ---
     required this.id,
     required this.title,
@@ -142,52 +141,53 @@ class NewsModel {
     this.excludedAt,
     this.excludedObservation,
   });
- 
- 
+
   Map<String, dynamic> toMap() {
-  return {
-    // --- Conteúdo ---
-    'id': id,
-    'title': title,
-    'subtitle': subtitle,
-    'body': body,
-    'cities': cities,
-    'categories': categories,
-    'urlImages': urlImages,
-    'videoUrl': videoUrl,
-    'type': type,
+    return {
+      // --- Conteúdo ---
+      'id': id,
+      'title': title,
+      'subtitle': subtitle,
+      'body': body,
+      'cities': cities,
+      'categories': categories,
+      'urlImages': urlImages,
+      'videoUrl': videoUrl,
+      'type': type,
 
-    // --- Status ---
-    'status': status,
-    // Converte DateTime? para Timestamp?
-    'lastUpdated': lastUpdated != null ? Timestamp.fromDate(lastUpdated!) : null,
+      // --- Status ---
+      'status': status,
+      // Converte DateTime? para Timestamp?
+      'lastUpdated':
+          lastUpdated != null ? Timestamp.fromDate(lastUpdated!) : null,
 
-    // --- Autoria ---
-    'autor': author,
-    'createdBy': createdBy,
-    // Converte DateTime para Timestamp (obrigatório)
-    'createdAt': Timestamp.fromDate(createdAt),
+      // --- Autoria ---
+      'author': author,
+      'createdBy': createdBy,
+      // Converte DateTime para Timestamp (obrigatório)
+      'createdAt': Timestamp.fromDate(createdAt),
 
-    // --- Validação ---
-    'validatedBy': validatedBy,
-    'validatedByName': validatedByName,
-    'validatedAt': validatedAt != null ? Timestamp.fromDate(validatedAt!) : null,
-    'validatedObservation': validatedObservation,
+      // --- Validação ---
+      'validatedBy': validatedBy,
+      'validatedByName': validatedByName,
+      'validatedAt':
+          validatedAt != null ? Timestamp.fromDate(validatedAt!) : null,
+      'validatedObservation': validatedObservation,
 
-    // --- Rejeição ---
-    'rejectedBy': rejectedBy,
-    'rejectedAt': rejectedAt != null ? Timestamp.fromDate(rejectedAt!) : null,
-    'rejectedObservation': rejectedObservation,
+      // --- Rejeição ---
+      'rejectedBy': rejectedBy,
+      'rejectedAt': rejectedAt != null ? Timestamp.fromDate(rejectedAt!) : null,
+      'rejectedObservation': rejectedObservation,
 
-    // --- Edição e Exclusão ---
-    'editedAt': editedAt != null ? Timestamp.fromDate(editedAt!) : null,
-    'excludedBy': excludedBy,
-    'excludedAt': excludedAt != null ? Timestamp.fromDate(excludedAt!) : null,
-    'excludedObservation': excludedObservation,
-  };
-}
+      // --- Edição e Exclusão ---
+      'editedAt': editedAt != null ? Timestamp.fromDate(editedAt!) : null,
+      'excludedBy': excludedBy,
+      'excludedAt': excludedAt != null ? Timestamp.fromDate(excludedAt!) : null,
+      'excludedObservation': excludedObservation,
+    };
+  }
 
- factory NewsModel.fromMap(Map<String, dynamic> map) {
+  factory NewsModel.fromMap(Map<String, dynamic> map) {
     return NewsModel(
       // ==========================================
       // 1. INFORMAÇÕES DO CONTEÚDO
@@ -206,127 +206,50 @@ class NewsModel {
       // 2. STATUS E CONTROLE DE ESTADO
       // ==========================================
       status: map['status'] ?? '',
-      lastUpdated: map['lastUpdated'] is Timestamp 
-          ? (map['lastUpdated'] as Timestamp).toDate() 
-          : null,
+      lastUpdated: _parseDate(map['lastUpdated']),
 
       // ==========================================
       // 3. CRIAÇÃO E AUTORIA
       // ==========================================
-      author: map['autor'] ?? '',
+      author: map['author'] ?? '',
       createdBy: map['createdBy'] ?? '',
-      createdAt: map['createdAt'] is Timestamp 
-          ? (map['createdAt'] as Timestamp).toDate() 
-          : DateTime.now(), // Fallback caso createdAt venha corrompido
+      createdAt: _parseDate(map['createdAt']) ??
+          DateTime.now(), // Fallback caso createdAt venha corrompido
 
       // ==========================================
       // 4. FLUXO DE VALIDAÇÃO
       // ==========================================
       validatedBy: map['validatedBy'],
       validatedByName: map['validatedByName'],
-      validatedAt: map['validatedAt'] is Timestamp 
-          ? (map['validatedAt'] as Timestamp).toDate() 
-          : null,
+      validatedAt: _parseDate(map['validatedAt']),
       validatedObservation: map['validatedObservation'],
 
       // ==========================================
       // 5. FLUXO DE REJEIÇÃO
       // ==========================================
       rejectedBy: map['rejectedBy'],
-      rejectedAt: map['rejectedAt'] is Timestamp 
-          ? (map['rejectedAt'] as Timestamp).toDate() 
-          : null,
+      rejectedAt: _parseDate(map['rejectedAt']),
       rejectedObservation: map['rejectedObservation'],
 
       // ==========================================
       // 6. HISTÓRICO DE EDIÇÃO E EXCLUSÃO
       // ==========================================
-      editedAt: map['editedAt'] is Timestamp 
-          ? (map['editedAt'] as Timestamp).toDate() 
-          : null,
+      editedAt: _parseDate(map['editedAt']),
       excludedBy: map['excludedBy'],
-      excludedAt: map['excludedAt'] is Timestamp 
-          ? (map['excludedAt'] as Timestamp).toDate() 
-          : null,
+      excludedAt: _parseDate(map['excludedAt']),
       excludedObservation: map['excludedObservation'],
     );
   }
 
-  NewsModel copyWith({
-    // --- Conteúdo ---
-    String? id,
-    String? title,
-    String? subtitle,
-    List<String>? cities,
-    List<String>? categories,
-    String? body,
-    List<String>? urlImages,
-    String? videoUrl,
-    String? type,
+  static DateTime? _parseDate(dynamic value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    }
 
-    // --- Status ---
-    String? status,
-    DateTime? lastUpdated,
+    if (value is DateTime) {
+      return value;
+    }
 
-    // --- Autoria ---
-    String? author,
-    String? createdBy,
-    DateTime? createdAt,
-
-    // --- Validação ---
-    String? validatedBy,
-    String? validatedByName,
-    DateTime? validatedAt,
-    String? validatedObservation,
-
-    // --- Rejeição ---
-    String? rejectedBy,
-    DateTime? rejectedAt,
-    String? rejectedObservation,
-
-    // --- Edição e Exclusão ---
-    DateTime? editedAt,
-    String? excludedBy,
-    DateTime? excludedAt,
-    String? excludedObservation,
-  }) {
-    return NewsModel(
-      // --- Conteúdo ---
-      id: id ?? this.id,
-      title: title ?? this.title,
-      subtitle: subtitle ?? this.subtitle, // Pode ser null nativamente, mas o ?? prioriza o valor passado se não for nulo
-      cities: cities ?? this.cities,
-      categories: categories ?? this.categories,
-      body: body ?? this.body,
-      urlImages: urlImages ?? this.urlImages,
-      videoUrl: videoUrl ?? this.videoUrl,
-      type: type ?? this.type,
-
-      // --- Status ---
-      status: status ?? this.status,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
-
-      // --- Autoria ---
-      author: author ?? this.author,
-      createdBy: createdBy ?? this.createdBy,
-      createdAt: createdAt ?? this.createdAt,
-
-      // --- Validação ---
-      validatedBy: validatedBy ?? this.validatedBy,
-      validatedByName: validatedByName ?? this.validatedByName,
-      validatedAt: validatedAt ?? this.validatedAt,
-      validatedObservation: validatedObservation ?? this.validatedObservation,
-
-      // --- Rejeição ---
-      rejectedBy: rejectedBy ?? this.rejectedBy,
-      rejectedAt: rejectedAt ?? this.rejectedAt,
-      rejectedObservation: rejectedObservation ?? this.rejectedObservation,
-
-      // --- Edição e Exclusão ---
-      editedAt: editedAt ?? this.editedAt,
-      excludedBy: excludedBy ?? this.excludedBy,
-      excludedAt: excludedAt ?? this.excludedAt,
-      excludedObservation: excludedObservation ?? this.excludedObservation,
-    );
+    return null;
   }
 }

@@ -502,9 +502,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 onPressed: isLoading ? null : () => _validateAndUpdate(false),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 52),
-                  backgroundColor: isLoading
-                      ? Colors.grey
-                      : const Color(0xFF2563EB),
+                  backgroundColor:
+                      isLoading ? Colors.grey : const Color(0xFF2563EB),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -608,6 +607,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
         'type': selectedType.value,
         'status': status,
         'updatedAt': DateTime.now(),
+        'lastUpdated': DateTime.now(),
       };
 
       // Se foi selecionada nova imagem, adiciona ela

@@ -5,24 +5,19 @@ class NewsRepository {
   NewsRepository();
   final NewsProvider newsProvider = NewsProvider();
 
-  Future<void> saveNewsToFirebase(NewsModel news) async {
-    await newsProvider.saveNewsToFirebase(news);
-  }
-
   Future<void> saveNewsToHive(NewsModel news) async {
     await newsProvider.saveNewsToHive(news);
+  }
+
+  Future<void> syncNewsHiveAndFirebase() async {
+    await newsProvider.syncNewsHiveAndFirebase();
   }
 
   Future<List<NewsModel>> getNewsFromHive() {
     return newsProvider.getNewsFromHive();
   }
 
-  Future<List<NewsModel>> getNewsFromFirebase() {
-    return newsProvider.getNewsFromFirebase();
-  }
-
-  Future<String> hideNews(
-      String newsId, String status, String userEmail) async {
+  Future<void> hideNews(String newsId, String status, String userEmail) async {
     return await newsProvider.hideNews(newsId, status, userEmail);
   }
 
@@ -46,9 +41,5 @@ class NewsRepository {
       validatorName: validatorName,
       newsType: newsType,
     );
-  }
-
-  Future<void> syncHiveAndFirebase() async {
-    await newsProvider.syncHiveAndFirebase();
   }
 }

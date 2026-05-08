@@ -43,25 +43,10 @@ class NewsWindowsPage extends GetView<NewsController> {
               );
             }
 
-            if (controller.newsList.isEmpty) {
-              return Center(
-                  child: Text(
-                'no_news_found'.tr,
-                selectionColor: Colors.white,
-              ));
-            }
-            // Filtra notícias válidas com base no modo de revisão
-            final List<NewsModel> validNews = isDeletedMode.value
-                ? controller.getDeletedNews()
-                : isRejectedMode.value
-                    ? controller.getRejectedNews()
-                    : isRevisionMode.value
-                        ? controller.getInAnalysis()
-                        : isDraftMode.value
-                            ? controller.getMyDrafts()
-                            : controller.getValidNews();
+            final List<NewsModel> validNews = _getNewsForCurrentMode();
+            final List<NewsModel> sortedNews = _sortByCreatedAt(validNews);
 
-            if (validNews.isEmpty) {
+            if (sortedNews.isEmpty) {
               return Center(
                 child: Text(
                   'no_news_found'.tr,
@@ -82,12 +67,12 @@ class NewsWindowsPage extends GetView<NewsController> {
                   const SizedBox(height: 16.0), // Espaço superior
 
                   // Cards horizontais
-                  _buildHorizontalCards(validNews),
+                  _buildHorizontalCards(sortedNews),
 
                   const SizedBox(height: 16.0),
 
                   // Lista vertical de notícias
-                  ..._buildNewsList(validNews),
+                  ..._buildNewsList(sortedNews),
                 ],
               ),
             );
@@ -95,6 +80,32 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
       ),
     );
+  }
+
+  List<NewsModel> _getNewsForCurrentMode() {
+    if (isDeletedMode.value) {
+      return controller.deletedNewsList;
+    }
+
+    if (isRejectedMode.value) {
+      return controller.rejectedNewsList;
+    }
+
+    if (isRevisionMode.value) {
+      return controller.inAnalysisNewsList;
+    }
+
+    if (isDraftMode.value) {
+      return controller.myDraftsList;
+    }
+
+    return controller.publishedNewsList;
+  }
+
+  List<NewsModel> _sortByCreatedAt(List<NewsModel> newsList) {
+    final sortedList = List<NewsModel>.from(newsList);
+    sortedList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return sortedList;
   }
 
   Widget _buildHorizontalCards(List<NewsModel> validNews) {
@@ -222,8 +233,12 @@ class NewsWindowsPage extends GetView<NewsController> {
                       if (controller.canDelete(news))
                         GestureDetector(
                           onTap: () {
-                            hideNewsPopup(news.id, NewsStates.deletado,
-                                controller.user.email, news.createdBy, news.type);
+                            hideNewsPopup(
+                                news.id,
+                                NewsStates.deletado,
+                                controller.user.email,
+                                news.createdBy,
+                                news.type);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(8.0),
@@ -457,8 +472,8 @@ class NewsWindowsPage extends GetView<NewsController> {
     ).toList();
   }
 
-      Future<void> hideNewsPopup(String newsId, String status, String userEmail,
-        String authorEmail, String type) async {
+  Future<void> hideNewsPopup(String newsId, String status, String userEmail,
+      String authorEmail, String type) async {
     await Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
@@ -483,7 +498,6 @@ class NewsWindowsPage extends GetView<NewsController> {
                 newsId: newsId,
                 status: status,
                 userEmail: userEmail,
-                authorEmail: authorEmail,
                 type: type,
               );
             },
@@ -625,8 +639,7 @@ class NewsWindowsPage extends GetView<NewsController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child:
-                Text('close'.tr, style: const TextStyle(color: Colors.blue)),
+            child: Text('close'.tr, style: const TextStyle(color: Colors.blue)),
           ),
         ],
       ),
