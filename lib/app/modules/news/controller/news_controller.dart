@@ -153,17 +153,6 @@ class NewsController extends GetxController {
     }
   }
 
-  bool _hasRenderableImage(NewsModel news) {
-    try {
-      if (news.urlImages.isNotEmpty && news.urlImages[0] != "") {
-        base64Decode(news.urlImages[0]);
-      }
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
   // Função para "deletar" a noticia (na verdade, muda o status para "deletado")
   Future<void> hideNews({
     required String newsId,

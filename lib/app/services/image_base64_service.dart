@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
 import 'package:image_cropper/image_cropper.dart';
 
 class ImageBase64Service extends GetxController {
@@ -27,27 +27,11 @@ class ImageBase64Service extends GetxController {
     _base64String.value = null;
     _message.value = 'processing_image_message'.tr;
 
-    // MUDANÇA: Verificar tipo MIME em vez da extensão do arquivo
-    String? mimeType = imageFile.mimeType;
-    if (mimeType != null) {
-      // Verificar pelo tipo MIME
-      if (mimeType != 'image/jpeg' && mimeType != 'image/jpg') {
-        _message.value = 'image_format_invalid'.tr;
-        return;
-      }
-    } else {
-      // Fallback: verificar extensão (para compatibilidade)
-      String fileName = imageFile.name.toLowerCase();
-      if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg')) {
-        _message.value = 'image_format_invalid'.tr;
-        return;
-      }
-    }
-
+    // Redimensionamento da imagem
     final CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: imageFile.path,
       compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 85,
+      compressQuality: 100,
       maxWidth: 1280,
       maxHeight: 1280,
       uiSettings: [
@@ -72,27 +56,37 @@ class ImageBase64Service extends GetxController {
       return;
     }
 
-    Uint8List imageBytes = await croppedFile.readAsBytes();
-    if (imageBytes.lengthInBytes <= maxSizeBytes) {
-      _base64String.value = base64Encode(imageBytes);
-      _message.value = 'image_selected_success'.tr;
-      return;
-    }
+    // Compressão para WebP
+    Uint8List? webpBytes = await FlutterImageCompress.compressWithFile(
+      croppedFile.path,
+      format: CompressFormat.webp,
+      quality: 80, // Qualidade inicial excelente para WebP
+    );
 
-    img.Image? image = img.decodeImage(imageBytes);
-    if (image == null) {
+    if (webpBytes == null) {
       _message.value = 'error_processing_image'.tr;
       return;
     }
 
-    Uint8List compressedImage =
-        Uint8List.fromList(img.encodeJpg(image, quality: 10));
+    int currentQuality = 80;
 
-    if (compressedImage.lengthInBytes > maxSizeBytes) {
+    // Loop de compressão gradual
+    while (webpBytes!.lengthInBytes > maxSizeBytes && currentQuality > 10) {
+      currentQuality -= 10; // Diminui 10% a cada tentativa
+
+      webpBytes = await FlutterImageCompress.compressWithList(
+        webpBytes,
+        format: CompressFormat.webp,
+        quality: currentQuality,
+      );
+    }
+
+// Verificação final após o loop
+    if (webpBytes.lengthInBytes > maxSizeBytes) {
       _message.value = 'image_too_large'.tr;
     } else {
-      _base64String.value = base64Encode(compressedImage);
-      _message.value = 'image_compressed'.tr;
+      _base64String.value = base64Encode(webpBytes);
+      _message.value = 'image_selected_success'.tr;
     }
   }
 }
