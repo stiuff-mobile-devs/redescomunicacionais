@@ -34,7 +34,14 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
         child: Obx(
           () {
-            if (controller.isLoading.value) {
+            // Show loader while controller is loading OR while all news lists are still empty
+            final bool allListsEmpty = controller.publishedNewsList.isEmpty &&
+                controller.inAnalysisNewsList.isEmpty &&
+                controller.myDraftsList.isEmpty &&
+                controller.rejectedNewsList.isEmpty &&
+                controller.deletedNewsList.isEmpty;
+
+            if (controller.isLoading.value || allListsEmpty) {
               return const Center(
                 child: BlinkingLoadingIcon(
                   size: 36,

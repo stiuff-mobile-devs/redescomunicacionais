@@ -12,7 +12,7 @@ import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dar
 class LocationService extends GetxService {
   UserController userController = Get.find<UserController>();
 
-  RxString city = 'obtaining_location'.tr.obs;
+  RxString city = ''.obs;
 
   Future<LocationService> init() async {
     return this;

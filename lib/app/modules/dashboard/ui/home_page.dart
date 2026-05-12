@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
+import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
+import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_windows.page.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
@@ -37,11 +39,6 @@ class HomePage extends GetView<HomeController> {
               foregroundColor: Colors.white,
               titleSpacing: isTablet ? 16.0 : 12.0,
               title: Obx(() {
-                final onlineStatus = _getOnlineStatus(
-                  isOnline: controller.isOnline.value,
-                  minutesSinceLastOnline:
-                      controller.minutesSinceLastOnline.value,
-                );
                 final titleText = controller.isRevisionMode.value
                     ? 'news_review'.tr
                     : controller.isDraftMode.value
@@ -51,36 +48,8 @@ class HomePage extends GetView<HomeController> {
                             : controller.isDeletedMode.value
                                 ? 'Matérias excluídas'.tr
                                 : 'app_short_name'.tr;
-
                 return Row(
                   children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => _showOnlineStatusFeedback(
-                        context,
-                        onlineStatus,
-                        controller.minutesSinceLastOnline.value,
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isTablet ? 10.0 : 8.0,
-                          vertical: isTablet ? 8.0 : 6.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: onlineStatus.color.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: onlineStatus.color.withOpacity(0.65),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.wifi_rounded,
-                          color: onlineStatus.color,
-                          size: iconSize * 0.9,
-                        ),
-                      ),
-                    ),
                     SizedBox(width: isTablet ? 10.0 : 8.0),
                     Expanded(
                       child: Column(
@@ -93,15 +62,6 @@ class HomePage extends GetView<HomeController> {
                               fontSize: appBarTitleSize,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            '${'last_online'.tr}: ${_onlineTimeLabel(controller.minutesSinceLastOnline.value)}',
-                            style: TextStyle(
-                              fontSize: isTablet ? 11.0 : 10.0,
-                              color: Colors.white70,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -143,13 +103,20 @@ class HomePage extends GetView<HomeController> {
                             const Icon(Icons.arrow_back, color: Colors.orange),
                       )
                     : const SizedBox.shrink()),
-                IconButton(
-                  iconSize: iconSize,
-                  icon: const Icon(Icons.help_outline),
-                  onPressed: () {
-                    controller.goUserGuide();
-                  },
-                ),
+                Obx(() {
+                  final conn = controller.connectionsController;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: IconButton(
+                      onPressed: () => Get.toNamed(Routes.CONNECTIONS),
+                      icon: Icon(
+                        Icons.wifi,
+                        color: conn.isInternetConnected.value ? Colors.green : Colors.red,
+                        size: iconSize,
+                      ),
+                    ),
+                  );
+                }),
                 IconButton(
                   iconSize: iconSize,
                   icon: const Icon(Icons.search),
@@ -186,6 +153,14 @@ class HomePage extends GetView<HomeController> {
                         );
                       },
                     );
+                  },
+                ),
+          
+                IconButton(
+                  iconSize: iconSize,
+                  icon: const Icon(Icons.help_outline),
+                  onPressed: () {
+                    controller.goUserGuide();
                   },
                 ),
               ],
@@ -358,142 +333,8 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  _OnlineStatus _getOnlineStatus({
-    required bool isOnline,
-    required int minutesSinceLastOnline,
-  }) {
-    if (!isOnline) {
-      return _OnlineStatus(
-        color: Colors.red,
-        label: 'offline'.tr,
-      );
-    }
+ 
 
-    if (minutesSinceLastOnline <= 5) {
-      return _OnlineStatus(
-        color: Colors.green,
-        label: 'recent_connection'.tr,
-      );
-    }
-
-    if (minutesSinceLastOnline <= 15) {
-      return _OnlineStatus(
-        color: Colors.amber,
-        label: 'moderate_connection'.tr,
-      );
-    }
-
-    return _OnlineStatus(
-      color: Colors.red,
-      label: 'outdated_connection'.tr,
-    );
-  }
-
-  String _onlineTimeLabel(int minutesSinceLastOnline) {
-    if (minutesSinceLastOnline <= 0) {
-      return 'now'.tr;
-    }
-
-    return '$minutesSinceLastOnline min';
-  }
-
-  void _showOnlineStatusFeedback(
-    BuildContext context,
-    _OnlineStatus status,
-    int minutesSinceLastOnline,
-  ) {
-    final lastCheck = controller.lastConnectivityCheckAt.value;
-    final lastCheckLabel = lastCheck == null
-        ? '--'
-        : '${lastCheck.hour.toString().padLeft(2, '0')}:${lastCheck.minute.toString().padLeft(2, '0')}';
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: status.color.withOpacity(0.65),
-              width: 1.3,
-            ),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.wifi_rounded, color: status.color),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'connection_status'.tr,
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${'last_online'.tr}: ${_onlineTimeLabel(minutesSinceLastOnline)}',
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${'current_status'.tr}: ${status.label}',
-                style: TextStyle(
-                  color: status.color,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${'network_type'.tr}: ${controller.connectionTypeLabel.value}',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${'last_check'.tr}: $lastCheckLabel',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'ranges'.tr,
-                style: TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 6),
-              Text('0-5 min: verde'.tr, style: TextStyle(color: Colors.green)),
-              Text('6-15 min: amarelo'.tr,
-                  style: TextStyle(color: Colors.amber)),
-              Text('> 15 min: vermelho'.tr,
-                  style: TextStyle(color: Colors.red)),
-              const SizedBox(height: 10),
-              Text(
-                'real_connection_checked_every_5_min'.tr,
-                style: TextStyle(color: Colors.white54, fontSize: 12),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child:
-                  Text('close'.tr, style: const TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+ 
 }
 
-class _OnlineStatus {
-  final Color color;
-  final String label;
-
-  const _OnlineStatus({
-    required this.color,
-    required this.label,
-  });
-}
