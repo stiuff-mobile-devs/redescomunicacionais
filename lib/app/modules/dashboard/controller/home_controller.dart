@@ -58,7 +58,8 @@ class HomeController extends GetxController {
     user = await userController.getCurrentUser();
 
     isLoadingLocation.value = true;
-    await locationService.requestLocation(user);
+    // Desativando por enquanto
+    //await locationService.requestLocation(user);
     isLoadingLocation.value = false;
 
     await checkConnectivityStatus();
