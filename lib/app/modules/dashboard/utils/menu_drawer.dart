@@ -123,6 +123,17 @@ class MenuPage extends StatelessWidget {
                 Get.toNamed(Routes.USER);
               },
             ),
+            ListTile(
+            leading: const Icon(Icons.info_outline, color: Colors.white),
+            title: Text(
+              'Conexões',
+              style: const TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              Get.toNamed(Routes.CONNECTIONS);
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: Colors.white),
             title: Text(

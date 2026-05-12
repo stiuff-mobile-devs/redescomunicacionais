@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/bindings/admin_binding.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
+import 'package:redescomunicacionais/app/modules/connections/bindings/connections_bindings.dart';
+import 'package:redescomunicacionais/app/modules/connections/ui/connections_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
 import 'package:redescomunicacionais/app/data/bindings/image_bindings.dart';
 import 'package:redescomunicacionais/app/modules/login/bindings/login_bindings.dart';
@@ -41,7 +43,7 @@ class AppPages {
     GetPage(
       name: Routes.HOME,
       page: () => HomePage(),
-      bindings: [UserBinding(), HomeBinding(), NewsBinding()],
+      bindings: [UserBinding(), HomeBinding(), NewsBinding(), ConnectionsBindings()],
     ),
     GetPage(
       name: Routes.NEWS,
@@ -77,6 +79,11 @@ class AppPages {
       name: Routes.NEWSCENTER,
       page: () => NewsCenterPage(),
       bindings: [NewsCenterBinding(), HomeBinding(), NewsBinding()],
+    ),
+    GetPage(
+      name: Routes.CONNECTIONS,
+      page: () => const ConnectionsPage(),
+      binding: ConnectionsBindings(),
     ),
   ];
 }

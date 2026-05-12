@@ -10,6 +10,7 @@ import 'package:redescomunicacionais/app/services/location_service.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
 
 class HomeController extends GetxController {
   late UserModel user;
@@ -49,10 +50,13 @@ class HomeController extends GetxController {
   int get recreateKey => _recreateKey.value;
   void forceRecreate() => _recreateKey.value++;
 
+  late ConnectionsController connectionsController;
+
   @override
   Future<void> onInit() async {
     locationService = Get.find<LocationService>();
     userController = Get.find<UserController>();
+    connectionsController = Get.find<ConnectionsController>();
     _loadPackageInfo();
 
     user = await userController.getCurrentUser();
