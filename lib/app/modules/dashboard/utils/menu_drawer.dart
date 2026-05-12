@@ -124,7 +124,7 @@ class MenuPage extends StatelessWidget {
               },
             ),
             ListTile(
-            leading: const Icon(Icons.info_outline, color: Colors.white),
+            leading: const Icon(Icons.wifi, color: Colors.white),
             title: Text(
               'Conexões',
               style: const TextStyle(color: Colors.white),
