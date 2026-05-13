@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -32,8 +33,8 @@ class ImageBase64Service extends GetxController {
       sourcePath: imageFile.path,
       compressFormat: ImageCompressFormat.jpg,
       compressQuality: 100,
-      maxWidth: 1280,
-      maxHeight: 1280,
+      maxWidth: 1920,
+      maxHeight: 1080,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'crop_image_title'.tr,
@@ -60,7 +61,7 @@ class ImageBase64Service extends GetxController {
     Uint8List? webpBytes = await FlutterImageCompress.compressWithFile(
       croppedFile.path,
       format: CompressFormat.webp,
-      quality: 80, // Qualidade inicial excelente para WebP
+      quality: 100, 
     );
 
     if (webpBytes == null) {
@@ -68,7 +69,7 @@ class ImageBase64Service extends GetxController {
       return;
     }
 
-    int currentQuality = 80;
+    int currentQuality = 100;
 
     // Loop de compressão gradual
     while (webpBytes!.lengthInBytes > maxSizeBytes && currentQuality > 10) {
@@ -86,6 +87,11 @@ class ImageBase64Service extends GetxController {
       _message.value = 'image_too_large'.tr;
     } else {
       _base64String.value = base64Encode(webpBytes);
+      var tamanho = (_base64String.value!.length) / 1024;
+      print('Tamanho original: ${File(imageFile.path).lengthSync() / 1024} KB');
+      print('Tamanho após crop: ${File(croppedFile.path).lengthSync() / 1024} KB');
+      print('Tamanho em WebP: ${  webpBytes.lengthInBytes / 1024} KB');
+      print('Tamanho em base 64: $tamanho KB'); 
       _message.value = 'image_selected_success'.tr;
     }
   }
