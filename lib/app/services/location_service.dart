@@ -12,7 +12,7 @@ import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dar
 class LocationService extends GetxService {
   UserController userController = Get.find<UserController>();
 
-  RxString city = "Obtendo localização...".obs;
+  RxString city = ''.obs;
 
   Future<LocationService> init() async {
     return this;
@@ -29,14 +29,7 @@ class LocationService extends GetxService {
   }
 
   Future<void> requestLocation(UserModel user) async {
-    bool needsLocationUpdate = user.lastLocation == null ||
-        user.lastLocationUpdatedAt == null ||
-        DateTime.now().difference(user.lastLocationUpdatedAt!).inDays >= 7;
-
-    if (!needsLocationUpdate) {
-      await _getUserLocation(user);
-      return;
-    }
+    
 
     final completer = Completer<void>();
 
@@ -44,18 +37,17 @@ class LocationService extends GetxService {
       if (Platform.isAndroid) {
         await Get.dialog(
           AlertDialog(
-            title: const Text("Solicitação de Localização"),
-            content: const Text(
-                "O aplicativo gostaria de acessar sua localização para fornecer melhor informações sobre sua área. Se concorda, selecione 'Confirmar'. Caso contrário, selecione 'Continuar sem localização'."),
+            title: Text('location_request_title'.tr),
+            content: Text('location_permission_description_android'.tr),
             actions: [
               TextButton(
                 onPressed: () {
-                  city.value = "Localização não fornecida";
+                  city.value = 'location_not_provided'.tr;
                   if (Get.isDialogOpen ?? false) {
                     _closeDialogIfOpen();
                   }
                 },
-                child: const Text("Continuar sem localização"),
+                child: Text('continue_without_location'.tr),
               ),
               TextButton(
                 onPressed: () async {
@@ -68,7 +60,7 @@ class LocationService extends GetxService {
                     _closeDialogIfOpen();
                   }
                 },
-                child: const Text("Confirmar"),
+                child: Text('confirm'.tr),
               ),
             ],
           ),
@@ -76,10 +68,8 @@ class LocationService extends GetxService {
       } else {
         await Get.dialog(
           AlertDialog(
-            title: const Text("Permitir localização"),
-            content: const Text(
-              "Usamos sua localização para mostrar notícias mais próximas de você.",
-            ),
+            title: Text('allow_location'.tr),
+            content: Text('location_permission_description_ios'.tr),
             actions: [
               TextButton(
                 onPressed: () async {
@@ -92,7 +82,7 @@ class LocationService extends GetxService {
                     _closeDialogIfOpen();
                   }
                 },
-                child: const Text("Continuar"),
+                child: Text('continue'.tr),
               ),
             ],
           ),
@@ -112,9 +102,10 @@ class LocationService extends GetxService {
 
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        city.value = "Localização não fornecida";
+        city.value = 'location_not_provided'.tr;
         return;
       }
+
       // Obtém a posição atual com timeout
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -127,13 +118,7 @@ class LocationService extends GetxService {
       );
 
       if (placemarks.isNotEmpty) {
-        city.value =
-            placemarks.first.subAdministrativeArea ?? "Cidade não encontrada";
-        user.lastLocation = placemarks.first.subAdministrativeArea;
-        user.lastLocationUpdatedAt = DateTime.now();
-
-        debugPrint(
-            "Atualizando localização: ${user.lastLocation} - ${user.lastLocationUpdatedAt}");
+        city.value = placemarks.first.subAdministrativeArea ?? 'city_not_found'.tr;
 
         try {
           await userController.updateUserInFirebase(user);
@@ -150,27 +135,27 @@ class LocationService extends GetxService {
         }
       }
     } on TimeoutException {
-      city.value = "Erro ao atualizar localização";
+      city.value = 'error_updating_location'.tr;
     } catch (e) {
-      city.value = "Erro ao atualizar localização";
+      city.value = 'error_updating_location'.tr;
     }
   }
 
   void _showLocationLoadingDialog() {
     Get.dialog(
       AlertDialog(
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            BlinkingLoadingIcon(
+            const BlinkingLoadingIcon(
               size: 80,
               color: Colors.black,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              "Aguarde enquanto verificamos sua localização",
+              'checking_location_message'.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
             SizedBox(height: 20),
             BlinkingLoadingIcon(

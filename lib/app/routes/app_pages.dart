@@ -2,12 +2,14 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/bindings/admin_binding.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
+import 'package:redescomunicacionais/app/modules/connections/bindings/connections_bindings.dart';
+import 'package:redescomunicacionais/app/modules/connections/ui/connections_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/bindings/home_bindings.dart';
 import 'package:redescomunicacionais/app/data/bindings/image_bindings.dart';
 import 'package:redescomunicacionais/app/modules/login/bindings/login_bindings.dart';
 import 'package:redescomunicacionais/app/modules/news/bindings/news_bindings.dart';
-import 'package:redescomunicacionais/app/modules/news_revision/bindings/news_revision_bindings.dart';
-import 'package:redescomunicacionais/app/modules/news_revision/ui/news_revision_page.dart';
+import 'package:redescomunicacionais/app/modules/news_center/bindings/news_center_bindings.dart';
+import 'package:redescomunicacionais/app/modules/news_center/ui/news_center_page.dart';
 import 'package:redescomunicacionais/app/modules/splash/bindings/splash_bindings.dart';
 import 'package:redescomunicacionais/app/modules/user/bindings/user_bindings.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
@@ -41,7 +43,7 @@ class AppPages {
     GetPage(
       name: Routes.HOME,
       page: () => HomePage(),
-      bindings: [UserBinding(), HomeBinding(), NewsBinding()],
+      bindings: [UserBinding(), HomeBinding(), NewsBinding(), ConnectionsBindings()],
     ),
     GetPage(
       name: Routes.NEWS,
@@ -74,8 +76,14 @@ class AppPages {
       binding: UserBinding(),
     ),
     GetPage(
-        name: Routes.NEWS_REVISION,
-        page: () => NewsRevisionPage(),
-        binding: NewsRevisionBindings()),
+      name: Routes.NEWSCENTER,
+      page: () => NewsCenterPage(),
+      bindings: [NewsCenterBinding(), HomeBinding(), NewsBinding()],
+    ),
+    GetPage(
+      name: Routes.CONNECTIONS,
+      page: () => const ConnectionsPage(),
+      binding: ConnectionsBindings(),
+    ),
   ];
 }

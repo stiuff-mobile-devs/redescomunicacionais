@@ -6,7 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart'; // Adicionado para kIsWeb
 
 class WebViewPage extends StatelessWidget {
-  const WebViewPage({Key? key}) : super(key: key);
+  const WebViewPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class WebViewPage extends StatelessWidget {
                         const Icon(Icons.open_in_new,
                             size: 48, color: Colors.black54),
                         const SizedBox(height: 16),
-                        Text('Abrindo link em nova aba...',
+                        Text('opening_link_new_tab'.tr,
                             style: TextStyle(color: Colors.black54)),
                       ],
                     ),

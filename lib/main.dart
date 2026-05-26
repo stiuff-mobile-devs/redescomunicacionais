@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/routes/app_pages.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/services/hive_service.dart';
+import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
 import 'package:redescomunicacionais/app/utils/theme/app_theme.dart';
 import 'package:redescomunicacionais/firebase_options.dart';
 
@@ -32,9 +33,10 @@ Future<void> main() async {
         GlobalCupertinoLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('pt', 'BR'),
-      ],
+      translations: AppTranslation(),
+      supportedLocales: AppTranslation.supportedLocales,
+      locale: AppTranslation.normalizeLocale(Get.deviceLocale),
+      fallbackLocale: AppTranslation.fallback,
     ),
   );
 }

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
-import 'package:redescomunicacionais/app/modules/news/controller/update_news_ontroller.dart';
+import 'package:redescomunicacionais/app/modules/news/controller/update_news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
+import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
@@ -129,7 +130,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Editar Notícia"),
+        title: Text('edit_news'.tr),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -165,7 +166,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                   const SizedBox(height: 16),
                   _buildImageMessage(),
                   const SizedBox(height: 16),
-                  _buildUpdateButton(),
+                  _buildActionButtons(),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -181,7 +182,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       controller: _titleController,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: "Título",
+        labelText: 'title'.tr,
         labelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
@@ -194,7 +195,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return "O título é obrigatório.";
+          return 'title_required'.tr;
         }
         return null;
       },
@@ -206,7 +207,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       controller: _subtitleController,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: "Subtítulo (opcional)",
+        labelText: 'subtitle_optional'.tr,
         labelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
@@ -230,8 +231,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione as Categorias",
+                title: Text(
+                  'select_categories'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -265,10 +266,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
             ),
             if (showCategoryError.value)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos uma categoria.",
+                  'select_at_least_one_category'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -286,8 +287,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione a Cidade",
+                title: Text(
+                  'select_city'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -321,10 +322,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
             ),
             if (showCityError.value)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos uma cidade.",
+                  'select_at_least_one_city'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -342,8 +343,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ExpansionTile(
-                title: const Text(
-                  "Selecione o Tipo",
+                title: Text(
+                  'select_type'.tr,
                   style: TextStyle(color: Colors.white),
                 ),
                 iconColor: Colors.white,
@@ -371,10 +372,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
             ),
             if (showTypeError.value)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Selecione pelo menos um tipo.",
+                  'select_at_least_one_type'.tr,
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -394,8 +395,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
       child: ElevatedButton.icon(
         onPressed: () => _imageController.pickImage(),
         icon: const Icon(Icons.image),
-        label: const Text(
-          "Alterar Imagem",
+        label: Text(
+          'change_image'.tr,
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -403,8 +404,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
   }
 
   Widget _buildImageInfo() {
-    return const Text(
-      "A imagem deve estar no formato JPG ou JPEG e, preferencialmente, ter um tamanho máximo de 500 KB. Imagens maiores serão comprimidas, o que pode causar perda de qualidade e lentidão no carregamento. Para uma melhor visualização, recomenda-se o uso de imagens com orientação paisagem.",
+    return Text(
+      'image_requirements'.tr,
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
@@ -458,26 +459,74 @@ class _EditNewsPageState extends State<EditNewsPage> {
         ));
   }
 
-  Widget _buildUpdateButton() {
-    return Obx(() => ElevatedButton(
-          onPressed:
-              _updateNewsController.isLoading.value ? null : _validateAndUpdate,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50),
-            backgroundColor: _updateNewsController.isLoading.value
-                ? Colors.grey
-                : Colors.blue,
-          ),
-          child: _updateNewsController.isLoading.value
-              ? const BlinkingLoadingIcon(
-                  size: 26,
+  Widget _buildActionButtons() {
+    return Obx(() {
+      final isLoading = _updateNewsController.isLoading.value;
+
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: isLoading ? null : () => _validateAndUpdate(true),
+              icon: const Icon(Icons.save_outlined, color: Colors.white),
+              label: Text(
+                'save_draft_news'.tr,
+                style: const TextStyle(
                   color: Colors.white,
-                )
-              : const Text(
-                  "Atualizar Notícia",
-                  style: TextStyle(color: Colors.white),
+                  fontWeight: FontWeight.w600,
                 ),
-        ));
+              ),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 52),
+                side: const BorderSide(color: Colors.white70, width: 1.4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x663B82F6),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed: isLoading ? null : () => _validateAndUpdate(false),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                  backgroundColor:
+                      isLoading ? Colors.grey : const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: isLoading
+                    ? const BlinkingLoadingIcon(
+                        size: 22,
+                        color: Colors.white,
+                      )
+                    : const Icon(Icons.update, color: Colors.white),
+                label: Text(
+                  'update_news'.tr,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   // Métodos de toggle
@@ -505,11 +554,16 @@ class _EditNewsPageState extends State<EditNewsPage> {
   }
 
   // Validação e atualização
-  void _validateAndUpdate() async {
+  void _validateAndUpdate(bool draft) async {
     // Reset erros
     showCategoryError.value = false;
     showCityError.value = false;
     showTypeError.value = false;
+
+    if (draft) {
+      await _submitUpdate(NewsStates.rascunho);
+      return;
+    }
 
     // Validação do formulário
     bool isFormValid = _formKey.currentState?.validate() ?? false;
@@ -531,15 +585,17 @@ class _EditNewsPageState extends State<EditNewsPage> {
     }
 
     if (!isFormValid) {
-      Get.snackbar(
-        "Erro de Validação",
-        "Por favor, preencha todos os campos obrigatórios.",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      PopUps.snackbar(
+        texto: 'fill_required_fields'.tr,
+        cor: Colors.red,
       );
       return;
     }
 
+    await _submitUpdate(NewsStates.emAnalise);
+  }
+
+  Future<void> _submitUpdate(String status) async {
     try {
       // Prepara os dados atualizados
       final updatedData = {
@@ -549,8 +605,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
         'cities': selectedCities.toList(),
         'categories': selectedCategories.toList(),
         'type': selectedType.value,
-        'status': NewsStates.emAnalise,
+        'status': status,
         'updatedAt': DateTime.now(),
+        'lastUpdated': DateTime.now(),
       };
 
       // Se foi selecionada nova imagem, adiciona ela
@@ -563,31 +620,26 @@ class _EditNewsPageState extends State<EditNewsPage> {
           await _updateNewsController.updateNews(newsId, updatedData);
 
       if (result == "success") {
-        Get.snackbar(
-          "Sucesso",
-          "Notícia atualizada com sucesso",
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
+        PopUps.snackbar(
+          texto: status == NewsStates.rascunho
+              ? 'save_draft_news'.tr
+              : 'news_updated_success'.tr,
+          cor: Colors.green,
         );
 
-        // Volta para a página anterior
         if (mounted) {
           Navigator.of(context).pop();
         }
       } else {
-        Get.snackbar(
-          "Erro",
-          result,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        PopUps.snackbar(
+          texto: result,
+          cor: Colors.red,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        "Erro",
-        "Erro inesperado: $e",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      PopUps.snackbar(
+        texto: '${'unexpected_error'.tr}: $e',
+        cor: Colors.red,
       );
     }
   }

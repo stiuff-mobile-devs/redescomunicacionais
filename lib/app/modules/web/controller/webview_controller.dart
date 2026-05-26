@@ -42,13 +42,11 @@ class WebViewPageController extends GetxController {
       );
       print('Resultado do launchUrl: $launched'); // Debug
       if (!launched) {
-        customAlertDialog(Get.context!, title: 'Não foi possível abrir o link')
-            .show();
+        customAlertDialog(Get.context!, title: 'could_not_open_link'.tr).show();
       }
     } else {
       print('canLaunchUrl retornou false'); // Debug
-      customAlertDialog(Get.context!, title: 'Não foi possível abrir o link')
-          .show();
+      customAlertDialog(Get.context!, title: 'could_not_open_link'.tr).show();
     }
   }
 

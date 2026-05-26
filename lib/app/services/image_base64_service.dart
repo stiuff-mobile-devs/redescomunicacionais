@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
+import 'package:image_cropper/image_cropper.dart';
 
 class ImageBase64Service extends GetxController {
   final RxnString _base64String = RxnString();
@@ -18,53 +21,78 @@ class ImageBase64Service extends GetxController {
         await picker.pickImage(source: ImageSource.gallery);
 
     if (imageFile == null) {
-      _message.value = "Nenhuma imagem selecionada.";
+      _message.value = 'no_image_selected'.tr;
       return;
     }
 
     _base64String.value = null;
-    _message.value =
-        "Processando sua imagem... Isso pode levar alguns segundos.";
+    _message.value = 'processing_image_message'.tr;
 
-    // MUDANÇA: Verificar tipo MIME em vez da extensão do arquivo
-    String? mimeType = imageFile.mimeType;
-    if (mimeType != null) {
-      // Verificar pelo tipo MIME
-      if (mimeType != 'image/jpeg' && mimeType != 'image/jpg') {
-        _message.value = "A imagem deve ser no formato JPG ou JPEG.";
-        return;
-      }
-    } else {
-      // Fallback: verificar extensão (para compatibilidade)
-      String fileName = imageFile.name.toLowerCase();
-      if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg')) {
-        _message.value = "A imagem deve ser no formato JPG ou JPEG.";
-        return;
-      }
-    }
+    // Redimensionamento da imagem
+    final CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 100,
+      maxWidth: 1920,
+      maxHeight: 1080,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'crop_image_title'.tr,
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(
+          title: 'crop_image_title'.tr,
+          aspectRatioLockEnabled: false,
+          resetAspectRatioEnabled: true,
+        ),
+      ],
+    );
 
-    Uint8List imageBytes = await imageFile.readAsBytes();
-    if (imageBytes.lengthInBytes <= maxSizeBytes) {
-      _base64String.value = base64Encode(imageBytes);
-      _message.value = "Imagem selecionada com sucesso!";
+    if (croppedFile == null) {
+      _message.value = 'no_image_selected'.tr;
       return;
     }
 
-    img.Image? image = img.decodeImage(imageBytes);
-    if (image == null) {
-      _message.value = "Erro ao processar a imagem.";
+    // Compressão para WebP
+    Uint8List? webpBytes = await FlutterImageCompress.compressWithFile(
+      croppedFile.path,
+      format: CompressFormat.webp,
+      quality: 100, 
+    );
+
+    if (webpBytes == null) {
+      _message.value = 'error_processing_image'.tr;
       return;
     }
 
-    Uint8List compressedImage =
-        Uint8List.fromList(img.encodeJpg(image, quality: 10));
+    int currentQuality = 100;
 
-    if (compressedImage.lengthInBytes > maxSizeBytes) {
-      _message.value = "A imagem ainda é muito grande!";
+    // Loop de compressão gradual
+    while (webpBytes!.lengthInBytes > maxSizeBytes && currentQuality > 10) {
+      currentQuality -= 10; // Diminui 10% a cada tentativa
+
+      webpBytes = await FlutterImageCompress.compressWithList(
+        webpBytes,
+        format: CompressFormat.webp,
+        quality: currentQuality,
+      );
+    }
+
+// Verificação final após o loop
+    if (webpBytes.lengthInBytes > maxSizeBytes) {
+      _message.value = 'image_too_large'.tr;
     } else {
-      _base64String.value = base64Encode(compressedImage);
-      _message.value =
-          "A imagem ultrapassou o limite de 500KB e foi comprimida. Esse processo pode resultar em perda de qualidade na imagem.";
+      _base64String.value = base64Encode(webpBytes);
+      var tamanho = (_base64String.value!.length) / 1024;
+      print('Tamanho original: ${File(imageFile.path).lengthSync() / 1024} KB');
+      print('Tamanho após crop: ${File(croppedFile.path).lengthSync() / 1024} KB');
+      print('Tamanho em WebP: ${  webpBytes.lengthInBytes / 1024} KB');
+      print('Tamanho em base 64: $tamanho KB'); 
+      _message.value = 'image_selected_success'.tr;
     }
   }
 }

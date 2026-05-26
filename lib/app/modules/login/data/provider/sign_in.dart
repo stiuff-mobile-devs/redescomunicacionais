@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:redescomunicacionais/app/config/Secrets.dart';
+import 'package:redescomunicacionais/app/config/secrets.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 
@@ -18,18 +18,18 @@ class SignInService {
 
   SignInService();
 
-  Future<UserModel?> signInGoogle() async {
+  Future<UserModel> signInGoogle() async {
     try {
       await _init;
       var account = await _googleSignIn.authenticate();
       return _signIn(account);
     } catch (e) {
       debugPrint('Error initializing GoogleSignIn: $e');
-      return null;
+      throw Exception("Erro ao fazer login com Google");
     }
   }
 
-  Future<UserModel?> _signIn(GoogleSignInAccount account) async {
+  Future<UserModel> _signIn(GoogleSignInAccount account) async {
     try {
       final GoogleSignInAuthentication googleAuth = account.authentication;
       final authCredential = fb.GoogleAuthProvider.credential(
@@ -41,11 +41,11 @@ class SignInService {
           userCredential, account.displayName, account.photoUrl);
     } catch (e) {
       debugPrint('Error during Google sign-in: $e');
-      return null;
+      throw Exception("Erro ao fazer login com Google");
     }
   }
 
-  Future<UserModel?> _createUserDoc(
+  Future<UserModel> _createUserDoc(
     fb.UserCredential userCredential,
     String? displayName,
     String? photoUrl,
@@ -59,11 +59,11 @@ class SignInService {
       );
     } catch (err) {
       debugPrint(err.toString());
-      return null;
+      throw Exception("Erro ao criar documento do usuário");
     }
   }
 
-  Future<UserModel?> trySignInGoogle() async {
+  Future<UserModel> trySignInGoogle() async {
     final User? firebaseUser = FirebaseAuth.instance.currentUser;
 
     if (firebaseUser != null) {
@@ -75,47 +75,54 @@ class SignInService {
             .get();
 
         if (userDoc.exists) {
-          // Retorna o UserModel com todos os campos do Firestore
-          return UserModel.fromMap(userDoc.data()!);
-        } else {
-          // Se não existe documento, cria um novo
           return await _userRepository.createUserDoc(
-            firebaseUser.email!,
-            firebaseUser.displayName!,
-            firebaseUser.uid,
-            firebaseUser.photoURL!,
+            firebaseUser.email ?? '',
+            userDoc.get('name') ?? '',
+            userDoc.get('id') ?? firebaseUser.uid,
+            userDoc.get('urlImage') ?? firebaseUser.photoURL ?? '',
           );
+
         }
       } catch (err) {
         debugPrint("Erro ao buscar dados do usuário: $err");
       }
     }
 
-    _trySignSilentlyInGoogle();
-    return null;
+    return await _trySignSilentlyInGoogle();
   }
 
-  Future<UserModel?> _trySignSilentlyInGoogle() async {
+  Future<UserModel> _trySignSilentlyInGoogle() async {
     try {
       final Future<GoogleSignInAccount?>? account =
           _googleSignIn.attemptLightweightAuthentication();
+
       if (account == null) {
-        return null;
+        throw Exception("Erro ao tentar fazer login silenciosamente");
       }
+
       final googleUser = await account;
-      return googleUser != null ? await _signIn(googleUser) : null;
+
+      if(googleUser == null) {
+        debugPrint("Nenhum usuário encontrado durante login silencioso.");
+        throw Exception("Nenhum usuário encontrado durante login silencioso");
+      }
+      else{
+        debugPrint("Usuário encontrado durante login silencioso: ${googleUser.email}");
+
+        return await _signIn(googleUser);
+      }
     } catch (e) {
       debugPrint('Error initializing GoogleSignIn: $e');
-      return null;
+      throw Exception("Erro ao tentar fazer login silenciosamente");
     }
   }
 
-  logoutGoogle() async {
+  Future<void> logoutGoogle() async {
     await _googleSignIn.signOut();
     await FirebaseAuth.instance.signOut();
   }
 
-  Future<UserModel?> signInMicrosoft() async {
+  Future<UserModel> signInMicrosoft() async {
     final microsoftProvider = OAuthProvider("microsoft.com");
     try {
       final UserCredential userCredential =
@@ -135,10 +142,10 @@ class SignInService {
     } catch (err) {
       debugPrint(err.toString());
     }
-    return null;
+    throw Exception("Erro ao fazer login com Microsoft");
   }
 
-  Future<UserModel?> trySignInMicrosoft() async {
+  Future<UserModel> trySignInMicrosoft() async {
     final User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
@@ -152,12 +159,12 @@ class SignInService {
         );
       } catch (err) {
         debugPrint("Erro ao verificar usuário silenciosamente: $err");
-        return null;
+        throw Exception("Erro ao verificar usuário silenciosamente");
       }
     }
 
     debugPrint("Nenhum usuário logado.");
-    return null;
+    throw Exception("Nenhum usuário logado");
   }
 
   Future<void> logoutMicrosoft() async {

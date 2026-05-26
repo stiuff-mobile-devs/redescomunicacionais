@@ -1,16 +1,18 @@
 import 'package:redescomunicacionais/app/modules/login/data/provider/sign_in_apple.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/login/data/provider/sign_in.dart';
+import 'package:redescomunicacionais/app/modules/user/data/provider/user_provider.dart';
 
 class LoginRepository {
   final SignInService signInService = SignInService();
   final SignInApple signInApple = SignInApple();
+  final UserProvider userProvider = UserProvider();
 
-  Future<UserModel?> signInGoogle() {
+  Future<UserModel> signInGoogle() {
     return signInService.signInGoogle();
   }
 
-  Future<UserModel?> trySignInGoogle() {
+  Future<UserModel> trySignInGoogle() {
     return signInService.trySignInGoogle();
   }
 
@@ -18,11 +20,11 @@ class LoginRepository {
     signInService.logoutGoogle();
   }
 
-  Future<UserModel?> signInMicrosoft() async {
+  Future<UserModel> signInMicrosoft() async {
     return signInService.signInMicrosoft();
   }
 
-  Future<UserModel?> trySignInMicrosoft() {
+  Future<UserModel> trySignInMicrosoft() {
     return signInService.trySignInMicrosoft();
   }
 
@@ -30,7 +32,11 @@ class LoginRepository {
     signInService.logoutMicrosoft();
   }
 
-  Future<UserModel?> signInAppleAuth() async {
+  Future<UserModel> signInAppleAuth() async {
     return await signInApple.signInWithApple();
+  }
+
+  Future<String> createUserDocInHive(UserModel user) async {
+    return await userProvider.createUserDocInHive(user);
   }
 }

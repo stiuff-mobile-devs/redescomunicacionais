@@ -13,19 +13,19 @@ class UserPage extends GetView<UserController> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Confirmar exclusão'),
-          content: const Text(
-            'Tem certeza que deseja excluir sua conta? Essa ação não tem volta e todos os dados serão perdidos.',
+          title: Text('confirm_deletion'.tr),
+          content: Text(
+            'confirm_delete_account_message'.tr,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text('cancel'.tr),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text(
-                'Excluir conta',
+              child: Text(
+                'delete_account'.tr,
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -107,7 +107,7 @@ class UserPage extends GetView<UserController> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Seus dados',
+                                    'your_data'.tr,
                                     style:
                                         theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.w700,
@@ -115,7 +115,7 @@ class UserPage extends GetView<UserController> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Atualize seu nome de exibição',
+                                    'update_display_name'.tr,
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 ],
@@ -128,8 +128,8 @@ class UserPage extends GetView<UserController> {
                           controller: controller.nameController,
                           textInputAction: TextInputAction.done,
                           decoration: InputDecoration(
-                            labelText: 'Nome',
-                            hintText: 'Digite seu nome',
+                            labelText: 'name'.tr,
+                            hintText: 'enter_your_name'.tr,
                             prefixIcon: const Icon(Icons.badge_outlined),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -191,7 +191,7 @@ class UserPage extends GetView<UserController> {
                                   ),
                                 )
                               : const Icon(Icons.save_outlined),
-                          label: const Text('Salvar alterações'),
+                          label: Text('save_changes'.tr),
                         ),
                       ],
                     ),
@@ -203,14 +203,14 @@ class UserPage extends GetView<UserController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Zona de perigo',
+                          'danger_zone'.tr,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Excluir a conta remove o acesso e os dados vinculados.',
+                          'delete_account_warning'.tr,
                           style: theme.textTheme.bodySmall,
                         ),
                         const SizedBox(height: 14),
@@ -232,7 +232,7 @@ class UserPage extends GetView<UserController> {
                             foregroundColor: theme.colorScheme.error,
                             side: BorderSide(color: theme.colorScheme.error),
                           ),
-                          label: const Text('Excluir conta'),
+                          label: Text('delete_account'.tr),
                         ),
                       ],
                     ),

@@ -9,10 +9,21 @@ import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart'; // Par
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class NewsWindowsPage extends GetView<NewsController> {
-  NewsWindowsPage({super.key, RxBool? isRevisionMode})
-      : isRevisionMode = isRevisionMode ?? false.obs;
+  NewsWindowsPage({
+    super.key,
+    RxBool? isRevisionMode,
+    RxBool? isDraftMode,
+    RxBool? isRejectedMode,
+    RxBool? isDeletedMode,
+  })  : isRevisionMode = isRevisionMode ?? false.obs,
+        isDraftMode = isDraftMode ?? false.obs,
+        isRejectedMode = isRejectedMode ?? false.obs,
+        isDeletedMode = isDeletedMode ?? false.obs;
 
   final RxBool isRevisionMode;
+  final RxBool isDraftMode;
+  final RxBool isRejectedMode;
+  final RxBool isDeletedMode;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +34,15 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
         child: Obx(
           () {
-            if (controller.isLoading.value) {
-              const Center(
+            // Show loader while controller is loading OR while all news lists are still empty
+            final bool allListsEmpty = controller.publishedNewsList.isEmpty &&
+                controller.inAnalysisNewsList.isEmpty &&
+                controller.myDraftsList.isEmpty &&
+                controller.rejectedNewsList.isEmpty &&
+                controller.deletedNewsList.isEmpty;
+
+            if (controller.isLoading.value || allListsEmpty) {
+              return const Center(
                 child: BlinkingLoadingIcon(
                   size: 36,
                   color: Colors.white,
@@ -32,22 +50,13 @@ class NewsWindowsPage extends GetView<NewsController> {
               );
             }
 
-            if (controller.newss.isEmpty) {
-              return const Center(
-                  child: Text(
-                "Nenhuma Matéria encontrada",
-                selectionColor: Colors.white,
-              ));
-            }
-            // Filtra notícias válidas com base no modo de revisão
-            final validNews = isRevisionMode.value
-                ? controller.getInAnalysis()
-                : controller.getValidNews();
+            final List<NewsModel> validNews = _getNewsForCurrentMode();
+            final List<NewsModel> sortedNews = _sortByCreatedAt(validNews);
 
-            if (validNews.isEmpty) {
-              return const Center(
+            if (sortedNews.isEmpty) {
+              return Center(
                 child: Text(
-                  "Nenhuma Matéria encontrada",
+                  'no_news_found'.tr,
                   style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
@@ -65,12 +74,12 @@ class NewsWindowsPage extends GetView<NewsController> {
                   const SizedBox(height: 16.0), // Espaço superior
 
                   // Cards horizontais
-                  _buildHorizontalCards(validNews),
+                  _buildHorizontalCards(sortedNews),
 
                   const SizedBox(height: 16.0),
 
                   // Lista vertical de notícias
-                  ..._buildNewsList(validNews),
+                  ..._buildNewsList(sortedNews),
                 ],
               ),
             );
@@ -80,14 +89,39 @@ class NewsWindowsPage extends GetView<NewsController> {
     );
   }
 
-  Widget _buildHorizontalCards(List<dynamic> validNews) {
+  List<NewsModel> _getNewsForCurrentMode() {
+    if (isDeletedMode.value) {
+      return controller.deletedNewsList;
+    }
+
+    if (isRejectedMode.value) {
+      return controller.rejectedNewsList;
+    }
+
+    if (isRevisionMode.value) {
+      return controller.inAnalysisNewsList;
+    }
+
+    if (isDraftMode.value) {
+      return controller.myDraftsList;
+    }
+
+    return controller.publishedNewsList;
+  }
+
+  List<NewsModel> _sortByCreatedAt(List<NewsModel> newsList) {
+    final sortedList = List<NewsModel>.from(newsList);
+    sortedList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return sortedList;
+  }
+
+  Widget _buildHorizontalCards(List<NewsModel> validNews) {
     return SizedBox(
       height: 120.0,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: validNews.map<Widget>((news) {
-            final NewsModel n = news as NewsModel;
+          children: validNews.map<Widget>((n) {
             return GestureDetector(
               onTap: () => controller.openNews(n),
               child: Card(
@@ -109,10 +143,9 @@ class NewsWindowsPage extends GetView<NewsController> {
                                 n.urlImages[0].isNotEmpty
                             ? _buildSafeImage(n.urlImages[0], 70.0)
                             : Image.asset(
-                                controller.getCityImageAsset(
-                                    (n.cities != null && n.cities.isNotEmpty)
-                                        ? n.cities[0]
-                                        : 'default'),
+                                controller.getCityImageAsset(n.cities.isNotEmpty
+                                    ? n.cities[0]
+                                    : 'default'),
                                 fit: BoxFit.cover,
                                 width: 120.0,
                                 height: 70.0,
@@ -142,11 +175,11 @@ class NewsWindowsPage extends GetView<NewsController> {
     );
   }
 
-  List<Widget> _buildNewsList(List<dynamic> validNews) {
+  List<Widget> _buildNewsList(List<NewsModel> validNews) {
     return validNews.asMap().entries.map<Widget>(
       (entry) {
         final index = entry.key;
-        final news = entry.value as NewsModel;
+        final news = entry.value;
 
         return Obx(() {
           final isSelected = controller.isSelected(index);
@@ -166,8 +199,10 @@ class NewsWindowsPage extends GetView<NewsController> {
                       topRight: Radius.circular(12.0),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8.0,
+                    runSpacing: 4.0,
                     children: [
                       // Ícone de editar (lápis)
                       GestureDetector(
@@ -183,7 +218,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.edit,
                                 color: Colors.white,
@@ -191,7 +226,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                               ),
                               SizedBox(width: 8.0),
                               Text(
-                                'Editar',
+                                'edit'.tr,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 25.0,
@@ -202,45 +237,48 @@ class NewsWindowsPage extends GetView<NewsController> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8.0),
-                      // Ícone de excluir (lixeira)
-                      GestureDetector(
-                        onTap: () {
-                          hideNewsPopup(news.id, NewsStates.deletado,
-                              controller.user.email, news.createdBy, news.type);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                                size: 30,
-                              ),
-                              SizedBox(width: 8.0),
-                              Text(
-                                'Excluir',
-                                style: TextStyle(
+                      if (controller.canDelete(news))
+                        GestureDetector(
+                          onTap: () {
+                            hideNewsPopup(
+                                news.id,
+                                NewsStates.deletado,
+                                controller.user.email,
+                                news.createdBy,
+                                news.type);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.delete,
                                   color: Colors.red,
-                                  fontSize: 25.0,
-                                  fontWeight: FontWeight.w600,
+                                  size: 30,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'delete'.tr,
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      if (isRevisionMode.value)
+                      if (isRevisionMode.value || controller.canReReview(news))
                         GestureDetector(
                           onTap: () => _showReviewDialog(news),
                           child: Container(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.rate_review,
                                   color: Colors.yellowAccent,
@@ -248,9 +286,67 @@ class NewsWindowsPage extends GetView<NewsController> {
                                 ),
                                 SizedBox(width: 8.0),
                                 Text(
-                                  'Revisar',
+                                  'review'.tr,
                                   style: TextStyle(
                                     color: Colors.yellowAccent,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      if (isDeletedMode.value)
+                        GestureDetector(
+                          onTap: () => _showObservationDialog(
+                            news.excludedObservation,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.sticky_note_2_outlined,
+                                  color: Colors.orangeAccent,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'observations'.tr,
+                                  style: TextStyle(
+                                    color: Colors.orangeAccent,
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      if (isRejectedMode.value)
+                        GestureDetector(
+                          onTap: () => _showObservationDialog(
+                            news.rejectedObservation,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.sticky_note_2_outlined,
+                                  color: Colors.orangeAccent,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'observations'.tr,
+                                  style: TextStyle(
+                                    color: Colors.orangeAccent,
                                     fontSize: 25.0,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -388,50 +484,31 @@ class NewsWindowsPage extends GetView<NewsController> {
     await Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
-        title:
-            Text("Excluir $type", style: const TextStyle(color: Colors.white)),
+        title: Text(
+          '${'delete'.tr} $type',
+          style: const TextStyle(color: Colors.white),
+        ),
         content: Text(
-          "Tem certeza que deseja excluir esta $type?",
+          '${'confirm_delete_this'.tr} $type?',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(Get.context!).pop(),
-            child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
+            onPressed: () => Get.back(),
+            child:
+                Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
-              try {
-                String result = await controller.hideNews(
-                    newsId, status, userEmail, authorEmail, type);
-                if (result == "sucess" || result == "success") {
-                  // Recarrega as notícias
-                  await controller.getNewsFromFirebase();
-                  controller.homeController.forceRecreate();
-                } else {
-                  showDialog(
-                    context: Get.context!,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: Colors.grey[900],
-                      title: const Text("Erro",
-                          style: TextStyle(color: Colors.white)),
-                      content: Text(
-                        result,
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("OK",
-                              style: TextStyle(color: Colors.blue)),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              } catch (_) {}
+              Get.back();
+              await controller.hideNews(
+                newsId: newsId,
+                status: status,
+                userEmail: userEmail,
+                type: type,
+              );
             },
-            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
+            child: Text('delete'.tr, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -445,16 +522,16 @@ class NewsWindowsPage extends GetView<NewsController> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: const Text("Acesso Negado",
-              style: TextStyle(color: Colors.white)),
-          content: const Text(
-            "Você não pode editar esta notícia porque não é o autor. Apenas o autor original pode fazer alterações.",
+          title:
+              Text('access_denied'.tr, style: TextStyle(color: Colors.white)),
+          content: Text(
+            'only_author_can_edit'.tr,
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK", style: TextStyle(color: Colors.blue)),
+              child: Text('ok'.tr, style: const TextStyle(color: Colors.blue)),
             ),
           ],
         );
@@ -470,11 +547,11 @@ class NewsWindowsPage extends GetView<NewsController> {
       final difference = now.difference(creationDate);
 
       if (difference.inSeconds < 60) {
-        return '${difference.inSeconds} segundos atrás';
+        return '${difference.inSeconds} ${'seconds_ago'.tr}';
       } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes} minutos atrás';
+        return '${difference.inMinutes} ${'minutes_ago'.tr}';
       } else if (difference.inHours < 24) {
-        return '${difference.inHours} horas atrás';
+        return '${difference.inHours} ${'hours_ago'.tr}';
       } else {
         return DateFormat('dd/MM/yyyy').format(creationDate);
       }
@@ -522,12 +599,12 @@ class NewsWindowsPage extends GetView<NewsController> {
     await Get.dialog(
       AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text(
-          "Revisão da Matéria",
+        title: Text(
+          'news_review'.tr,
           style: TextStyle(color: Colors.white),
         ),
-        content: const Text(
-          "Escolha uma ação para esta matéria:",
+        content: Text(
+          'choose_action_for_news'.tr,
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -536,14 +613,40 @@ class NewsWindowsPage extends GetView<NewsController> {
               Get.back();
               await _showReasonDialog(news, true);
             },
-            child: const Text("Aceitar", style: TextStyle(color: Colors.green)),
+            child:
+                Text('accept'.tr, style: const TextStyle(color: Colors.green)),
           ),
           TextButton(
             onPressed: () async {
               Get.back();
               await _showReasonDialog(news, false);
             },
-            child: const Text("Recusar", style: TextStyle(color: Colors.red)),
+            child: Text('reject'.tr, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  Future<void> _showObservationDialog(String? observation) async {
+    final text = (observation ?? '').trim();
+
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'observations'.tr,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          text.isEmpty ? 'no_observation_available'.tr : text,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('close'.tr, style: const TextStyle(color: Colors.blue)),
           ),
         ],
       ),
@@ -558,14 +661,14 @@ class NewsWindowsPage extends GetView<NewsController> {
       AlertDialog(
         backgroundColor: Colors.grey[900],
         title: Text(
-          accepted ? "Motivo para Aceitar" : "Motivo para Recusar",
+          accepted ? 'reason_to_accept'.tr : 'reason_to_reject'.tr,
           style: const TextStyle(color: Colors.white),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Escreva o motivo:",
+            Text(
+              'write_reason'.tr,
               style: TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 8.0),
@@ -574,7 +677,7 @@ class NewsWindowsPage extends GetView<NewsController> {
               maxLines: 4,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: "Escreva o motivo aqui",
+                hintText: 'write_reason_here'.tr,
                 hintStyle: TextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: Colors.grey[850],
@@ -589,26 +692,25 @@ class NewsWindowsPage extends GetView<NewsController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
+            child:
+                Text('cancel'.tr, style: const TextStyle(color: Colors.blue)),
           ),
           TextButton(
             onPressed: () async {
               final reason = _reasonController.text.trim();
               Get.back();
-              try {
-                // envia o motivo junto com a revisão
-                await controller.reviewNews(
-                    news.id,
-                    accepted,
-                    reason,
-                    controller.user.email,
-                    news.createdBy,
-                    controller.user.name ?? '');
-                controller.homeController.forceRecreate();
-              } catch (_) {}
+              await controller.reviewNews(
+                newsId: news.id,
+                isApproved: accepted,
+                reason: reason,
+                validator: controller.user.email,
+                creator: news.createdBy,
+                validatorName: controller.user.name ?? '',
+                newsType: news.type,
+              );
             },
             child: Text(
-              accepted ? "Enviar" : "Enviar",
+              'send'.tr,
               style: TextStyle(color: accepted ? Colors.green : Colors.red),
             ),
           ),
