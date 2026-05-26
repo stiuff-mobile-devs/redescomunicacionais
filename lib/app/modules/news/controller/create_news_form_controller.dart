@@ -6,7 +6,6 @@ import 'package:redescomunicacionais/app/modules/news/controller/news_controller
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
 
 class CreateNewsFormController extends GetxController {
   final _formKey = GlobalKey<FormState>();
@@ -43,7 +42,8 @@ class CreateNewsFormController extends GetxController {
   // Dependências
   final HomeController _homeController = Get.find<HomeController>();
   final NewsController _newsController = Get.find<NewsController>();
-  final ImageBase64Service _imageController = Get.find<ImageBase64Service>();
+  final ImageBase64Service _imageController =
+  Get.find<ImageBase64Service>();
 
   // Listas de dados
   final List<String> categories = [
@@ -126,11 +126,7 @@ class CreateNewsFormController extends GetxController {
   }
 
   // Validação e publicação
-  Future<void> validateAndPublish(bool draft) async {
-    if (draft) {
-      await _publishNews(draft);
-      return;
-    }
+  void validateAndPublish() {
     // Reset de erros
     _showCategoryError.value = _selectedCategories.isEmpty;
     _showCityError.value = _selectedCities.isEmpty;
@@ -140,51 +136,38 @@ class CreateNewsFormController extends GetxController {
         _selectedCategories.isNotEmpty &&
         _selectedCities.isNotEmpty &&
         _type.value != null) {
-      await _publishNews(draft);
-    } else {
-      PopUps.snackbar(
-        texto: 'Por favor, preencha todos os campos obrigatórios.',
-        cor: Colors.red,
-      );
+      _publishNews();
     }
   }
 
-  Future<void> _publishNews(bool draft) async {
+  void _publishNews() {
     final String title = _titleController.text;
     final String subtitle = _subtitleController.text;
     final String body = _getBodyText();
-    List<String> urlImages = [_imageController.base64String ?? ""];
+
+    // Adicionando até 3 imagens
+    List<String> urlImages =
+    _imageController.base64Images.toList();
+
     final String author = _homeController.user.name!;
     final String email = _homeController.user.email;
+    final String createdAt = DateTime.now().toString();
     final String videoUrl = _videoUrlController.text;
 
-    final String newsState = draft ? NewsStates.rascunho : NewsStates.emAnalise;
-
-    try {
-      await _newsController.addNews(
-        title,
-        subtitle,
-        _selectedCities.toList(),
-        _selectedCategories.toList(),
-        body,
-        urlImages,
-        author,
-        email,
-        _type.value ?? '',
-        newsState,
-        videoUrl,
-      );
-      PopUps.snackbar(
-        texto: 'Notícia publicada com sucesso!',
-        cor: Colors.green,
-      );
-    } catch (e) {
-      PopUps.snackbar(
-        texto: 'Erro ao publicar notícia: $e',
-        cor: Colors.red,
-      );
-      return;
-    }
+    _newsController.addNews(
+      title,
+      subtitle,
+      _selectedCities.toList(),
+      _selectedCategories.toList(),
+      body,
+      urlImages,
+      author,
+      email,
+      createdAt,
+      _type.value ?? '',
+      NewsStates.emAnalise,
+      videoUrl,
+    );
 
     // Limpar formulário
     _clearForm();
@@ -197,16 +180,24 @@ class CreateNewsFormController extends GetxController {
     _titleController.clear();
     _subtitleController.clear();
     _bodyController.clear();
+
     _selectedCategories.clear();
     _selectedCities.clear();
+
     _type.value = null;
+
     _showCategoryError.value = false;
     _showCityError.value = false;
     _showTypeError.value = false;
+
+    // LIMPA AS IMAGENS
+    _imageController.clearImages();
   }
 
   String _getBodyText() {
-    return jsonEncode(_bodyController.document.toDelta().toJson());
+    return jsonEncode(
+      _bodyController.document.toDelta().toJson(),
+    );
   }
 
   // Getter para acessar o ImageController externamente

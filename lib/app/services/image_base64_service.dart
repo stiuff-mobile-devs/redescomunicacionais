@@ -1,98 +1,51 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
-import 'package:image_cropper/image_cropper.dart';
 
 class ImageBase64Service extends GetxController {
-  final RxnString _base64String = RxnString();
-  final RxString _message = "".obs;
+  final ImagePicker _picker = ImagePicker();
+
+  final RxList<String> _base64Images = <String>[].obs;
+
+  List<String> get base64Images => _base64Images;
+
+  final RxString _message = ''.obs;
 
   String get message => _message.value;
-  String? get base64String => _base64String.value;
 
-  Future<void> pickImage() async {
-    const int maxSizeBytes = 500000; // 500KB
-    final ImagePicker picker = ImagePicker();
-    final XFile? imageFile =
-        await picker.pickImage(source: ImageSource.gallery);
+  Future<void> pickImages() async {
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultiImage();
 
-    if (imageFile == null) {
-      _message.value = 'no_image_selected'.tr;
-      return;
-    }
-
-    _base64String.value = null;
-    _message.value = 'processing_image_message'.tr;
-
-    // MUDANÇA: Verificar tipo MIME em vez da extensão do arquivo
-    String? mimeType = imageFile.mimeType;
-    if (mimeType != null) {
-      // Verificar pelo tipo MIME
-      if (mimeType != 'image/jpeg' && mimeType != 'image/jpg') {
-        _message.value = 'image_format_invalid'.tr;
+      if (pickedFiles.isEmpty) {
+        _message.value = 'Nenhuma imagem selecionada';
         return;
       }
-    } else {
-      // Fallback: verificar extensão (para compatibilidade)
-      String fileName = imageFile.name.toLowerCase();
-      if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg')) {
-        _message.value = 'image_format_invalid'.tr;
+
+      if (pickedFiles.length > 3) {
+        _message.value = 'Selecione no máximo 3 imagens';
         return;
       }
+
+      _base64Images.clear();
+
+      for (final file in pickedFiles) {
+        final bytes = await File(file.path).readAsBytes();
+        final base64String = base64Encode(bytes);
+
+        _base64Images.add(base64String);
+      }
+
+      _message.value =
+      '${_base64Images.length} imagem(ns) selecionada(s)';
+    } catch (e) {
+      _message.value = 'Erro ao selecionar imagens';
     }
+  }
 
-    final CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: imageFile.path,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 85,
-      maxWidth: 1280,
-      maxHeight: 1280,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'crop_image_title'.tr,
-          toolbarColor: Colors.black,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false,
-          hideBottomControls: false,
-        ),
-        IOSUiSettings(
-          title: 'crop_image_title'.tr,
-          aspectRatioLockEnabled: false,
-          resetAspectRatioEnabled: true,
-        ),
-      ],
-    );
-
-    if (croppedFile == null) {
-      _message.value = 'no_image_selected'.tr;
-      return;
-    }
-
-    Uint8List imageBytes = await croppedFile.readAsBytes();
-    if (imageBytes.lengthInBytes <= maxSizeBytes) {
-      _base64String.value = base64Encode(imageBytes);
-      _message.value = 'image_selected_success'.tr;
-      return;
-    }
-
-    img.Image? image = img.decodeImage(imageBytes);
-    if (image == null) {
-      _message.value = 'error_processing_image'.tr;
-      return;
-    }
-
-    Uint8List compressedImage =
-        Uint8List.fromList(img.encodeJpg(image, quality: 10));
-
-    if (compressedImage.lengthInBytes > maxSizeBytes) {
-      _message.value = 'image_too_large'.tr;
-    } else {
-      _base64String.value = base64Encode(compressedImage);
-      _message.value = 'image_compressed'.tr;
-    }
+  void clearImages() {
+    _base64Images.clear();
   }
 }
