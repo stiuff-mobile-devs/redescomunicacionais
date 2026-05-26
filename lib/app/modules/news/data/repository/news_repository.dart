@@ -1,5 +1,6 @@
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/provider/news_provider.dart';
+import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 
 class NewsRepository {
   NewsRepository();
@@ -9,8 +10,8 @@ class NewsRepository {
     await newsProvider.saveNewsToHive(news);
   }
 
-  Future<void> syncNewsHiveAndFirebase() async {
-    await newsProvider.syncNewsHiveAndFirebase();
+  Future<void> syncNewsHiveAndFirebase(UserModel user) async {
+    await newsProvider.syncNewsHiveAndFirebase(user);
   }
 
   Future<List<NewsModel>> getNewsFromHive() {

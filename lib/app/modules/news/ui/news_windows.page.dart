@@ -34,7 +34,6 @@ class NewsWindowsPage extends GetView<NewsController> {
         ),
         child: Obx(
           () {
-            // Show loader while controller is loading OR while all news lists are still empty
             final bool allListsEmpty = controller.publishedNewsList.isEmpty &&
                 controller.inAnalysisNewsList.isEmpty &&
                 controller.myDraftsList.isEmpty &&
@@ -71,10 +70,10 @@ class NewsWindowsPage extends GetView<NewsController> {
               },
               child: ListView(
                 children: [
-                  const SizedBox(height: 16.0), // Espaço superior
+                  //const SizedBox(height: 16.0), // Espaço superior
 
                   // Cards horizontais
-                  _buildHorizontalCards(sortedNews),
+                  //_buildHorizontalCards(sortedNews),
 
                   const SizedBox(height: 16.0),
 
@@ -213,7 +212,6 @@ class NewsWindowsPage extends GetView<NewsController> {
                             _showAccessDeniedDialog(Get.context!);
                           }
                         },
-                        // ...existing code...
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
@@ -358,7 +356,7 @@ class NewsWindowsPage extends GetView<NewsController> {
                     ],
                   ),
                 ),
-
+              
               // Card da notícia
               GestureDetector(
                 onTap: () => controller.openNews(news),

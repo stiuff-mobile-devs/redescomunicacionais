@@ -7,6 +7,7 @@ import 'package:redescomunicacionais/app/modules/news/data/repository/news_repos
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
 
@@ -31,7 +32,7 @@ class NewsController extends GetxController {
     super.onInit();
     userController = Get.find<UserController>();
     user = await userController.getCurrentUser();
-    await _repository.syncNewsHiveAndFirebase();
+    await _repository.syncNewsHiveAndFirebase(user);
     await getAllNewsFromHive();
   }
 
@@ -75,6 +76,37 @@ class NewsController extends GetxController {
     });
   }
 
+  Future<void> getAllNewsFromHive() async {
+    try {
+      isLoading(true);
+
+      List<NewsModel> allNews = await _repository.getNewsFromHive();
+
+      // So admin e editor veem as listas de análise, rascunho, rejeitado e deletado
+      if (user.role == UserRoles.admin || user.role == UserRoles.editor) {
+        inAnalysisNewsList.assignAll(
+          allNews.where((news) => news.status == NewsStates.emAnalise).toList(),
+        );
+        myDraftsList.assignAll(
+          allNews.where((news) => news.status == NewsStates.rascunho).toList(),
+        );
+        rejectedNewsList.assignAll(
+          allNews.where((news) => news.status == NewsStates.rejeitado).toList(),
+        );
+        deletedNewsList.assignAll(
+          allNews.where((news) => news.status == NewsStates.deletado).toList(),
+        );
+      }
+      publishedNewsList.assignAll(
+        allNews.where((news) => news.status == NewsStates.publicado).toList(),
+      );
+    } catch (e) {
+      debugPrint("Erro no Controller (Hive): $e");
+    } finally {
+      isLoading(false);
+    }
+  }
+
   Future<void> addNews(
     String title,
     String? subtitle,
@@ -112,7 +144,7 @@ class NewsController extends GetxController {
       try {
         await _repository.saveNewsToHive(news);
         _repository
-            .syncNewsHiveAndFirebase(); // Sincroniza os dados após atualização
+            .syncNewsHiveAndFirebase(user); // Sincroniza os dados após atualização
         getAllNewsFromHive(); // Atualiza as listas no controller
       } catch (e) {
         debugPrint("Hive falhou: $e.");
@@ -120,34 +152,6 @@ class NewsController extends GetxController {
       }
     } catch (e) {
       throw Exception("Erro ao salvar notícia: $e");
-    } finally {
-      isLoading(false);
-    }
-  }
-
-  Future<void> getAllNewsFromHive() async {
-    try {
-      isLoading(true);
-
-      final allNews = await _repository.getNewsFromHive();
-
-      inAnalysisNewsList.assignAll(
-        allNews.where((news) => news.status == NewsStates.emAnalise).toList(),
-      );
-      myDraftsList.assignAll(
-        allNews.where((news) => news.status == NewsStates.rascunho).toList(),
-      );
-      rejectedNewsList.assignAll(
-        allNews.where((news) => news.status == NewsStates.rejeitado).toList(),
-      );
-      deletedNewsList.assignAll(
-        allNews.where((news) => news.status == NewsStates.deletado).toList(),
-      );
-      publishedNewsList.assignAll(
-        allNews.where((news) => news.status == NewsStates.publicado).toList(),
-      );
-    } catch (e) {
-      debugPrint("Erro no Controller (Hive): $e");
     } finally {
       isLoading(false);
     }
@@ -165,7 +169,7 @@ class NewsController extends GetxController {
     try {
       await _repository.hideNews(newsId, status, userEmail);
       _repository
-          .syncNewsHiveAndFirebase(); // Sincroniza os dados após atualização
+          .syncNewsHiveAndFirebase(user); // Sincroniza os dados após atualização
       getAllNewsFromHive(); // Atualiza as listas no controller
       PopUps.snackbar(
         texto: '$type excluída com sucesso!',
@@ -212,7 +216,7 @@ class NewsController extends GetxController {
         newsType,
       );
       _repository
-          .syncNewsHiveAndFirebase(); // Sincroniza os dados após atualização
+          .syncNewsHiveAndFirebase(user); // Sincroniza os dados após atualização
       getAllNewsFromHive(); // Atualiza as listas no controller
       PopUps.snackbar(
         texto: isApproved
@@ -237,11 +241,11 @@ class NewsController extends GetxController {
   }
 
   bool canDelete(NewsModel news) {
-    return user.role == 'editor' || user.role == 'admin';
+    return user.role == UserRoles.editor || user.role == UserRoles.admin;
   }
 
   bool canReReview(NewsModel news) {
-    bool isEditorOrAdmin = user.role == 'editor' || user.role == 'admin';
+    bool isEditorOrAdmin = user.role == UserRoles.editor || user.role == UserRoles.admin;
     bool isNotAuthor = user.email != news.createdBy;
     bool isRevisableStatus = news.status == NewsStates.publicado ||
         news.status == NewsStates.emAnalise;
@@ -260,7 +264,7 @@ class NewsController extends GetxController {
 
   bool isSelected(int index) => selectedCardIndex.value == index;
 
-  // Mapeamento city -> asset path (adicione as imagens em assets/ e registre no pubspec.yaml)
+  // Mapeamento city -> asset path para fallback de imagens
   final Map<String, String> _cityImageAssets = {
     'São Sebastião do Alto': 'assets/images/cidades/saosebastiaodoalto.jpg',
     'Macuco': 'assets/images/cidades/macuco.jpg',

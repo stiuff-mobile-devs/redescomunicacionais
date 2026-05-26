@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 
 enum UserRole { user, admin, editor }
 
@@ -269,9 +270,9 @@ class UserProvider {
       String role = userData['role'] ?? 'user';
 
       switch (role.toLowerCase()) {
-        case 'admin':
+        case UserRoles.admin:
           return UserRole.admin;
-        case 'editor':
+        case UserRoles.editor:
           return UserRole.editor;
         default:
           return UserRole.user;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/controller/admin_controller.dart';
+import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
@@ -227,9 +228,9 @@ class AdminPage extends GetView<AdminController> {
 
   Color _getRoleColor(String role) {
     switch (role.toLowerCase()) {
-      case 'admin':
+      case UserRoles.admin:
         return Colors.red;
-      case 'editor':
+      case UserRoles.editor:
         return Colors.orange;
       default:
         return Colors.green;
@@ -264,9 +265,9 @@ class AdminPage extends GetView<AdminController> {
 
   String _getRoleDisplayName(String role) {
     switch (role.toLowerCase()) {
-      case 'admin':
+      case UserRoles.admin:
         return 'role_admin'.tr;
-      case 'editor':
+      case UserRoles.editor:
         return 'role_editor'.tr;
       default:
         return 'role_user'.tr;
