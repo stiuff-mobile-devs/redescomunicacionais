@@ -137,7 +137,7 @@ class NewsProvider {
 
   Future<void> _saveNewsToApi(NewsModel news) async{
     try {
-      NewsPackageModel? package = await _getPackageNews(news.id);
+      NewsPackageModel? package = await getPackageNews(news.id);
 
       if (package != null) {
         
@@ -155,7 +155,7 @@ class NewsProvider {
     }
   }
   
-  Future<NewsPackageModel? > _getPackageNews(String id) async{
+  Future<NewsPackageModel? > getPackageNews(String id) async{
     try {
        var box = Hive.isBoxOpen('news_packages')
           ? Hive.box<NewsPackageModel>('news_packages')
@@ -171,6 +171,19 @@ class NewsProvider {
   // Funções de manipulação local (Hive)
   //-----------------------------------------
 
+  Future<List<NewsPackageModel>> getAllPackageNews() async {
+    try {
+      var box = Hive.isBoxOpen('news_packages')
+          ? Hive.box<NewsPackageModel>('news_packages')
+          : await Hive.openBox<NewsPackageModel>('news_packages');
+
+      // Pega todos os valores da caixa e transforma em uma lista
+      return box.values.toList();
+    } catch (e) {
+      throw Exception("Erro ao buscar todos os pacotes: $e");
+    }
+  }
+  
   Future<void> saveNewsToHive(List<NewsModel> newsList) async {
   if (newsList.isEmpty) return;
 

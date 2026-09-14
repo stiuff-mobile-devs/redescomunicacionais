@@ -65,3 +65,4 @@ android/app/google-services.json
 >>>>>>> Stashed changes
 ios/GoogleService-Info.plist
 lib/app/config/secrets.dart
+guia_contexto.md

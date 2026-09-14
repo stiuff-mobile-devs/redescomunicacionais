@@ -49,6 +49,8 @@ dependencies:
   in_app_update: ^5.0.0
   pointycastle: ^4.0.0
   flutter_secure_storage: ^10.3.1
+  nearby_connections: ^4.3.0
+  permission_handler: ^13.0.2
   
   flutter_localizations:
     sdk: flutter
