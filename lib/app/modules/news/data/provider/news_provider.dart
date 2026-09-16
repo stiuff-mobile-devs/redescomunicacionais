@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -10,6 +12,8 @@ import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String collectionPath = "news";
+  final String publicKeyPackageKey = "publicKeyPackage";
+  final String publicKeyPackagePath = "public_key_packages";
 
   //-----------------------------------------
   // Funções de manipulação Online (Firebase)
@@ -155,6 +159,10 @@ class NewsProvider {
     }
   }
   
+
+  //-----------------------------------------
+  // Funções de manipulação local (Hive)
+  //-----------------------------------------
   Future<NewsPackageModel? > getPackageNews(String id) async{
     try {
        var box = Hive.isBoxOpen('news_packages')
@@ -166,10 +174,6 @@ class NewsProvider {
       throw Exception("Erro ao buscar pacote de notícias: $e");
     }
   }
-
-  //-----------------------------------------
-  // Funções de manipulação local (Hive)
-  //-----------------------------------------
 
   Future<List<NewsPackageModel>> getAllPackageNews() async {
     try {
@@ -183,7 +187,21 @@ class NewsProvider {
       throw Exception("Erro ao buscar todos os pacotes: $e");
     }
   }
-  
+
+   Future<void> saveNewsPackageInHive(NewsPackageModel package) async {
+     try {
+      // Verifiqua se a box já está aberta para evitar lentidão
+      var box = Hive.isBoxOpen('news_packages')
+          ? Hive.box<NewsPackageModel>('news_packages')
+          : await Hive.openBox<NewsPackageModel>('news_packages');
+
+      //  salva ou atualiza se o ID já existir
+      await box.put(package.id, package);
+    } catch (e) {
+      throw Exception("Erro ao salvar no Hive local: $e");
+    }
+  }
+
   Future<void> saveNewsToHive(List<NewsModel> newsList) async {
   if (newsList.isEmpty) return;
 
@@ -408,4 +426,93 @@ class NewsProvider {
   DateTime _trimDateTime(DateTime dt) {
     return DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second);
   }
+
+  // ===========================================================================
+  // GERENCIAMENTO DE PACOTES DE CHAVES PÚBLICAS 
+  // ===========================================================================
+
+  Future<void> savePublicKeyPackage(PublicKeyPackage package) async {
+    try {
+      var box = Hive.isBoxOpen(publicKeyPackagePath)
+          ? Hive.box<PublicKeyPackage>(publicKeyPackagePath)
+          : await Hive.openBox<PublicKeyPackage>(publicKeyPackagePath);
+
+      await box.put(publicKeyPackageKey, package);
+    } catch (e) {
+      throw Exception("Erro ao salvar pacote de chaves: $e");
+    }
+  }
+
+  /// Recupera um pacote de chaves específico através do e-mail do remetente
+  Future<PublicKeyPackage?> getPublicKeyPackage() async {
+    try {
+      var box = Hive.isBoxOpen(publicKeyPackagePath)
+          ? Hive.box<PublicKeyPackage>(publicKeyPackagePath)
+          : await Hive.openBox<PublicKeyPackage>(publicKeyPackagePath);
+
+      return box.get(publicKeyPackageKey);
+    } catch (e) {
+      throw Exception("Erro ao buscar pacote de chaves: $e");
+    }
+  }
+
+  /// Retorna uma lista ordenada de chaves públicas para um dado e-mail.
+  /// A primeira posição [0] é a chave pública atual.
+  /// As posições seguintes contêm as chaves antigas em ordem reversa (da mais recente para a mais antiga).
+  Future<List<String>> getKeysListByEmail(String email) async {
+    List<String> orderedKeys = [];
+
+    try {
+      // 1. Busca o modelo completo do autor usando a função do repositório
+      // Substitua `keyRepository` pela instância correta do seu projeto, ou passe o modelo como parâmetro.
+      PublicKeyModel? authorKeyModel = await getAuthorKeyModelFromPackage(email);
+
+      if (authorKeyModel != null) {
+        
+        /*
+        // Regra de Segurança Opcional: Se a chave foi revogada, retorna lista vazia para bloquear a leitura
+        if (authorKeyModel.revocationInfo?.isRevoked == true) {
+          debugPrint("Atenção: As chaves do e-mail $email foram revogadas.");
+          return orderedKeys; // Retorna vazio
+        }*/
+
+        // 2. Adiciona a chave pública ativa no momento (a mais atual)
+        if (authorKeyModel.publicKey != null && authorKeyModel.publicKey!.isNotEmpty) {
+          orderedKeys.add(authorKeyModel.publicKey!);
+        }
+
+        // 3. Adiciona o histórico de chaves antigas (oldPublicKeys) de forma invertida
+        if (authorKeyModel.oldPublicKeys != null && authorKeyModel.oldPublicKeys!.isNotEmpty) {
+          // O comando .reversed do Dart inverte a ordem da lista automaticamente
+          orderedKeys.addAll(authorKeyModel.oldPublicKeys!.reversed);
+        }
+      }
+    } catch (e) {
+      debugPrint("Erro ao processar lista de chaves para $email: $e");
+    }
+
+    return orderedKeys;
+  }
+
+  /// Busca um PublicKeyModel específico dentro de um PublicKeyPackage através do e-mail.
+  /// Retorna o modelo se encontrado, ou null caso o e-mail não esteja no pacote.
+  Future<PublicKeyModel?> getAuthorKeyModelFromPackage(String email) async {
+    PublicKeyPackage? localKeyPackage = await getPublicKeyPackage();
+
+    try {
+      // Itera sobre a lista de chaves públicas do pacote
+      for (var keyModel in localKeyPackage!.publicKeys) {
+        // Verifica se o e-mail do modelo bate com o e-mail procurado
+        if (keyModel.email == email) {
+          return keyModel; // Retorna o modelo completo do autor encontrado
+        }
+      }
+    } catch (e) {
+      debugPrint("Erro ao buscar a chave do e-mail $email no pacote: $e");
+    }
+    
+    // Retorna nulo se o laço terminar sem encontrar o e-mail
+    return null; 
+  }
+
 }

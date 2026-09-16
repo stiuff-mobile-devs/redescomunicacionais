@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
-import 'package:hive/hive.dart';
+import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import '../model/news_package_model.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
@@ -9,6 +9,8 @@ import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart
 
 class OfflinePackageService {
   final KeyStorageService _keyStorageService = KeyStorageService();
+
+  final NewsRepository newsRepository = NewsRepository();
 
   // cria o pacote a ser enviado
   Future<NewsPackageModel?> createPackage(NewsModel news) async {
@@ -38,7 +40,7 @@ class OfflinePackageService {
       );
 
       // Salva o pacote no Hive local
-      await _saveNewsPackageInHive(package);
+      await newsRepository.saveNewsPackageInHive(package);
 
       // Cria o pacote
       return package;
@@ -48,19 +50,7 @@ class OfflinePackageService {
     }
   }
 
-  Future<void> _saveNewsPackageInHive(NewsPackageModel package) async {
-     try {
-      // Verifiqua se a box já está aberta para evitar lentidão
-      var box = Hive.isBoxOpen('news_packages')
-          ? Hive.box<NewsPackageModel>('news_packages')
-          : await Hive.openBox<NewsPackageModel>('news_packages');
-
-      //  salva ou atualiza se o ID já existir
-      await box.put(package.id, package);
-    } catch (e) {
-      throw Exception("Erro ao salvar no Hive local: $e");
-    }
-  }
+ 
 
   // valida um pacote recebido
   bool verifyPackage(NewsPackageModel package, String publicKeyStr) {

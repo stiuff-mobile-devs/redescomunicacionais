@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
@@ -22,8 +23,9 @@ class NewsRepository {
     return newsProvider.getNewsFromHive(isPublic: isPublic);
   }
 
-  Future<QueryDocumentSnapshot<Map<String, dynamic>>?> getPublicNewsPaginatedFromFirebase(
-      QueryDocumentSnapshot<Map<String, dynamic>>? lastDocument) async {
+  Future<QueryDocumentSnapshot<Map<String, dynamic>>?>
+      getPublicNewsPaginatedFromFirebase(
+          QueryDocumentSnapshot<Map<String, dynamic>>? lastDocument) async {
     return await newsProvider.getPublicNewsPaginatedFromFirebase(
         lastDocument: lastDocument);
   }
@@ -56,9 +58,8 @@ class NewsRepository {
       validatorName: validatorName,
       newsType: newsType,
     );
-
   }
-  
+
   Future<void> savePublicationTermsToFirebase({
     required String newsId,
     required Map<String, dynamic> terms,
@@ -79,5 +80,17 @@ class NewsRepository {
 
   Future<List<NewsPackageModel>> getAllPackageNews() async {
     return await newsProvider.getAllPackageNews();
+  }
+
+  Future<void> saveNewsPackageInHive(NewsPackageModel package) async {
+    return await newsProvider.saveNewsPackageInHive(package);
+  }
+
+  Future<PublicKeyPackage?> getPublicKeyPackage() async {
+    return await newsProvider.getPublicKeyPackage();
+  }
+
+  Future<List<String>> getKeysListByEmail(String email) async {
+    return await getKeysListByEmail(email);
   }
 }

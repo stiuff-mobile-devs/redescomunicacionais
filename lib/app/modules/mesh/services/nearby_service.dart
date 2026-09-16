@@ -6,13 +6,14 @@ import 'package:get/get.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart' show NewsRepository;
 
 class NearbyService extends GetxService {
   final Strategy strategy = Strategy.P2P_CLUSTER;
-  final String serviceId = "com.sua_empresa.redescomunicacionais"; // Bundle ID público
+  final String serviceId = "br.uff.redescomunicacionais"; // Bundle ID público
   
   final Nearby _nearby = Nearby();
   final RxList<String> connectedEndpoints = <String>[].obs;
@@ -130,13 +131,13 @@ class NearbyService extends GetxService {
       }).toList();
 
       // Busca a data do Pacote de Chaves Públicas local
-      // PublicKeyPackage? localKeyPackage = await keyRepository.getLocalPublicKeyPackage();
-      DateTime localKeysDate = DateTime(1970); // localKeyPackage?.timestamp ?? DateTime(1970);
+      PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
+      DateTime localKeysDate = DateTime(1970); 
 
       Map<String, dynamic> handshakeData = {
         'type': 'HANDSHAKE',
         'items': handshakeItems,
-        'keysTimestamp': localKeysDate.toIso8601String(),
+        'keysTimestamp': localKeyPackage?.timestamp.toIso8601String() ?? localKeysDate.toIso8601String(),
       };
       
       String jsonString = jsonEncode(handshakeData);
@@ -174,15 +175,15 @@ class NearbyService extends GetxService {
   void _sendKeysPackage(String endpointId) async {
     debugPrint('NearbyService: Preparando Pacote de Chaves para $endpointId...');
     try {
-      // PublicKeyPackage? localKeyPackage = await keyRepository.getLocalPublicKeyPackage();
-      // if (localKeyPackage != null) {
-      //   Map<String, dynamic> payloadData = {'type': 'FULL_KEYS_PACKAGE', 'package': localKeyPackage.toJson()};
-      //   String jsonString = jsonEncode(payloadData);
-      //   Directory tempDir = await getTemporaryDirectory();
-      //   File tempFile = File('${tempDir.path}/keys.json');
-      //   await tempFile.writeAsString(jsonString);
-      //   await _nearby.sendFilePayload(endpointId, tempFile.path);
-      // }
+       PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
+       if (localKeyPackage != null) {
+         Map<String, dynamic> payloadData = {'type': 'FULL_KEYS_PACKAGE', 'package': localKeyPackage.toJson()};
+         String jsonString = jsonEncode(payloadData);
+         Directory tempDir = await getTemporaryDirectory();
+         File tempFile = File('${tempDir.path}/keys.json');
+         await tempFile.writeAsString(jsonString);
+         await _nearby.sendFilePayload(endpointId, tempFile.path);
+       }
     } catch (e) {
       debugPrint('NearbyService: Erro ao enviar pacote de chaves: $e');
     }
@@ -214,19 +215,25 @@ class NearbyService extends GetxService {
           }
         }
 
-        // Compara Chaves Públicas para evitar ataques de repetição
+        // Compara Chaves Públicas para evitar ataques de repetição[cite: 1]
         DateTime remoteKeysDate = DateTime.parse(data['keysTimestamp']);
-        // PublicKeyPackage? localKeyPackage = await keyRepository.getLocalPublicKeyPackage();
-        DateTime localKeysDate = DateTime(1970); // localKeyPackage?.timestamp ?? DateTime(1970);
+        PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
+        
+        // Se o usuário não tiver chaves salvas, assume 1970 para forçar o download da lista do vizinho
+        DateTime localKeysDate = localKeyPackage?.timestamp ?? DateTime(1970);
 
         if (remoteKeysDate.isAfter(localKeysDate)) {
           debugPrint('NearbyService: Vizinho tem chaves mais novas. Solicitando...');
+          
           Map<String, dynamic> requestData = {'type': 'REQUEST_KEYS'};
           await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonEncode(requestData).codeUnits));
-        } else if (localKeysDate.isAfter(remoteKeysDate)) {
+          
+        } else if (localKeysDate.isAfter(remoteKeysDate) && localKeyPackage != null) {
+          debugPrint('NearbyService: Minhas chaves são mais novas. Enviando pacote...');
+          
           _sendKeysPackage(endpointId);
         }
-      } 
+      }
       
       // === CASOS 2 e 3: PEDIDOS ESPECÍFICOS ===
       else if (data['type'] == 'REQUEST_NEWS') {
@@ -239,22 +246,44 @@ class NearbyService extends GetxService {
       // === CASO 4: RECEBIMENTO DA MATÉRIA (SEGURANÇA DO EDITOR) ===
       else if (data['type'] == 'FULL_NEWS_PACKAGE') {
         NewsPackageModel receivedPackage = NewsPackageModel.fromJson(data['package']);
+        
+        // Identifica quem é o autor da matéria recebida
         String authorEmail = receivedPackage.email ?? '';
         
         debugPrint('NearbyService: Pacote de $authorEmail recebido. Validando...');
         
-        // Pega a Chave Pública do autor salva no Hive
-        // String? publicKeyStr = await keyRepository.getPublicKeyStrByEmail(authorEmail);
-        String? publicKeyStr = "chave_ficticia";
+        // Busca a lista ordenada de chaves do autor no banco local (Chave Atual + Histórico Invertido)
+        List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
 
-        if (publicKeyStr != null) {
-          bool isAuthentic = offlinePackageService.verifyPackage(receivedPackage, publicKeyStr);
-          if (isAuthentic && receivedPackage.news != null) {
-            debugPrint('NearbyService: SUCESSO! Assinatura autêntica.');
-            await newsRepository.saveNewsToHive(receivedPackage.news!);
-          } else {
-            debugPrint('NearbyService: ALERTA! Assinatura INVÁLIDA. Pacote descartado.');
+        if (keysToTest.isNotEmpty) {
+          bool isAuthentic = false;
+
+          // Itera pela lista de chaves e testa até conseguir validar a assinatura
+          for (String keyStr in keysToTest) {
+            isAuthentic = offlinePackageService.verifyPackage(receivedPackage, keyStr);
+            
+            if (isAuthentic) {
+              // Se a assinatura for verdadeira, para o laço imediatamente
+              break; 
+            }
           }
+
+          if (isAuthentic && receivedPackage.news != null) {
+          debugPrint('NearbyService: SUCESSO! Assinatura autêntica. Matéria visível e pacote salvos.');
+          
+          // Salva a matéria extraída para o leitor ver na tela do app
+          await newsRepository.saveNewsToHive(receivedPackage.news!);
+          
+          // Salva o pacote para continuar a propagação na rede
+          await newsRepository.saveNewsPackageInHive(receivedPackage);
+        } else {
+          debugPrint('NearbyService: Falha na validação (Chaves desatualizadas ou pacote adulterado).');
+          debugPrint('NearbyService: Salvando APENAS o pacote para atuar como ponte na rede Mesh.');
+          
+          // NÃO salva o `newsToHive` (o usuário não consegue ler a matéria no front-end),
+          // mas salva o pacote estruturado no banco para continuar a transmissão epidêmica.
+          await newsRepository.saveNewsPackageInHive(receivedPackage);
+        }
         }
       }
 
