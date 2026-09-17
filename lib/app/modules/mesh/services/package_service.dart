@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import '../model/news_package_model.dart';
 import 'package:pointycastle/asymmetric/api.dart';
@@ -64,6 +65,31 @@ class OfflinePackageService {
       return KeysServices.toCheck(newsString, package.signature ?? "", publicKey);
     } catch (e) {
       debugPrint("Error verifying news package: $e");
+      return false;
+    }
+  }
+
+  /// Verifica se o pacote de chaves públicas é autêntico usando a Chave Pública da API.
+  bool verifyPublicKeyPackage(PublicKeyPackage package, String apiPublicKeyStr) {
+    try {
+      // 1. Importa a Chave Pública fixa (hardcoded) da API
+      final RSAPublicKey apiPublicKey = KeysServices.importPublicKey(apiPublicKeyStr);
+
+      // 2. Reconstrói o mapa de dados exatamente como ele foi assinado na API
+      // Nota: A assinatura nunca inclui o próprio campo 'signature'
+      final Map<String, dynamic> dataToVerify = {
+        'publicKeys': package.publicKeys.map((e) => e.toJson()).toList(),
+        'senderEmail': package.senderEmail,
+        'timestamp': package.timestamp.toIso8601String(),
+      };
+
+      // Transformando o mapa na mesma String JSON usada no momento da assinatura
+      final String packageString = jsonEncode(dataToVerify);
+
+      // 3. Verifica se a matemática da assinatura bate com os dados
+      return KeysServices.toCheck(packageString, package.signature, apiPublicKey);
+    } catch (e) {
+      debugPrint("Erro ao verificar o pacote de chaves da API: $e");
       return false;
     }
   }

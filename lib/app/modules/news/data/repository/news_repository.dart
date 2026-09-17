@@ -91,6 +91,9 @@ class NewsRepository {
   }
 
   Future<List<String>> getKeysListByEmail(String email) async {
-    return await getKeysListByEmail(email);
+    return await  newsProvider.getKeysListByEmail(email);
   }
+
+  Future<void> savePublicKeyPackage(PublicKeyPackage package) async {
+    return await newsProvider.savePublicKeyPackage(package);}
 }

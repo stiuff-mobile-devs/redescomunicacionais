@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:redescomunicacionais/app/config/secrets.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
@@ -290,14 +291,25 @@ class NearbyService extends GetxService {
       // === CASO 5: RECEBIMENTO DO PACOTE DE CHAVES (SEGURANÇA DA API) ===
       else if (data['type'] == 'FULL_KEYS_PACKAGE') {
         debugPrint('NearbyService: Pacote de Chaves recebido. Validando com a API...');
-        // PublicKeyPackage receivedKeys = PublicKeyPackage.fromJson(data['package']);
         
-        // A Chave Pública da API é hardcoded e todos confiam nela
-        // String apiPublicKey = Constants.apiPublicKey; 
+        PublicKeyPackage receivedKeys = PublicKeyPackage.fromJson(data['package']);
         
-        // TODO: Chamar o serviço de criptografia para checar a assinatura (receivedKeys.signature) 
-        // usando a apiPublicKey. Se for verdadeiro, salva o pacote no Hive:
-        // await keyRepository.saveLocalPublicKeyPackage(receivedKeys);
+        // A Chave Pública da API é hardcoded e todos os aparelhos confiam nela[cite: 1]
+        // Substitua 'Constants.apiPublicKey' pelo local onde você guardou a chave fixa
+        String apiPublicKey = Secrets.apiPublicKey; 
+        
+        // Chama a função que acabamos de criar
+        bool isKeysAuthentic = offlinePackageService.verifyPublicKeyPackage(receivedKeys, apiPublicKey);
+
+        if (isKeysAuthentic) {
+          debugPrint('NearbyService: SUCESSO! Autoridade Certificadora autêntica. Atualizando chaves...');
+          
+          // Salva o novo pacote validado no Hive para ser usado em futuras verificações
+          await newsRepository.savePublicKeyPackage(receivedKeys);
+        } else {
+          // Se a assinatura da API não bater, alguém tentou injetar chaves falsas na rede
+          debugPrint('NearbyService: ALERTA! Pacote de Chaves FALSO ou corrompido. Descartado.');
+        }
       }
 
     } catch (e) {
