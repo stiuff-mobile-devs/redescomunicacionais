@@ -5,7 +5,6 @@ class KeyStorageService {
 
   // Chave de identificação no cofre do sistema
   static const String _privateKeyAlias = 'neighbor_news_private_key';
-  static const String _publicKeyAlias = 'neighbor_news_public_key';
 
   Future<void> savePrivateKey(String pemKey) async {
     await _storage.write(key: _privateKeyAlias, value: pemKey);
@@ -17,6 +16,5 @@ class KeyStorageService {
 
   Future<void> deleteKeys() async {
     await _storage.delete(key: _privateKeyAlias);
-    await _storage.delete(key: _publicKeyAlias);
   }
 }

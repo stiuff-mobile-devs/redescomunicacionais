@@ -1,29 +1,30 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
+import 'package:redescomunicacionais/app/config/secrets.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
+import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import '../model/news_package_model.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
 
 class OfflinePackageService {
-  final KeyStorageService _keyStorageService = KeyStorageService();
-
   final NewsRepository newsRepository = NewsRepository();
+  final UserRepository _userRepository = UserRepository();
 
   // cria o pacote a ser enviado
-  Future<NewsPackageModel?> createPackage(NewsModel news) async {
+  Future<NewsPackageModel?> createNewsPackage(NewsModel news) async {
     try {
       // Recupera a chave privada do armazenamento seguro
-      final privateKeyStr = await _keyStorageService.getPrivateKey();
+      final privateKeyStr = await _userRepository.getPrivateKeyInStorage();
       if (privateKeyStr == null) {
         throw Exception("Private key not found on device");
       }
 
       // Transforma a chave privada salva em string em RSAPrivateKey
-      final RSAPrivateKey privateKey = KeysServices.importPrivateKey(privateKeyStr);
+      final RSAPrivateKey privateKey =
+          KeysServices.importPrivateKey(privateKeyStr);
 
       // Converte a notícia em uma string para ser assinada
       final String newsString = jsonEncode(news.toMap());
@@ -34,7 +35,7 @@ class OfflinePackageService {
       final package = NewsPackageModel(
         news: news,
         signature: signature,
-        email: news.author, 
+        email: news.author,
         lastUpdated: DateTime.now(),
         isUploaded: false,
         id: news.id,
@@ -51,10 +52,8 @@ class OfflinePackageService {
     }
   }
 
- 
-
   // valida um pacote recebido
-  bool verifyPackage(NewsPackageModel package, String publicKeyStr) {
+  bool verifyNewsPackage(NewsPackageModel package, String publicKeyStr) {
     try {
       final RSAPublicKey publicKey = KeysServices.importPublicKey(publicKeyStr);
 
@@ -62,34 +61,31 @@ class OfflinePackageService {
       final String newsString = jsonEncode(package.news?.toMap());
 
       // Verifica a assinatura
-      return KeysServices.toCheck(newsString, package.signature ?? "", publicKey);
+      return KeysServices.toCheck(
+          newsString, package.signature ?? "", publicKey);
     } catch (e) {
       debugPrint("Error verifying news package: $e");
       return false;
     }
   }
 
-  /// Verifica se o pacote de chaves públicas é autêntico usando a Chave Pública da API.
-  bool verifyPublicKeyPackage(PublicKeyPackage package, String apiPublicKeyStr) {
+  // verifica se o pacote de chaves recebido (da API ou de vizinhos) é autêntico
+  bool verifyKeysPackage(PublicKeyPackage package) {
     try {
-      // 1. Importa a Chave Pública fixa (hardcoded) da API
-      final RSAPublicKey apiPublicKey = KeysServices.importPublicKey(apiPublicKeyStr);
+      // Importa a Chave Pública da API fixada no código do app
+      final RSAPublicKey apiPublicKey = KeysServices.importPublicKey(Secrets.apiPublicKey);
 
-      // 2. Reconstrói o mapa de dados exatamente como ele foi assinado na API
-      // Nota: A assinatura nunca inclui o próprio campo 'signature'
-      final Map<String, dynamic> dataToVerify = {
-        'publicKeys': package.publicKeys.map((e) => e.toJson()).toList(),
+      // Reconstrói o mapa que foi assinado pela API no servidor
+      final Map<String, dynamic> mapToCheck = {
+        'publicKeys': package.publicKeys.map((k) => k.toJson()).toList(),
         'senderEmail': package.senderEmail,
         'timestamp': package.timestamp.toIso8601String(),
       };
 
-      // Transformando o mapa na mesma String JSON usada no momento da assinatura
-      final String packageString = jsonEncode(dataToVerify);
-
-      // 3. Verifica se a matemática da assinatura bate com os dados
-      return KeysServices.toCheck(packageString, package.signature, apiPublicKey);
+      // 3. Verifica a assinatura usando a chave mestre da API[cite: 1]
+      return KeysServices.toCheck(jsonEncode(mapToCheck), package.signature, apiPublicKey);
     } catch (e) {
-      debugPrint("Erro ao verificar o pacote de chaves da API: $e");
+      debugPrint("Error verifying public keys package: $e");
       return false;
     }
   }

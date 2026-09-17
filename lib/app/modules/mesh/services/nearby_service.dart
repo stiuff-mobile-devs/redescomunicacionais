@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:redescomunicacionais/app/config/secrets.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart' show NewsRepository;
@@ -261,7 +259,7 @@ class NearbyService extends GetxService {
 
           // Itera pela lista de chaves e testa até conseguir validar a assinatura
           for (String keyStr in keysToTest) {
-            isAuthentic = offlinePackageService.verifyPackage(receivedPackage, keyStr);
+            isAuthentic = offlinePackageService.verifyNewsPackage(receivedPackage, keyStr);
             
             if (isAuthentic) {
               // Se a assinatura for verdadeira, para o laço imediatamente
@@ -294,12 +292,8 @@ class NearbyService extends GetxService {
         
         PublicKeyPackage receivedKeys = PublicKeyPackage.fromJson(data['package']);
         
-        // A Chave Pública da API é hardcoded e todos os aparelhos confiam nela[cite: 1]
-        // Substitua 'Constants.apiPublicKey' pelo local onde você guardou a chave fixa
-        String apiPublicKey = Secrets.apiPublicKey; 
-        
         // Chama a função que acabamos de criar
-        bool isKeysAuthentic = offlinePackageService.verifyPublicKeyPackage(receivedKeys, apiPublicKey);
+        bool isKeysAuthentic = offlinePackageService.verifyKeysPackage(receivedKeys);
 
         if (isKeysAuthentic) {
           debugPrint('NearbyService: SUCESSO! Autoridade Certificadora autêntica. Atualizando chaves...');

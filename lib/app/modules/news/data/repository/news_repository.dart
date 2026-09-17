@@ -71,7 +71,7 @@ class NewsRepository {
   }
 
   Future<void> saveNewsToPackage(NewsModel news) async {
-    await _offlinePackageService.createPackage(news);
+    await _offlinePackageService.createNewsPackage(news);
   }
 
   Future<NewsPackageModel?> getPackageNews(String id) async {

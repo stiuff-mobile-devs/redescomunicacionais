@@ -1,10 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
 
-class PublicKeyPackage {
+part 'public_key_package.g.dart';
+
+
+@HiveType(typeId: 3)
+class PublicKeyPackage extends HiveObject {
+  @HiveField(0)
   final List<PublicKeyModel> publicKeys;
+
+  @HiveField(1)
   final String senderEmail;
+
+  @HiveField(2)
   final DateTime timestamp;
+
+  @HiveField(3)
   final String signature;
 
   PublicKeyPackage({

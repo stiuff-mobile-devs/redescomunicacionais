@@ -1,13 +1,32 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
 
-class PublicKeyModel {
+part 'public_key_model.g.dart';
+
+@HiveType(typeId: 4)
+class PublicKeyModel extends HiveObject {
+  @HiveField(0)
   String? id;
+
+  @HiveField(1)
   String? email;
+
+  @HiveField(2)
   String? publicKey;
+
+  @HiveField(3)
   List<String>? oldPublicKeys;
+
+  @HiveField(4)
   List<String>? cities;
+
+  @HiveField(5)
   DateTime? createdAt;
+
+  @HiveField(6)
   DateTime? lastUpdated;
+
+  @HiveField(7)
   RevocationInfo? revocationInfo;
 
   PublicKeyModel({
@@ -82,10 +101,18 @@ class PublicKeyModel {
   }
 }
 
-class RevocationInfo {
+@HiveType(typeId: 12)
+class RevocationInfo extends HiveObject {
+  @HiveField(0)
   bool? isRevoked;
+
+  @HiveField(1)
   DateTime? revokedAt;
+
+  @HiveField(2)
   String? revokedBy;
+
+  @HiveField(3)
   String? revocationReason;
 
   RevocationInfo({
