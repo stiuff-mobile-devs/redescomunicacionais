@@ -11,7 +11,7 @@ export const PublicKeyRepository = {
 
     try {
       const docRef = db.collection("public_keys");
-      await docRef.doc(loggedUser.email).set(publicKeyToFirestore(data));
+      await docRef.doc(loggedUser.email).set(publicKeyToFirestore(data), { merge: true });
     } catch (e) {
       throw e;
     }

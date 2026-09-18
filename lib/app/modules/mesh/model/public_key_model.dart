@@ -71,6 +71,19 @@ class PublicKeyModel extends HiveObject {
     };
   }
 
+  Map<String, dynamic> toJsonStringData() {
+    return {
+      'id': id,
+      'email': email,
+      'publicKey': publicKey,
+      'oldPublicKeys': oldPublicKeys,
+      'cities': cities,
+      'createdAt': createdAt?.toIso8601String(),
+      'lastUpdated': lastUpdated?.toIso8601String(),
+      'revocationInfo': revocationInfo?.toJson(),
+    };
+  }
+
   PublicKeyModel copyWith({
     String? id,
     String? email,

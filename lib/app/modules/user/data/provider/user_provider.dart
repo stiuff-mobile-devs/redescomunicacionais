@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -9,6 +10,7 @@ import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dar
 
 class UserProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'southamerica-east1');
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final KeyStorageService _keyStorageService = KeyStorageService();
 
@@ -305,12 +307,32 @@ class UserProvider {
     return await _keyStorageService.getPrivateKey();
   }
 
+  Future<void> savePublicKey(PublicKeyModel publicKeyModel) async {
+    try {
+      final callable = _functions.httpsCallable('savePublicKey');
+      final payload = publicKeyModel.toJsonStringData();
+
+      await callable.call(payload);
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code == 'internal') {
+        debugPrint("Internal server error: ${e.message}");
+      } else if (e.code == 'permission-denied') {
+        debugPrint("Permission denied!");
+      } else {
+        debugPrint("API error while saving public key: ${e.code}");
+      }
+    }
+    catch (e) {
+      throw Exception("Error saving public Key");
+    }
+  }
+
   Future<void> createPublicKeyInFirebase(PublicKeyModel publicKeyModel) async {
     try {
       await _firestore.collection('public_keys').doc(publicKeyModel.email).set(
-            publicKeyModel.toJson(),
-            SetOptions(merge: true),
-          );
+        publicKeyModel.toJson(),
+        SetOptions(merge: true),
+      );
     } catch (e) {
       throw Exception("Erro ao criar public Key");
     }

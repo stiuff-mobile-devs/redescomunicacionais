@@ -44,6 +44,10 @@ class UserRepository {
     return _userProvider.createPublicKeyInFirebase(publicKeyModel);
   }
 
+  Future<void> createPublicKey(PublicKeyModel publicKeyModel) async {
+    return _userProvider.savePublicKey(publicKeyModel);
+  }
+
   Future<bool> updatePublicKeyInFirebase(
       String email, String newPublicKey) async {
     return _userProvider.updatePublicKeyInFirebase(email, newPublicKey);

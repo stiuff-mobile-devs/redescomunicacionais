@@ -167,7 +167,7 @@ class LoginController extends GetxController {
         if (!isUpdatePublicKey) {
           final publicKeyModel =
               await _createPublicKeyModel(publicKeyString, user);
-          await _userRepository.createPublicKeyInFirebase(publicKeyModel);
+          await _userRepository.createPublicKey(publicKeyModel);
         }
 
         await storage.savePrivateKey(privateKeyString);
