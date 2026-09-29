@@ -6,6 +6,7 @@ export interface KeysPackage {
   timestamp: Date;
   signature: string;
 }
+
 export interface KeysPackageJson extends Omit<KeysPackage, 'timestamp' | 'publicKeys'> {
   publicKeys: PublicKeyJson[];
   timestamp: string;

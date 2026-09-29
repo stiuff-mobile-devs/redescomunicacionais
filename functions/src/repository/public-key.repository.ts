@@ -17,6 +17,20 @@ export const PublicKeyRepository = {
     }
   },
 
+  getByEmail: async (email: string): Promise<PublicKey | null> => {
+    const db: Firestore = admin.firestore();
+
+    try {
+      const doc = await db.collection("public_keys").doc(email).get();
+      if (!doc.exists) {
+        return null;
+      }
+      return firestoreToPublicKey(doc.id, doc.data()!);
+    } catch (e) {
+      throw e;
+    }
+  },
+
   getAll: async (): Promise<PublicKey[]> => {
     const db: Firestore = admin.firestore();
 

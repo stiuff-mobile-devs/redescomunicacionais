@@ -10,3 +10,4 @@ setGlobalOptions({
 
 export * from "./controller/health-check";
 export * from "./controller/public-key.controller";
+export * from "./controller/news.controller";

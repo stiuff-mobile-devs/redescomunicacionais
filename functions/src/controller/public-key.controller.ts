@@ -3,7 +3,7 @@ import { getLoggedUser } from "../utils/auth-utils";
 import { User } from "../model/User";
 import {CallableRequest, HttpsError} from "firebase-functions/v2/https";
 import {jsonToPublicKey} from "../model/PublicKey";
-import { publicKeyService } from "../service/public-key.service";
+import { PublicKeyService } from "../service/public-key.service";
 import { defineSecret } from "firebase-functions/params";
 import { KeysPackageJson} from "../model/KeysPackage";
 
@@ -15,7 +15,7 @@ export const savePublicKey = onCall<any>(
     const loggedUser: User = getLoggedUser(request.auth);
     const publicKey = jsonToPublicKey(request.data);
 
-    await publicKeyService.saveNewKey(publicKey, loggedUser);
+    await PublicKeyService.saveNewKey(publicKey, loggedUser);
 
     return {
       message: "Public key saved successfully."
@@ -34,7 +34,7 @@ export const getPublicKeysPackage = onCall<any>({ secrets: [apiPrivateKey] },
       getLoggedUser(request.auth);
       const privateKeyStr = apiPrivateKey.value();
 
-      return await publicKeyService.getPublicKeysPackage(privateKeyStr)
+      return await PublicKeyService.getPublicKeysPackage(privateKeyStr)
     } catch (e) {
       throw new HttpsError(
         "internal",
