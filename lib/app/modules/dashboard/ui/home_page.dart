@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
+import 'package:redescomunicacionais/app/modules/mesh/console_page.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_widgets.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/utils/menu_drawer.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart'; // Importe o widget de cidades
+import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Logicas de responsividade
+    // Lógicas de responsividade
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
@@ -23,8 +24,8 @@ class HomePage extends GetView<HomeController> {
         ResponsiveUtils.shouldUseHorizontalLayout(screenWidth, screenHeight);
 
     double appBarTitleSize = ResponsiveUtils.calculateAppBarTitleSize(
-        screenWidth, isTablet, useHorizontalLayout);
-    double iconSize = ResponsiveUtils.calculateIconSize(screenWidth, isTablet);
+        screenWidth, isTablet, useHorizontalLayout).clamp(16.0, 24.0);
+    double iconSize = ResponsiveUtils.calculateIconSize(screenWidth, isTablet).clamp(20.0, 28.0);
     ResponsiveUtils.calculateBottomBarHeight(screenHeight, isTablet);
     ResponsiveUtils.calculateBottomBarFontSize(screenWidth, isTablet);
 
@@ -60,8 +61,7 @@ class HomePage extends GetView<HomeController> {
                 );
               }),
               shape: const RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(10)),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
               ),
               flexibleSpace: Get.find<ThemeController>().isLight
                   ? null
@@ -88,8 +88,7 @@ class HomePage extends GetView<HomeController> {
                           controller.isDeletedMode.value = false;
                           controller.isPublishedMode.value = true;
                         },
-                        icon:
-                            const Icon(Icons.arrow_back, color: Colors.orange),
+                        icon: const Icon(Icons.arrow_back, color: Colors.orange),
                       )
                     : const SizedBox.shrink()),
                 Obx(() {
@@ -115,8 +114,7 @@ class HomePage extends GetView<HomeController> {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        TextEditingController searchController =
-                            TextEditingController();
+                        TextEditingController searchController = TextEditingController();
                         return AlertDialog(
                           title: Text('filter_news'.tr),
                           content: TextField(
@@ -127,15 +125,12 @@ class HomePage extends GetView<HomeController> {
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
+                              onPressed: () => Navigator.of(context).pop(),
                               child: Text('cancel'.tr),
                             ),
                             TextButton(
                               onPressed: () {
-                                controller
-                                    .filterNewsByName(searchController.text);
+                                controller.filterNewsByName(searchController.text);
                                 Navigator.of(context).pop();
                               },
                               child: Text('filter'.tr),
@@ -156,12 +151,21 @@ class HomePage extends GetView<HomeController> {
               ],
             ),
       drawer: !useHorizontalLayout ? MenuPage() : null,
+      
+      // === BOTÃO FLUTUANTE QUE ABRE A TELA DO CONSOLE ===
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Get.to(() => const ConsolePage()), // Navega para a página dedicada
+        icon: const Icon(Icons.bug_report),
+        label: const Text('Console Mesh'),
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+      ),
+
       body: RefreshIndicator(
         onRefresh: () async {
           await controller.refreshDashboardData();
         },
         child: Obx(() {
-          // 1. Se nenhuma cidade foi selecionada (e verificada no Hive pelo controller), exibe a tela de seleção
           if (controller.selectedCity.value == null) {
             return Container(
               width: double.infinity,
@@ -185,15 +189,12 @@ class HomePage extends GetView<HomeController> {
                       ),
                     ),
                   ),
-
-                  // Botão de "Visualizar todas as cidades"
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // Passa o valor para o controller, que atualiza a tela e o Hive
                           controller.updateSelectedCity('Todas');
                         },
                         icon: const Icon(Icons.public, color: Colors.white),
@@ -211,13 +212,10 @@ class HomePage extends GetView<HomeController> {
                       ),
                     ),
                   ),
-
-                  // Widget com a lista das cidades em formato de cards com imagens
                   Expanded(
                     child: CitySelectorWidget(
                       onCitySelected: (String cityName) {
                         debugPrint('Cidade selecionada na Home: $cityName');
-                        // Passa a cidade selecionada para o controller (salvando no Hive)
                         controller.updateSelectedCity(cityName);
                       },
                     ),
@@ -227,7 +225,6 @@ class HomePage extends GetView<HomeController> {
             );
           }
 
-          // 2. Se a cidade foi selecionada, exibe o layout normal de notícias filtrando por ela
           return useHorizontalLayout
               ? _buildHorizontalLayout(
                   context,
@@ -237,13 +234,12 @@ class HomePage extends GetView<HomeController> {
                   appBarTitleSize,
                   iconSize,
                 )
-              : _buildVerticalLayout();
+              : _buildVerticalLayout(context);
         }),
       ),
     );
   }
 
-  // Layout horizontal para web e landscape
   Widget _buildHorizontalLayout(
     BuildContext context,
     double screenWidth,
@@ -295,7 +291,6 @@ class HomePage extends GetView<HomeController> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Botão de voltar para a seleção de cidades no menu lateral horizontal
                         TextButton.icon(
                           onPressed: () => controller.updateSelectedCity(null),
                           icon: Icon(
@@ -336,9 +331,7 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  // Layout vertical para mobile portrait
-  Widget _buildVerticalLayout() {
-    final context = Get.context!;
+  Widget _buildVerticalLayout(BuildContext context) {
     return Container(
       color: Get.find<ThemeController>().isLight
           ? Colors.white
@@ -362,7 +355,6 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  // Cabeçalho sutil exibindo a cidade selecionada com botão para voltar
   Widget _buildCityIndicatorHeader(BuildContext context) {
     final isLight = Get.find<ThemeController>().isLight;
     
@@ -388,7 +380,6 @@ class HomePage extends GetView<HomeController> {
           ),
           TextButton.icon(
             onPressed: () {
-              // Limpa a tela e o Hive
               controller.updateSelectedCity(null); 
             },
             icon: Icon(

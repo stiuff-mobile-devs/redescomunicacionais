@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
@@ -129,4 +130,20 @@ class HomeController extends GetxController {
       await _userRepository.clearLocalSelectedCity();
     }
   }
+
+  // Método para iniciar os testes
+  void initiateEpidemicNetwork() async {
+    final nearbyService = Get.find<NearbyService>();
+    
+    // Inicia a rede passando um nome para o aparelho (útil para identificar nos testes)
+    await nearbyService.startEpidemicMesh('Celular_Teste_01');
+  }
+
+  // Método para parar a rede após os testes
+  void stopEpidemicSpread
+() async {
+    final nearbyService = Get.find<NearbyService>();
+    await nearbyService.stopAll();
+  }
+
 }

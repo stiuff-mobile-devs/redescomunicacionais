@@ -26,13 +26,14 @@ class NearbyService extends GetxService {
     debugPrint('NearbyService: Serviço inicializado.');
   }
   
-  Future<bool> requestPermissions() async {
+ Future<bool> requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.bluetooth,
       Permission.bluetoothAdvertise,
       Permission.bluetoothConnect,
       Permission.bluetoothScan,
       Permission.location,
+      Permission.nearbyWifiDevices, // <-- Adicione esta linha
     ].request();
 
     bool allGranted = statuses.values.every((status) => status.isGranted);
