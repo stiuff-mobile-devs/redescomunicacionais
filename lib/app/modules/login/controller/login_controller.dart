@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pointycastle/api.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
@@ -77,7 +76,7 @@ class LoginController extends GetxController {
   }
 
   Future<void> tryLogin() async {
-     try {
+    try {
       await _repository.trySignInGoogle().timeout(const Duration(seconds: 10),
           onTimeout: () =>
               throw Exception("Tempo esgotado para login silencioso"));
@@ -88,8 +87,8 @@ class LoginController extends GetxController {
         await loginAnonymous();
       }
     }
-
     Get.offAllNamed(Routes.HOME);
+
   }
 
   Future<void> tryLoginMicrosoft() async {

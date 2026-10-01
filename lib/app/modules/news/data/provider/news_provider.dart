@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';

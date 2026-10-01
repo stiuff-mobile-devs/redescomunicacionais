@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/keys_package_model.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart' show Inst;
 import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/provider/news_provider.dart';
@@ -9,7 +11,7 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 class NewsRepository {
   NewsRepository();
   final NewsProvider newsProvider = NewsProvider();
-  final OfflinePackageService _offlinePackageService = OfflinePackageService();
+  OfflinePackageService get _offlinePackageService => Get.find<OfflinePackageService>();
 
   Future<void> saveNewsToHive(NewsModel news) async {
     await newsProvider.saveNewsToHive([news]);
