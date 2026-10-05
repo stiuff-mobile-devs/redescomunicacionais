@@ -33,7 +33,7 @@ class NearbyService extends GetxService {
       Permission.bluetoothConnect,
       Permission.bluetoothScan,
       Permission.location,
-      Permission.nearbyWifiDevices, // <-- Adicione esta linha
+      Permission.nearbyWifiDevices, 
     ].request();
 
     bool allGranted = statuses.values.every((status) => status.isGranted);
@@ -88,6 +88,7 @@ class NearbyService extends GetxService {
       onPayLoadRecieved: _onPayloadReceived, 
       onPayloadTransferUpdate: _onPayloadTransferUpdate,
     );
+    debugPrint('Conexão aceita');
   }
 
   void _onConnectionResult(String endpointId, Status status) {
@@ -148,54 +149,13 @@ class NearbyService extends GetxService {
     }
   }
 
-  void _requestSpecificNews(String endpointId, String newsId) async {
-    Map<String, dynamic> requestData = {'type': 'REQUEST_NEWS', 'newsId': newsId};
-    await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonEncode(requestData).codeUnits));
-  }
-
-  void _sendFullNewsPackage(String endpointId, String? newsId) async {
-    if (newsId == null) return;
-    try {
-      NewsPackageModel? package = await newsRepository.getPackageNews(newsId);
-      if (package != null) {
-        Map<String, dynamic> payloadData = {'type': 'FULL_NEWS_PACKAGE', 'package': package.toJson()};
-        String jsonString = jsonEncode(payloadData);
-        
-        Directory tempDir = await getTemporaryDirectory();
-        File tempFile = File('${tempDir.path}/$newsId.json');
-        await tempFile.writeAsString(jsonString);
-
-        await _nearby.sendFilePayload(endpointId, tempFile.path);
-      }
-    } catch (e) {
-      debugPrint('NearbyService: Erro ao enviar matéria completa: $e');
-    }
-  }
-
-  void _sendKeysPackage(String endpointId) async {
-    debugPrint('NearbyService: Preparando Pacote de Chaves para $endpointId...');
-    try {
-       PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
-       if (localKeyPackage != null) {
-         Map<String, dynamic> payloadData = {'type': 'FULL_KEYS_PACKAGE', 'package': localKeyPackage.toJson()};
-         String jsonString = jsonEncode(payloadData);
-         Directory tempDir = await getTemporaryDirectory();
-         File tempFile = File('${tempDir.path}/keys.json');
-         await tempFile.writeAsString(jsonString);
-         await _nearby.sendFilePayload(endpointId, tempFile.path);
-       }
-    } catch (e) {
-      debugPrint('NearbyService: Erro ao enviar pacote de chaves: $e');
-    }
-  }
-
-  void _processIncomingJson(String endpointId, String jsonString) async {
+   void _processIncomingJson(String endpointId, String jsonString) async {
     try {
       final Map<String, dynamic> data = jsonDecode(jsonString);
       
       // === CASO 1: HANDSHAKE ===
       if (data['type'] == 'HANDSHAKE') {
-        final List<dynamic> remoteItems = data['items'];
+        final List<dynamic> remoteItems = data['items']; // Pega endpoints das matérias
         final localNews = await newsRepository.getAllPackageNews();
 
         // Compara matérias (Last Write Wins)
@@ -215,7 +175,7 @@ class NearbyService extends GetxService {
           }
         }
 
-        // Compara Chaves Públicas para evitar ataques de repetição[cite: 1]
+        // Compara Chaves Públicas para evitar ataques de repetição
         DateTime remoteKeysDate = DateTime.parse(data['keysTimestamp']);
         PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
         
@@ -247,12 +207,12 @@ class NearbyService extends GetxService {
       else if (data['type'] == 'FULL_NEWS_PACKAGE') {
         NewsPackageModel receivedPackage = NewsPackageModel.fromJson(data['package']);
         
-        // Identifica quem é o autor da matéria recebida
+        // Identifica quem é a ultima pessoa que assinou o pacote
         String authorEmail = receivedPackage.email ?? '';
         
-        debugPrint('NearbyService: Pacote de $authorEmail recebido. Validando...');
+        debugPrint('NearbyService: Pacote assino por $authorEmail recebido. Validando...');
         
-        // Busca a lista ordenada de chaves do autor no banco local (Chave Atual + Histórico Invertido)
+        // Busca a lista ordenada de chaves do ultimo assinador no banco local (Chave Atual + Histórico Invertido)
         List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
 
         if (keysToTest.isNotEmpty) {
@@ -293,7 +253,6 @@ class NearbyService extends GetxService {
         
         PublicKeyPackage receivedKeys = PublicKeyPackage.fromJson(data['package']);
         
-        // Chama a função que acabamos de criar
         bool isKeysAuthentic = offlinePackageService.verifyKeysPackage(receivedKeys);
 
         if (isKeysAuthentic) {
@@ -309,6 +268,48 @@ class NearbyService extends GetxService {
 
     } catch (e) {
       debugPrint('NearbyService: Erro ao processar JSON: $e');
+    }
+  }
+
+  void _requestSpecificNews(String endpointId, String newsId) async {
+    Map<String, dynamic> requestData = {'type': 'REQUEST_NEWS', 'newsId': newsId};
+    await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonEncode(requestData).codeUnits));
+  }
+
+  void _sendFullNewsPackage(String endpointId, String? newsId) async {
+    if (newsId == null) return;
+    try {
+      NewsPackageModel? package = await newsRepository.getPackageNews(newsId);
+      if (package != null) {
+        Map<String, dynamic> payloadData = {'type': 'FULL_NEWS_PACKAGE', 'package': package.toJson()};
+        String jsonString = jsonEncode(payloadData);
+        
+        Directory tempDir = await getTemporaryDirectory();
+        File tempFile = File('${tempDir.path}/$newsId.json');
+        await tempFile.writeAsString(jsonString);
+
+        await _nearby.sendFilePayload(endpointId, tempFile.path);
+        debugPrint('Enviando noticia $newsId');
+      }
+    } catch (e) {
+      debugPrint('NearbyService: Erro ao enviar matéria completa: $e');
+    }
+  }
+
+  void _sendKeysPackage(String endpointId) async {
+    debugPrint('NearbyService: Preparando Pacote de Chaves para $endpointId...');
+    try {
+       PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
+       if (localKeyPackage != null) {
+         Map<String, dynamic> payloadData = {'type': 'FULL_KEYS_PACKAGE', 'package': localKeyPackage.toJson()};
+         String jsonString = jsonEncode(payloadData);
+         Directory tempDir = await getTemporaryDirectory();
+         File tempFile = File('${tempDir.path}/keys.json');
+         await tempFile.writeAsString(jsonString);
+         await _nearby.sendFilePayload(endpointId, tempFile.path);
+       }
+    } catch (e) {
+      debugPrint('NearbyService: Erro ao enviar pacote de chaves: $e');
     }
   }
 }

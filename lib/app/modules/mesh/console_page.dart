@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 
 class ConsolePage extends GetView<HomeController> {
   const ConsolePage({super.key});

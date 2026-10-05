@@ -82,7 +82,7 @@ class OfflinePackageService {
         'timestamp': package.timestamp.toIso8601String(),
       };
 
-      // 3. Verifica a assinatura usando a chave mestre da API[cite: 1]
+      // Verifica a assinatura usando a chave mestre da API
       return KeysServices.toCheck(jsonEncode(mapToCheck), package.signature, apiPublicKey);
     } catch (e) {
       debugPrint("Error verifying public keys package: $e");

@@ -1,12 +1,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.redescomunicacionais">
 
-    <!-- Permissões de localização -->
+   <!-- Permissões de localização (Obrigatório para o rádio funcionar) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
     <!-- Permissão para MSAL -->
     <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- Permissões de Wi-Fi (Para a transferência dos Arquivos Pesados) -->
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <!-- Permissões de Bluetooth Legadas (Android 11 ou inferior) -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <!-- Permissões de Bluetooth Exigidas (Android 12, 13, 14 e 15) -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
     <application
         android:label="RCL"
