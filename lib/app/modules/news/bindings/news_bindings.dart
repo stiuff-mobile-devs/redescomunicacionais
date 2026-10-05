@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/create_news_form_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_controller.dart';
@@ -9,5 +10,6 @@ class NewsBinding implements Bindings {
     Get.lazyPut<NewsController>(() => NewsController());
     Get.lazyPut<CreateNewsFormController>(() => CreateNewsFormController());
     Get.lazyPut<UpdateNewsController>(() => UpdateNewsController());
+    Get.lazyPut<OfflinePackageService>(() => OfflinePackageService());
   }
 }

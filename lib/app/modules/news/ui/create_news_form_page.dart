@@ -16,28 +16,19 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     final bool isLight = themeController.isLight;
 
     return Scaffold(
-      backgroundColor: isLight
-          ? theme.scaffoldBackgroundColor
-          : null,
-
+      backgroundColor: isLight ? theme.scaffoldBackgroundColor : null,
       appBar: AppBar(
         centerTitle: true,
         elevation: 2,
-
-        backgroundColor: isLight
-            ? theme.scaffoldBackgroundColor
-            : null,
-
+        backgroundColor: isLight ? theme.scaffoldBackgroundColor : null,
         foregroundColor: theme.colorScheme.onSurface,
-
         flexibleSpace: isLight
             ? null
             : Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appBarBottomGradient(),
-          ),
-        ),
-
+                decoration: BoxDecoration(
+                  gradient: AppColors.appBarBottomGradient(),
+                ),
+              ),
         title: Text(
           'Adicionar Matéria'.tr,
           style: TextStyle(
@@ -45,20 +36,18 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
             fontWeight: FontWeight.w600,
           ),
         ),
-
         iconTheme: IconThemeData(
           color: theme.colorScheme.onSurface,
         ),
       ),
-
       body: Container(
-        decoration: Get.find<ThemeController>().isLight
+        decoration: isLight
             ? const BoxDecoration(
-          color: Colors.white,
-        )
+                color: Colors.white,
+              )
             : BoxDecoration(
-          gradient: AppColors.darkBlueToBlackGradient(),
-        ),
+                gradient: AppColors.darkBlueToBlackGradient(),
+              ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -69,8 +58,12 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 children: [
                   _buildTitleField(context, controller),
                   const SizedBox(height: 16),
-
+                  
                   _buildSubtitleField(context, controller),
+                  const SizedBox(height: 16),
+
+                  // === CAMPOS PADRONIZADOS (TIPO COLABORADORES) ===
+                  _buildCollaboratorsField(context, controller),
                   const SizedBox(height: 16),
 
                   _buildCategorySelection(context, controller),
@@ -98,8 +91,8 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                   _buildImageMessage(context, controller),
                   const SizedBox(height: 16),
 
+                  // === BOTÕES PADRONIZADOS (MATERIAL 3) ===
                   _buildPublishButton(context, controller),
-
                   const SizedBox(height: 32),
                 ],
               ),
@@ -111,110 +104,137 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   }
 
   // ============================================================
-  // TÍTULO
+  // COLABORADORES
   // ============================================================
-
-  Widget _buildTitleField(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildCollaboratorsField(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    return TextFormField(
-      controller: controller.titleController,
-
-      style: TextStyle(
-        color: colors.onSurface,
+    return GestureDetector(
+      onTap: () => _showCollaboratorsDialog(context, controller),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: colors.outline),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Colaboradores (Opcional)'.tr,
+                    style: TextStyle(
+                      color: colors.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Obx(() {
+                    if (controller.selectedCollaborators.isEmpty) {
+                      return Text(
+                        'Toque para adicionar colaboradores...'.tr,
+                        style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
+                      );
+                    }
+                    return Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: controller.selectedCollaborators.map((name) {
+                        return Chip(
+                          label: Text(name, style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
+                          backgroundColor: colors.primaryContainer,
+                          deleteIcon: Icon(Icons.close, size: 16, color: colors.onPrimaryContainer),
+                          onDeleted: () => controller.removeCollaborator(name),
+                          padding: EdgeInsets.zero,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        );
+                      }).toList(),
+                    );
+                  }),
+                ],
+              ),
+            ),
+            Icon(Icons.people_alt_outlined, color: colors.onSurfaceVariant),
+          ],
+        ),
       ),
-
-      decoration: InputDecoration(
-        labelText: 'title'.tr,
-
-        labelStyle: TextStyle(
-          color: colors.onSurfaceVariant,
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: colors.outline,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: colors.primary,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-
-        errorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Colors.red,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-
-        focusedErrorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'title_required'.tr;
-        }
-
-        return null;
-      },
     );
   }
 
-  // ============================================================
-  // SUBTÍTULO
-  // ============================================================
-
-  Widget _buildSubtitleField(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  void _showCollaboratorsDialog(BuildContext context, CreateNewsFormController controller) {
+    final manualInputController = TextEditingController();
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
 
-    return TextFormField(
-      controller: controller.subtitleController,
-
-      style: TextStyle(
-        color: colors.onSurface,
-      ),
-
-      decoration: InputDecoration(
-        labelText: 'subtitle_optional'.tr,
-
-        labelStyle: TextStyle(
-          color: colors.onSurfaceVariant,
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: colors.outline,
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        title: Text('Adicionar Colaboradores'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: manualInputController,
+                      decoration: InputDecoration(
+                        hintText: 'Digitar nome manualmente...'.tr,
+                        isDense: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    style: IconButton.styleFrom(backgroundColor: theme.colorScheme.primary),
+                    icon: Icon(Icons.add, color: theme.colorScheme.onPrimary),
+                    onPressed: () {
+                      if (manualInputController.text.isNotEmpty) {
+                        controller.addManualCollaborator(manualInputController.text);
+                        manualInputController.clear();
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.0),
+                child: Divider(),
+              ),
+              Text('Editores do Projeto:'.tr, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Obx(() => Column(
+                    children: controller.availableEditors.map((editor) {
+                      final isSelected = controller.selectedCollaborators.contains(editor);
+                      return CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(editor ?? "Nome não Informado", style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                        value: isSelected,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (_) => controller.toggleCollaborator(editor ?? "Nome não Informado"),
+                      );
+                    }).toList(),
+                  )),
+                ),
+              ),
+            ],
           ),
-          borderRadius: BorderRadius.circular(8),
         ),
-
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: colors.primary,
-            width: 2,
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Concluir'.tr, style: TextStyle(color: theme.colorScheme.primary)),
           ),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        ],
       ),
     );
   }
@@ -222,97 +242,106 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // CATEGORIAS
   // ============================================================
-
-  Widget _buildCategorySelection(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildCategorySelection(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
-    final bool isLight = Get.find<ThemeController>().isLight;
-
-    // No tema escuro o fundo da página é um GRADIENTE (não uma cor
-    // sólida), então usamos transparente para o gradiente aparecer
-    // por trás da caixa. No tema claro usamos branco, igual ao resto
-    // da página.
-    final Color boxBackgroundColor =
-    isLight ? Colors.white : Colors.transparent;
-
-    return Obx(
-          () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => _showCategoryDialog(context, controller),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             decoration: BoxDecoration(
-              color: boxBackgroundColor,
-              border: Border.all(
-                color: colorScheme.outline,
-              ),
+              border: Border.all(color: colors.outline),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Theme(
-              data: theme.copyWith(
-                canvasColor: boxBackgroundColor,
-                cardColor: boxBackgroundColor,
-                dividerColor: colorScheme.outline.withOpacity(0.3),
-
-                // Desativa o "surface tint" automático do Material 3,
-                // que sobrepõe a cor primary por cima do backgroundColor
-                // e deixa a caixa com aparência acinzentada/escurecida.
-                colorScheme: colorScheme.copyWith(
-                  surfaceTint: Colors.transparent,
-                ),
-              ),
-              child: ExpansionTile(
-                backgroundColor: boxBackgroundColor,
-                collapsedBackgroundColor: boxBackgroundColor,
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'select_categories'.tr,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'select_categories'.tr,
+                        style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(() {
+                        if (controller.selectedCategories.isEmpty) {
+                          return Text(
+                            'Toque para selecionar...'.tr,
+                            style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
+                          );
+                        }
+                        return Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: controller.selectedCategories.map((category) {
+                            return Chip(
+                              label: Text(category, style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
+                              backgroundColor: colors.primaryContainer,
+                              deleteIcon: Icon(Icons.close, size: 16, color: colors.onPrimaryContainer),
+                              onDeleted: () => controller.toggleCategory(category),
+                              padding: EdgeInsets.zero,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            );
+                          }).toList(),
+                        );
+                      }),
+                    ],
                   ),
                 ),
-                iconColor: colorScheme.onSurface,
-                collapsedIconColor: colorScheme.onSurface,
-                children: controller.categories.map((category) {
-                  return CheckboxListTile(
-                    tileColor: boxBackgroundColor,
-                    title: Text(
-                      category,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    value: controller.selectedCategories.contains(category),
-                    onChanged: (_) {
-                      controller.toggleCategory(category);
-                    },
-                    activeColor: colorScheme.primary,
-                    checkColor: colorScheme.onPrimary,
-                    side: BorderSide(
-                      color: colorScheme.outline,
-                      width: 2,
-                    ),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
-              ),
+                Icon(Icons.category_outlined, color: colors.onSurfaceVariant),
+              ],
             ),
           ),
-
-          if (controller.showCategoryError)
-            Padding(
+        ),
+        Obx(() {
+          if (controller.showCategoryError) {
+            return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'select_at_least_one_category'.tr,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+              child: Text('select_at_least_one_category'.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+      ],
+    );
+  }
+
+  void _showCategoryDialog(BuildContext context, CreateNewsFormController controller) {
+    final theme = Theme.of(context);
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        title: Text('select_categories'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Obx(() => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: controller.categories.map((category) {
+                final isSelected = controller.selectedCategories.contains(category);
+                return CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(category, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                  value: isSelected,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => controller.toggleCategory(category),
+                );
+              }).toList(),
+            )),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Concluir'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+          ),
         ],
       ),
     );
@@ -321,93 +350,106 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // CIDADE
   // ============================================================
-
-  Widget _buildCitySelection(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildCitySelection(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
-    final bool isLight = Get.find<ThemeController>().isLight;
-
-    final Color boxBackgroundColor =
-    isLight ? Colors.white : Colors.transparent;
-
-    return Obx(
-          () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => _showCityDialog(context, controller),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             decoration: BoxDecoration(
-              color: boxBackgroundColor,
-              border: Border.all(
-                color: colorScheme.outline,
-              ),
+              border: Border.all(color: colors.outline),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Theme(
-              data: theme.copyWith(
-                canvasColor: boxBackgroundColor,
-                cardColor: boxBackgroundColor,
-                dividerColor: colorScheme.outline.withOpacity(0.3),
-
-                // Desativa o "surface tint" automático do Material 3,
-                // que sobrepõe a cor primary por cima do backgroundColor
-                // e deixa a caixa com aparência acinzentada/escurecida.
-                colorScheme: colorScheme.copyWith(
-                  surfaceTint: Colors.transparent,
-                ),
-              ),
-              child: ExpansionTile(
-                backgroundColor: boxBackgroundColor,
-                collapsedBackgroundColor: boxBackgroundColor,
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'select_city'.tr,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'select_city'.tr,
+                        style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(() {
+                        if (controller.selectedCities.isEmpty) {
+                          return Text(
+                            'Toque para selecionar...'.tr,
+                            style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
+                          );
+                        }
+                        return Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: controller.selectedCities.map((city) {
+                            return Chip(
+                              label: Text(city, style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
+                              backgroundColor: colors.primaryContainer,
+                              deleteIcon: Icon(Icons.close, size: 16, color: colors.onPrimaryContainer),
+                              onDeleted: () => controller.toggleCity(city),
+                              padding: EdgeInsets.zero,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            );
+                          }).toList(),
+                        );
+                      }),
+                    ],
                   ),
                 ),
-                iconColor: colorScheme.onSurface,
-                collapsedIconColor: colorScheme.onSurface,
-                children: controller.cities.map((city) {
-                  return CheckboxListTile(
-                    tileColor: boxBackgroundColor,
-                    title: Text(
-                      city,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    value: controller.selectedCities.contains(city),
-                    onChanged: (_) {
-                      controller.toggleCity(city);
-                    },
-                    activeColor: colorScheme.primary,
-                    checkColor: colorScheme.onPrimary,
-                    side: BorderSide(
-                      color: colorScheme.outline,
-                      width: 2,
-                    ),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
-              ),
+                Icon(Icons.location_city_outlined, color: colors.onSurfaceVariant),
+              ],
             ),
           ),
-
-          if (controller.showCityError)
-            Padding(
+        ),
+        Obx(() {
+          if (controller.showCityError) {
+            return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'select_at_least_one_city'.tr,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+              child: Text('select_at_least_one_city'.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+      ],
+    );
+  }
+
+  void _showCityDialog(BuildContext context, CreateNewsFormController controller) {
+    final theme = Theme.of(context);
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        title: Text('select_city'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Obx(() => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: controller.cities.map((city) {
+                final isSelected = controller.selectedCities.contains(city);
+                return CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(city, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                  value: isSelected,
+                  activeColor: theme.colorScheme.primary,
+                  onChanged: (_) => controller.toggleCity(city),
+                );
+              }).toList(),
+            )),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Concluir'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+          ),
         ],
       ),
     );
@@ -416,106 +458,169 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // TIPO
   // ============================================================
-
-  Widget _buildTypeSelection(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildTypeSelection(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
-    final bool isLight = Get.find<ThemeController>().isLight;
-
-    final Color boxBackgroundColor =
-    isLight ? Colors.white : Colors.transparent;
-
-    return Obx(
-          () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => _showTypeDialog(context, controller),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             decoration: BoxDecoration(
-              color: boxBackgroundColor,
-              border: Border.all(
-                color: colorScheme.outline,
-              ),
+              border: Border.all(color: colors.outline),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Theme(
-              data: theme.copyWith(
-                canvasColor: boxBackgroundColor,
-                cardColor: boxBackgroundColor,
-                dividerColor: colorScheme.outline.withOpacity(0.3),
-
-                // Desativa o "surface tint" automático do Material 3,
-                // que sobrepõe a cor primary por cima do backgroundColor
-                // e deixa a caixa com aparência acinzentada/escurecida.
-                colorScheme: colorScheme.copyWith(
-                  surfaceTint: Colors.transparent,
-                ),
-              ),
-              child: ExpansionTile(
-                backgroundColor: boxBackgroundColor,
-                collapsedBackgroundColor: boxBackgroundColor,
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(
-                  'select_type'.tr,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'select_type'.tr,
+                        style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(() {
+                        if (controller.type == null || controller.type!.isEmpty) {
+                          return Text(
+                            'Toque para selecionar...'.tr,
+                            style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
+                          );
+                        }
+                        return Chip(
+                          label: Text(controller.type!, style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
+                          backgroundColor: colors.primaryContainer,
+                          padding: EdgeInsets.zero,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        );
+                      }),
+                    ],
                   ),
                 ),
-                iconColor: colorScheme.onSurface,
-                collapsedIconColor: colorScheme.onSurface,
-                children: controller.types.map((selectedType) {
-                  return CheckboxListTile(
-                    tileColor: boxBackgroundColor,
-                    title: Text(
-                      selectedType,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    value: controller.type == selectedType,
-                    onChanged: (_) {
-                      controller.toggleType(selectedType);
-                    },
-                    activeColor: colorScheme.primary,
-                    checkColor: colorScheme.onPrimary,
-                    side: BorderSide(
-                      color: colorScheme.outline,
-                      width: 2,
-                    ),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
-              ),
+                Icon(Icons.label_outline, color: colors.onSurfaceVariant),
+              ],
             ),
           ),
-
-          if (controller.showTypeError)
-            Padding(
+        ),
+        Obx(() {
+          if (controller.showTypeError) {
+            return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'select_at_least_one_type'.tr,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+              child: Text('select_at_least_one_type'.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+      ],
+    );
+  }
+
+  void _showTypeDialog(BuildContext context, CreateNewsFormController controller) {
+    final theme = Theme.of(context);
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        title: Text('select_type'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Obx(() => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: controller.types.map((selectedType) {
+                final isSelected = controller.type == selectedType;
+                return CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(selectedType, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                  value: isSelected,
+                  activeColor: theme.colorScheme.primary,
+                  // Tipo normalmente é seleção única, então sobrescrevemos e fechamos o modal (ou permite fechar no botão concluir)
+                  onChanged: (_) {
+                    controller.toggleType(selectedType);
+                    Get.back();
+                  },
+                );
+              }).toList(),
+            )),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancelar'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+          ),
         ],
       ),
     );
   }
 
   // ============================================================
-  // YOUTUBE
+  // TÍTULO E OUTROS CAMPOS DE TEXTO
   // ============================================================
+  Widget _buildTitleField(BuildContext context, CreateNewsFormController controller) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-  Widget _buildYouTubeUrlField(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+    return TextFormField(
+      controller: controller.titleController,
+      style: TextStyle(color: colors.onSurface),
+      decoration: InputDecoration(
+        labelText: 'title'.tr,
+        labelStyle: TextStyle(color: colors.onSurfaceVariant),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.outline),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.primary, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.red),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.error, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'title_required'.tr;
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildSubtitleField(BuildContext context, CreateNewsFormController controller) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return TextFormField(
+      controller: controller.subtitleController,
+      style: TextStyle(color: colors.onSurface),
+      decoration: InputDecoration(
+        labelText: 'subtitle_optional'.tr,
+        labelStyle: TextStyle(color: colors.onSurfaceVariant),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.outline),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.primary, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildYouTubeUrlField(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -524,83 +629,40 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       children: [
         TextFormField(
           controller: controller.videoUrlController,
-
-          style: TextStyle(
-            color: colors.onSurface,
-          ),
-
+          style: TextStyle(color: colors.onSurface),
           decoration: InputDecoration(
             labelText: 'youtube_url_optional'.tr,
-
-            labelStyle: TextStyle(
-              color: colors.onSurfaceVariant,
-            ),
-
+            labelStyle: TextStyle(color: colors.onSurfaceVariant),
             hintText: 'youtube_url_placeholder'.tr,
-
-            hintStyle: TextStyle(
-              color: colors.onSurfaceVariant.withOpacity(0.6),
-            ),
-
-            prefixIcon: Icon(
-              Icons.video_library,
-              color: colors.onSurfaceVariant,
-            ),
-
+            hintStyle: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.6)),
+            prefixIcon: Icon(Icons.video_library, color: colors.onSurfaceVariant),
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: colors.outline,
-              ),
+              borderSide: BorderSide(color: colors.outline),
               borderRadius: BorderRadius.circular(8),
             ),
-
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: colors.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: colors.primary, width: 2),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),
-
         const SizedBox(height: 8),
-
-        Text(
-          'paste_youtube_link_here'.tr,
-          style: TextStyle(
-            color: colors.onSurfaceVariant,
-            fontSize: 12,
-          ),
-        ),
+        Text('paste_youtube_link_here'.tr, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12)),
       ],
     );
   }
 
   // ============================================================
-  // EDITOR
+  // EDITOR E IMAGEM
   // ============================================================
-
-  Widget _buildMarkdownEditor(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildMarkdownEditor(BuildContext context, CreateNewsFormController controller) {
     return SizedBox(
       height: 300,
-      child: MarkdownEditor(
-        controller: controller.bodyController,
-      ),
+      child: MarkdownEditor(controller: controller.bodyController),
     );
   }
 
-  // ============================================================
-  // IMAGEM
-  // ============================================================
-
-  Widget _buildImagePicker(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildImagePicker(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -609,25 +671,13 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         onPressed: () {
           controller.imageController.pickImage();
         },
-
-        icon: const Icon(
-          Icons.image,
-        ),
-
-        label: Text(
-          'add_image'.tr,
-        ),
-
+        icon: const Icon(Icons.image),
+        label: Text('add_image'.tr),
         style: ElevatedButton.styleFrom(
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );
@@ -639,149 +689,83 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
 
     return Text(
       'image_requirements'.tr,
-
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: colors.onSurface,
-      ),
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.onSurface),
     );
   }
 
-  Widget _buildImagePreview(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildImagePreview(BuildContext context, CreateNewsFormController controller) {
     return Center(
-      child: Obx(
-            () {
-          if (controller.imageController.base64String != null) {
-            return Column(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.memory(
-                    base64Decode(
-                      controller.imageController.base64String!,
-                    ),
-                    height: 150,
-                    fit: BoxFit.cover,
-                  ),
+      child: Obx(() {
+        if (controller.imageController.base64String != null) {
+          return Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.memory(
+                  base64Decode(controller.imageController.base64String!),
+                  height: 150,
+                  fit: BoxFit.cover,
                 ),
-              ],
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
-      ),
+              ),
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      }),
     );
   }
 
-  Widget _buildImageMessage(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
+  Widget _buildImageMessage(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    return Obx(
-          () => Text(
+    return Obx(() => Text(
         controller.imageController.message,
-
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: colors.secondary,
-        ),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.secondary),
       ),
     );
   }
 
   // ============================================================
-  // BOTÕES
+  // BOTÕES DE AÇÃO PADRONIZADOS (MATERIAL 3)
   // ============================================================
-
-  Widget _buildPublishButton(
-      BuildContext context,
-      CreateNewsFormController controller,
-      ) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
+  Widget _buildPublishButton(BuildContext context, CreateNewsFormController controller) {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton.icon(
+          child: FilledButton.tonalIcon(
             onPressed: () {
               controller.validateAndPublish(true);
             },
-
-            icon: Icon(
-              Icons.save_outlined,
-              color: colors.primary,
+            icon: const Icon(Icons.save_outlined),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 54),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
-
             label: Text(
               'save_draft_news'.tr,
-              style: TextStyle(
-                color: colors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(
-                double.infinity,
-                52,
-              ),
-
-              side: BorderSide(
-                color: colors.primary,
-                width: 1.4,
-              ),
-
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
             ),
           ),
         ),
-
         const SizedBox(width: 12),
-
         Expanded(
-          child: ElevatedButton.icon(
+          child: FilledButton.icon(
             onPressed: () {
               controller.validateAndPublish(false);
             },
-
-            icon: Icon(
-              Icons.rocket_launch,
-              color: colors.onPrimary,
-            ),
-
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(
-                double.infinity,
-                52,
-              ),
-
-              backgroundColor: colors.primary,
-
-              foregroundColor: colors.onPrimary,
-
+            icon: const Icon(Icons.rocket_launch),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 54),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
-
             label: Text(
               'publish_news'.tr,
-              style: TextStyle(
-                color: colors.onPrimary,
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
         ),

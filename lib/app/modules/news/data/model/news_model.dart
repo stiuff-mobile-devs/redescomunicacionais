@@ -62,6 +62,9 @@ class NewsModel {
   @HiveField(9)
   DateTime createdAt;
 
+  @HiveField(40)
+  List<String>? collaborators;
+
   // ==========================================
   // 4. FLUXO DE VALIDAÇÃO / APROVAÇÃO
   // ==========================================
@@ -106,7 +109,6 @@ class NewsModel {
 
   @HiveField(20)
   String? excludedObservation;
-  
 
   NewsModel({
     String? id,
@@ -135,8 +137,12 @@ class NewsModel {
     this.excludedAt,
     this.excludedObservation,
     this.publicationTerms,
-  }) : id = id ?? Uuid().v4();
+    this.collaborators,
+  }) : id = id ?? const Uuid().v4();
 
+  // ==========================================
+  // SERIALIZAÇÃO PARA O FIREBASE (Usa Timestamp)
+  // ==========================================
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> data = {
       'id': id,
@@ -165,6 +171,7 @@ class NewsModel {
       'excludedAt': excludedAt != null ? Timestamp.fromDate(excludedAt!) : null,
       'excludedObservation': excludedObservation,
       'publicationTerms': publicationTerms,
+      'collaborators' : collaborators,
     };
 
     const requiredKeys = {
@@ -185,28 +192,22 @@ class NewsModel {
 
   factory NewsModel.fromMap(Map<String, dynamic> map) {
     return NewsModel(
-      // === Ajustado com 'as String' para garantir tipagem estrita ===
       id: map['id'] as String,
       title: map['title'] as String,
       subtitle: map['subtitle'] as String?,
       body: map['body'] as String,
-      
-      // === Ajustado com '?? []' para o caso de chaves removidas pelo toMap ===
       cities: List<String>.from(map['cities'] ?? []),
       categories: List<String>.from(map['categories'] ?? []),
       urlImages: List<String>.from(map['urlImages'] ?? []),
-      
       videoUrl: map['videoUrl'] as String?,
       type: map['type'] as String,
       status: map['status'] as String,
       
-      // === Parse de datas obrigatórias com fallback de segurança ===
       lastUpdated: _parseDate(map['lastUpdated']) ?? DateTime.now(),
       author: map['author'] as String,
       createdBy: map['createdBy'] as String,
       createdAt: _parseDate(map['createdAt'])!, 
 
-      // === Campos opcionais mapeados com segurança usando cast de nulos ===
       validatedBy: map['validatedBy'] as String?,
       validatedByName: map['validatedByName'] as String?,
       validatedAt: _parseDate(map['validatedAt']),
@@ -221,9 +222,11 @@ class NewsModel {
       publicationTerms: map['publicationTerms'] != null
           ? Map<String, dynamic>.from(map['publicationTerms'])
           : null,
+      collaborators : List<String>.from(map['collaborators'] ?? [])
     );
   }
 
+  // Permite ler datas tanto do Firebase (Timestamp) quanto da Rede Mesh (String ISO)
   static DateTime? _parseDate(dynamic value) {
     if (value is Timestamp) {
       return value.toDate();
@@ -231,6 +234,50 @@ class NewsModel {
     if (value is DateTime) {
       return value;
     }
+    if (value is String) {
+      return DateTime.tryParse(value); // <-- Essencial para decodificar o JSON recebido via rádio
+    }
     return null;
+  }
+
+  // ==========================================
+  // SERIALIZAÇÃO PARA A REDE MESH (Usa String ISO-8601)
+  // ==========================================
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'title': title,
+      'subtitle': subtitle,
+      'body': body,
+      'cities': cities,
+      'categories': categories,
+      'urlImages': urlImages,
+      'videoUrl': videoUrl,
+      'type': type,
+      'status': status,
+      // Converte as datas diretamente para texto para não quebrar o jsonEncode
+      'lastUpdated': lastUpdated.toIso8601String(),
+      'author': author,
+      'createdBy': createdBy,
+      'createdAt': createdAt.toIso8601String(),
+      'validatedBy': validatedBy,
+      'validatedByName': validatedByName,
+      'validatedAt': validatedAt?.toIso8601String(),
+      'validatedObservation': validatedObservation,
+      'rejectedBy': rejectedBy,
+      'rejectedAt': rejectedAt?.toIso8601String(),
+      'rejectedObservation': rejectedObservation,
+      'editedAt': editedAt?.toIso8601String(),
+      'excludedBy': excludedBy,
+      'excludedAt': excludedAt?.toIso8601String(),
+      'excludedObservation': excludedObservation,
+      'publicationTerms': publicationTerms,
+      'collaborators': collaborators,
+    };
+
+    // Remove os campos nulos para economizar banda na transferência via Bluetooth
+    data.removeWhere((key, value) => value == null);
+
+    return data;
   }
 }

@@ -36,6 +36,12 @@ class NewsPage extends GetView<NewsController> {
         .take(2)
         .toList();
 
+    final List<String>? visibleCollaborators = controller
+        .selectedNews.collaborators
+        ?.map<String>((e) => e.toString())
+        .take(2)
+        .toList();
+
     return GetBuilder<NewsController>(
       init: controller,
       initState: (_) {
@@ -68,10 +74,10 @@ class NewsPage extends GetView<NewsController> {
             flexibleSpace: isLight
                 ? null
                 : Container(
-              decoration: BoxDecoration(
-                gradient: AppColors.appBarBottomGradient(),
-              ),
-            ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.appBarBottomGradient(),
+                    ),
+                  ),
             title: Text(
               '${'full_type'.tr} ${controller.selectedNews.type}',
               style: TextStyle(
@@ -95,23 +101,25 @@ class NewsPage extends GetView<NewsController> {
           ),
           body: isWideScreen
               ? _buildWideScreenLayout(
-            screenWidth,
-            screenHeight,
-            isTablet,
-            visibleCategories,
-            hasMoreThanTwoCategories,
-            context,
-            isLight,
-          )
+                  screenWidth,
+                  screenHeight,
+                  isTablet,
+                  visibleCategories,
+                  hasMoreThanTwoCategories,
+                  context,
+                  isLight,
+                  visibleCollaborators,
+                )
               : _buildMobileLayout(
-            screenWidth,
-            screenHeight,
-            isTablet,
-            visibleCategories,
-            hasMoreThanTwoCategories,
-            context,
-            isLight,
-          ),
+                  screenWidth,
+                  screenHeight,
+                  isTablet,
+                  visibleCategories,
+                  hasMoreThanTwoCategories,
+                  context,
+                  isLight,
+                  visibleCollaborators
+                ),
         );
       },
     );
@@ -122,14 +130,15 @@ class NewsPage extends GetView<NewsController> {
   // ============================================================
 
   Widget _buildWideScreenLayout(
-      double screenWidth,
-      double screenHeight,
-      bool isTablet,
-      List<String> visibleCategories,
-      bool hasMoreThanTwoCategories,
-      BuildContext context,
-      bool isLight,
-      ) {
+    double screenWidth,
+    double screenHeight,
+    bool isTablet,
+    List<String> visibleCategories,
+    bool hasMoreThanTwoCategories,
+    BuildContext context,
+    bool isLight,
+    List<String>? visibleCollaborators,
+  ) {
     final theme = Theme.of(context);
 
     final String urlImages = controller.selectedNews.urlImages.isNotEmpty
@@ -195,8 +204,8 @@ class NewsPage extends GetView<NewsController> {
                     ),
                     borderRadius: BorderRadius.circular(
                       ResponsiveUtils.calculateResponsiveBorderRadius(
-                        isTablet,
-                      ) *
+                            isTablet,
+                          ) *
                           0.8,
                     ),
                     color: theme.colorScheme.surfaceContainerHighest,
@@ -223,9 +232,7 @@ class NewsPage extends GetView<NewsController> {
                           ),
                         ],
                       ),
-
                       SizedBox(height: isTablet ? 12 : 10),
-
                       Container(
                         height: 1,
                         decoration: BoxDecoration(
@@ -238,14 +245,13 @@ class NewsPage extends GetView<NewsController> {
                           ),
                         ),
                       ),
-
                       SizedBox(height: isTablet ? 12 : 10),
-
                       _buildInfoRowWideScreen(
                         isTablet,
                         visibleCategories,
                         hasMoreThanTwoCategories,
                         context,
+                        visibleCollaborators,
                       ),
                     ],
                   ),
@@ -287,9 +293,7 @@ class NewsPage extends GetView<NewsController> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 20 : 16),
-
                   if (controller.selectedNews.videoUrl != null &&
                       controller.selectedNews.videoUrl!.isNotEmpty)
                     Container(
@@ -306,7 +310,6 @@ class NewsPage extends GetView<NewsController> {
                         captionLanguage: 'pt',
                       ),
                     ),
-
                   _buildQuillContent(
                     context: context,
                     isTablet: isTablet,
@@ -326,14 +329,15 @@ class NewsPage extends GetView<NewsController> {
   // ============================================================
 
   Widget _buildMobileLayout(
-      double screenWidth,
-      double screenHeight,
-      bool isTablet,
-      List<String> visibleCategories,
-      bool hasMoreThanTwoCategories,
-      BuildContext context,
-      bool isLight,
-      ) {
+    double screenWidth,
+    double screenHeight,
+    bool isTablet,
+    List<String> visibleCategories,
+    bool hasMoreThanTwoCategories,
+    BuildContext context,
+    bool isLight,
+    List<String>? visibleCollaborators,
+  ) {
     final theme = Theme.of(context);
 
     final String urlImages = controller.selectedNews.urlImages.isNotEmpty
@@ -404,8 +408,7 @@ class NewsPage extends GetView<NewsController> {
               width: 1,
             ),
             borderRadius: BorderRadius.circular(
-              ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) *
-                  0.8,
+              ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.8,
             ),
             color: theme.colorScheme.surfaceContainerHighest,
           ),
@@ -431,9 +434,7 @@ class NewsPage extends GetView<NewsController> {
                   ),
                 ],
               ),
-
               SizedBox(height: isTablet ? 12 : 10),
-
               Container(
                 height: 1,
                 decoration: BoxDecoration(
@@ -446,14 +447,13 @@ class NewsPage extends GetView<NewsController> {
                   ),
                 ),
               ),
-
               SizedBox(height: isTablet ? 12 : 10),
-
               _buildInfoRow(
                 isTablet,
                 visibleCategories,
                 hasMoreThanTwoCategories,
                 context,
+                visibleCollaborators,
               ),
             ],
           ),
@@ -590,13 +590,12 @@ class NewsPage extends GetView<NewsController> {
     final theme = Theme.of(context);
 
     final Color contentBackground =
-    isLight ? Colors.white : const Color(0xFF1E1E1E);
+        isLight ? Colors.white : const Color(0xFF1E1E1E);
 
-    final Color contentTextColor =
-    isLight ? Colors.black87 : Colors.white;
+    final Color contentTextColor = isLight ? Colors.black87 : Colors.white;
 
     final Color borderColor =
-    isLight ? Colors.grey.shade300 : const Color(0xFF333333);
+        isLight ? Colors.grey.shade300 : const Color(0xFF333333);
 
     return Container(
       decoration: BoxDecoration(
@@ -716,11 +715,12 @@ class NewsPage extends GetView<NewsController> {
   // ============================================================
 
   Widget _buildInfoRowWideScreen(
-      bool isTablet,
-      List<String> visibleCategories,
-      bool hasMoreThanTwoCategories,
-      BuildContext context,
-      ) {
+    bool isTablet,
+    List<String> visibleCategories,
+    bool hasMoreThanTwoCategories,
+    BuildContext context,
+    List<String>? visibleCollaborators,
+  ) {
     return Column(
       children: [
         _buildInfoItem(
@@ -730,9 +730,7 @@ class NewsPage extends GetView<NewsController> {
           isTablet: isTablet,
           theme: Theme.of(context),
         ),
-
         SizedBox(height: isTablet ? 12 : 10),
-
         _buildInfoItem(
           icon: Icons.schedule,
           label: 'date'.tr,
@@ -742,9 +740,7 @@ class NewsPage extends GetView<NewsController> {
           isTablet: isTablet,
           theme: Theme.of(context),
         ),
-
         SizedBox(height: isTablet ? 12 : 10),
-
         _buildInfoItem(
           icon: Icons.location_city,
           label: 'city'.tr,
@@ -754,9 +750,7 @@ class NewsPage extends GetView<NewsController> {
           isTablet: isTablet,
           theme: Theme.of(context),
         ),
-
         SizedBox(height: isTablet ? 12 : 10),
-
         _buildInfoItem(
           icon: Icons.category,
           label: 'type'.tr,
@@ -764,9 +758,7 @@ class NewsPage extends GetView<NewsController> {
           isTablet: isTablet,
           theme: Theme.of(context),
         ),
-
         SizedBox(height: isTablet ? 12 : 10),
-
         _buildCategoriesItem(
           isTablet,
           controller.selectedNews.categories
@@ -776,6 +768,16 @@ class NewsPage extends GetView<NewsController> {
           hasMoreThanTwoCategories,
           context,
         ),
+        if (controller.selectedNews.collaborators != 0)
+          _buildCollaboratorsItem(
+              isTablet,
+              controller.selectedNews.collaborators
+                  ?.map<String>((e) => e.toString())
+                  .toList(),
+              visibleCollaborators,
+              hasMoreThanTwoCategories,
+              context,
+            ),
       ],
     );
   }
@@ -785,11 +787,12 @@ class NewsPage extends GetView<NewsController> {
   // ============================================================
 
   Widget _buildInfoRow(
-      bool isTablet,
-      List<String> visibleCategories,
-      bool hasMoreThanTwoCategories,
-      BuildContext context,
-      ) {
+    bool isTablet,
+    List<String> visibleCategories,
+    bool hasMoreThanTwoCategories,
+    BuildContext context,
+    List<String>? visibleCollaborators,
+  ) {
     final theme = Theme.of(context);
 
     return Column(
@@ -862,6 +865,17 @@ class NewsPage extends GetView<NewsController> {
           hasMoreThanTwoCategories,
           context,
         ),
+        if ( controller.selectedNews.collaborators?.length != 0)
+
+          _buildCollaboratorsItem(
+            isTablet,
+            controller.selectedNews.collaborators
+                ?.map<String>((e) => e.toString())
+                .toList(),
+            visibleCollaborators,
+            hasMoreThanTwoCategories,
+            context,
+          ),
 
         SizedBox(height: isTablet ? 12 : 10),
 
@@ -930,9 +944,7 @@ class NewsPage extends GetView<NewsController> {
               ),
             ],
           ),
-
           SizedBox(height: isTablet ? 4 : 2),
-
           Text(
             value,
             style: TextStyle(
@@ -953,12 +965,12 @@ class NewsPage extends GetView<NewsController> {
   // ============================================================
 
   Widget _buildCategoriesItem(
-      bool isTablet,
-      List<String> categorias,
-      List<String> visibleCategories,
-      bool hasMoreThanTwoCategories,
-      BuildContext context,
-      ) {
+    bool isTablet,
+    List<String> categorias,
+    List<String> visibleCategories,
+    bool hasMoreThanTwoCategories,
+    BuildContext context,
+  ) {
     final theme = Theme.of(context);
 
     return Container(
@@ -986,9 +998,7 @@ class NewsPage extends GetView<NewsController> {
               ),
               SizedBox(width: isTablet ? 6 : 4),
               Text(
-                categorias.length > 1
-                    ? 'categories'.tr
-                    : 'category'.tr,
+                categorias.length > 1 ? 'categories'.tr : 'category'.tr,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontSize: isTablet ? 12 : 10,
@@ -997,15 +1007,13 @@ class NewsPage extends GetView<NewsController> {
               ),
             ],
           ),
-
           SizedBox(height: isTablet ? 4 : 2),
-
           Wrap(
             spacing: 6,
             runSpacing: 4,
             children: [
               ...visibleCategories.map(
-                    (cat) => Container(
+                (cat) => Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: isTablet ? 8 : 6,
                     vertical: isTablet ? 4 : 2,
@@ -1014,8 +1022,8 @@ class NewsPage extends GetView<NewsController> {
                     color: Colors.blue.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(
                       ResponsiveUtils.calculateResponsiveBorderRadius(
-                        isTablet,
-                      ) *
+                            isTablet,
+                          ) *
                           0.3,
                     ),
                     border: Border.all(
@@ -1033,7 +1041,6 @@ class NewsPage extends GetView<NewsController> {
                   ),
                 ),
               ),
-
               if (hasMoreThanTwoCategories)
                 GestureDetector(
                   onTap: () {
@@ -1052,8 +1059,8 @@ class NewsPage extends GetView<NewsController> {
                       color: Colors.orange.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(
                         ResponsiveUtils.calculateResponsiveBorderRadius(
-                          isTablet,
-                        ) *
+                              isTablet,
+                            ) *
                             0.3,
                       ),
                       border: Border.all(
@@ -1089,15 +1096,164 @@ class NewsPage extends GetView<NewsController> {
     );
   }
 
+  Widget _buildCollaboratorsItem(
+    bool isTablet,
+    List<String>? collaborators,
+    List<String>? visibleCollaborators,
+    bool hasMoreThanTwoCategories,
+    BuildContext context,
+  ) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isTablet ? 10 : 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.calculateResponsiveBorderRadius(isTablet) * 0.5,
+        ),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant,
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.label_outline,
+                color: theme.colorScheme.onSurfaceVariant,
+                size: isTablet ? 16 : 14,
+              ),
+              SizedBox(width: isTablet ? 6 : 4),
+              Text(
+                'Colaboradores',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: isTablet ? 12 : 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: isTablet ? 4 : 2),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              ...(visibleCollaborators ?? []).map(
+                (cat) => Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 8 : 6,
+                    vertical: isTablet ? 4 : 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.calculateResponsiveBorderRadius(
+                              isTablet) *
+                          0.3,
+                    ),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.5),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Text(
+                    cat,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: isTablet ? 13 : 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              if (hasMoreThanTwoCategories)
+                GestureDetector(
+                  onTap: () {
+                    _showAllCollaboratorsDialog(
+                      context,
+                      collaborators,
+                      isTablet,
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 8 : 6,
+                      vertical: isTablet ? 4 : 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.calculateResponsiveBorderRadius(
+                              isTablet,
+                            ) *
+                            0.3,
+                      ),
+                      border: Border.all(
+                        color: Colors.orange,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '+${collaborators?.length ?? 0}',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: isTablet ? 13 : 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.more_horiz,
+                          color: Colors.orange,
+                          size: isTablet ? 14 : 12,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAllCollaboratorsDialog(
+    BuildContext context,
+    List<String>? collaborators,
+    bool isTablet,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ResponsiveUtils.createResponsiveDialog(
+          context: context,
+          title: 'all_categories'.tr,
+          content: collaborators?.join(', ') ?? '',
+          onConfirm: () => Navigator.of(context).pop(),
+          confirmText: 'close'.tr,
+        );
+      },
+    );
+  }
   // ============================================================
   // DIALOG CATEGORIAS
   // ============================================================
 
   void _showAllCategoriesDialog(
-      BuildContext context,
-      List<String> categorias,
-      bool isTablet,
-      ) {
+    BuildContext context,
+    List<String> categorias,
+    bool isTablet,
+  ) {
     showDialog(
       context: context,
       builder: (context) {

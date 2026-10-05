@@ -47,14 +47,20 @@ class KeysServices {
     return "$_pubHeader\n$base64Key\n$_pubFooter";
   }
 
-  static String exportPrivateKey(RSAPrivateKey key) {
+ static String exportPrivateKey(RSAPrivateKey key) {
+    // Extraímos todos os componentes estruturais da chave RSA
     final modulus = key.modulus.toString();
     final privateExponent = key.privateExponent.toString();
-    final rawString = "$modulus|$privateExponent";
+    final p = key.p.toString();
+    final q = key.q.toString();
 
-    final base64Key = base64.encode(utf8.encode(rawString));
-    debugPrint("Chave Publica em string: $base64Key");
-    return "$_privHeader\n$base64Key\n$_privFooter";
+    // Juntamos tudo com o separador
+    final rawString = '$modulus|$privateExponent|$p|$q';
+
+    // Codificamos em Base64 e adicionamos as assinaturas do projeto
+    final base64Content = base64.encode(utf8.encode(rawString));
+    
+    return '$_privHeader\n$base64Content\n$_privFooter';
   }
 
   static RSAPublicKey importPublicKey(String pemString) {
@@ -93,10 +99,18 @@ class KeysServices {
     final rawString = utf8.decode(base64.decode(base64Content));
     final parts = rawString.split('|');
 
+    // Trava de segurança: verifica se a chave não foi salva corrompida no passado
+    if (parts.length < 4) {
+       throw FormatException("Chave privada corrompida: Faltam os fatores p e q.");
+    }
+
     final modulus = BigInt.parse(parts[0]);
     final privateExponent = BigInt.parse(parts[1]);
+    final p = BigInt.parse(parts[2]);
+    final q = BigInt.parse(parts[3]);
 
-    return RSAPrivateKey(modulus, privateExponent, null, null);
+    // Agora passamos os 4 parâmetros corretamente
+    return RSAPrivateKey(modulus, privateExponent, p, q);
   }
 
   static String toSign(String newsBody, RSAPrivateKey privateKey) {

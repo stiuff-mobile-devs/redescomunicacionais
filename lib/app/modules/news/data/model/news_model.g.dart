@@ -43,13 +43,14 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       excludedAt: fields[17] as DateTime?,
       excludedObservation: fields[20] as String?,
       publicationTerms: (fields[31] as Map?)?.cast<String, dynamic>(),
+      collaborators: (fields[40] as List?)?.cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, NewsModel obj) {
     writer
-      ..writeByte(26)
+      ..writeByte(27)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -80,6 +81,8 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       ..write(obj.createdBy)
       ..writeByte(9)
       ..write(obj.createdAt)
+      ..writeByte(40)
+      ..write(obj.collaborators)
       ..writeByte(12)
       ..write(obj.validatedBy)
       ..writeByte(30)

@@ -153,6 +153,7 @@ class NewsController extends GetxController {
       String type,
       String status,
       String? videoUrl,
+      List<String> collaborators,
       ) async {
     isLoading(true);
 
@@ -171,6 +172,7 @@ class NewsController extends GetxController {
         status: status,
         videoUrl: videoUrl,
         lastUpdated: DateTime.now(),
+        collaborators: collaborators,
       );
 
       await _repository.saveNewsToHive(news);
