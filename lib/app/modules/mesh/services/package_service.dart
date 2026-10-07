@@ -27,7 +27,7 @@ class OfflinePackageService {
           KeysServices.importPrivateKey(privateKeyStr);
 
       // Converte a notícia em uma string para ser assinada
-      final String newsString = jsonEncode(news.toMap());
+      final String newsString = jsonEncode(news.toJson());
 
       // Assina a string da notícia com a chave privada
       final String signature = KeysServices.toSign(newsString, privateKey);
@@ -58,7 +58,7 @@ class OfflinePackageService {
       final RSAPublicKey publicKey = KeysServices.importPublicKey(publicKeyStr);
 
       // Transforma a noticia recebida na mesma string de quando foi assinada
-      final String newsString = jsonEncode(package.news?.toMap());
+      final String newsString = jsonEncode(package.news?.toJson());
 
       // Verifica a assinatura
       return KeysServices.toCheck(

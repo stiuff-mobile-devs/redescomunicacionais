@@ -59,7 +59,7 @@ class UserProvider {
       await _firestore
           .collection(userCollection)
           .doc(user.id)
-          .set(user.toJson());
+          .set(user.toFirebase());
     } catch (e) {
       throw Exception("Erro ao criar usuário do Firebase: $e");
     }
@@ -310,7 +310,7 @@ class UserProvider {
   Future<void> savePublicKey(PublicKeyModel publicKeyModel) async {
     try {
       final callable = _functions.httpsCallable('savePublicKey');
-      final payload = publicKeyModel.toJsonStringData();
+      final payload = publicKeyModel.toJson();
 
       await callable.call(payload);
     } on FirebaseFunctionsException catch (e) {

@@ -53,35 +53,52 @@ class PublicKeyModel extends HiveObject {
       createdAt: _parseTimestamp(json['createdAt']),
       lastUpdated: _parseTimestamp(json['lastUpdated']),
       revocationInfo: json['revocationInfo'] != null 
-          ? RevocationInfo.fromJson(json['revocationInfo'] as Map<String, dynamic>) 
+          ? RevocationInfo.fromJson(Map<String, dynamic>.from(json['revocationInfo'])) 
           : null,
     );
   }
 
+  // ==========================================
+  // SERIALIZAÇÃO PARA A REDE MESH (Usa String ISO-8601)
+  // ==========================================
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
       'id': id,
       'email': email,
       'publicKey': publicKey,
       'oldPublicKeys': oldPublicKeys,
       'cities': cities,
-      'createdAt': createdAt,
-      'lastUpdated': lastUpdated,
-      'revocationInfo': revocationInfo?.toJson(),
-    };
-  }
-
-  Map<String, dynamic> toJsonStringData() {
-    return {
-      'id': id,
-      'email': email,
-      'publicKey': publicKey,
-      'oldPublicKeys': oldPublicKeys,
-      'cities': cities,
+      // Converte datas nativas para texto ISO-8601 para segurança no jsonEncode
       'createdAt': createdAt?.toIso8601String(),
       'lastUpdated': lastUpdated?.toIso8601String(),
       'revocationInfo': revocationInfo?.toJson(),
     };
+
+    // Remove campos nulos para economizar largura de banda na rede Mesh
+    data.removeWhere((key, value) => value == null);
+
+    return data;
+  }
+
+  // ==========================================
+  // SERIALIZAÇÃO PARA O FIREBASE (Preserva DateTime nativo)
+  // ==========================================
+  Map<String, dynamic> toFirebase() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'email': email,
+      'publicKey': publicKey,
+      'oldPublicKeys': oldPublicKeys,
+      'cities': cities,
+      // Mantém DateTime nativo para persistência direta no Firestore
+      'createdAt': createdAt,
+      'lastUpdated': lastUpdated,
+      'revocationInfo': revocationInfo?.toFirebase(),
+    };
+
+    data.removeWhere((key, value) => value == null);
+
+    return data;
   }
 
   PublicKeyModel copyWith({
@@ -106,9 +123,11 @@ class PublicKeyModel extends HiveObject {
     );
   }
 
+  // Interpretador Híbrido: Firestore, Dart e JSON/Mesh
   static DateTime? _parseTimestamp(dynamic value) {
     if (value == null) return null;
     if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
     if (value is String) return DateTime.tryParse(value);
     return null;
   }
@@ -137,20 +156,43 @@ class RevocationInfo extends HiveObject {
 
   factory RevocationInfo.fromJson(Map<String, dynamic> json) {
     return RevocationInfo(
-      isRevoked: json['isRevoked'] ?? false,
+      isRevoked: json['isRevoked'] as bool? ?? false,
       revokedAt: _parseTimestamp(json['revokedAt']),
       revokedBy: json['revokedBy'] as String?,
       revocationReason: json['revocationReason'] as String?,
     );
   }
 
+  // ==========================================
+  // SERIALIZAÇÃO PARA A REDE MESH (Usa String ISO-8601)
+  // ==========================================
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
+      'isRevoked': isRevoked,
+      'revokedAt': revokedAt?.toIso8601String(),
+      'revokedBy': revokedBy,
+      'revocationReason': revocationReason,
+    };
+
+    data.removeWhere((key, value) => value == null);
+
+    return data;
+  }
+
+  // ==========================================
+  // SERIALIZAÇÃO PARA O FIREBASE (Preserva DateTime nativo)
+  // ==========================================
+  Map<String, dynamic> toFirebase() {
+    final Map<String, dynamic> data = {
       'isRevoked': isRevoked,
       'revokedAt': revokedAt,
       'revokedBy': revokedBy,
       'revocationReason': revocationReason,
     };
+
+    data.removeWhere((key, value) => value == null);
+
+    return data;
   }
 
   RevocationInfo copyWith({
@@ -170,6 +212,7 @@ class RevocationInfo extends HiveObject {
   static DateTime? _parseTimestamp(dynamic value) {
     if (value == null) return null;
     if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value; 
     if (value is String) return DateTime.tryParse(value);
     return null;
   }

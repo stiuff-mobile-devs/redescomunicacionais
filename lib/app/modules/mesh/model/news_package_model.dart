@@ -34,36 +34,54 @@ class NewsPackageModel {
   });
 
   factory NewsPackageModel.fromJson(Map<String, dynamic> json) {
-    
-
     return NewsPackageModel(
-      news: NewsModel.fromMap(Map<String, dynamic>.from(json['news'] ?? {})),
-      signature: json['signature'] ?? '',
-      email: json['email'] ?? '',
+      news: json['news'] != null 
+          ? NewsModel.fromMap(Map<String, dynamic>.from(json['news'])) 
+          : null,
+      signature: json['signature'] as String? ?? '',
+      email: json['email'] as String? ?? '',
       lastUpdated: _parseDate(json['lastUpdated']),
-      isUploaded: json['isUploaded'] ?? false,
-      id: json['id'], // Mantém o ID gerado e salvo anteriormente
+      isUploaded: json['isUploaded'] as bool? ?? false,
+      id: json['id'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'news': news?.toMap(), 
+    final Map<String, dynamic> data = {
+      'news': news?.toJson(), 
+      'signature': signature,
+      'email': email,
+      'lastUpdated': lastUpdated?.toIso8601String(), 
+      'isUploaded': isUploaded,
+      'id': id,
+    };
+
+    data.removeWhere((key, value) => value == null);
+
+    return data;
+  }
+
+  Map<String, dynamic> toFirebase() {
+    final Map<String, dynamic> data = {
+      'news': news?.toFirebase(), 
       'signature': signature,
       'email': email,
       'lastUpdated': lastUpdated, 
       'isUploaded': isUploaded,
       'id': id,
     };
+
+    data.removeWhere((key, value) => value == null);
+
+    return data;
   }
 
-    static DateTime? _parseDate(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is DateTime) {
-      return value;
-    }
+  // Interpretador Híbrido: Firestore, Dart e JSON/Mesh
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value); 
     return null;
   }
 }

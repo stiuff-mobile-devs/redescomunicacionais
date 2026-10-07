@@ -22,7 +22,7 @@ class NewsProvider {
   Future<void> _saveNewsToFirebase(NewsModel news) async {
     try {
       await _firestore.collection(collectionPath).doc(news.id).set(
-            news.toMap(),
+            news.toFirebase(),
             SetOptions(merge: true),
           );
     } on FirebaseException catch (e) {
@@ -283,7 +283,7 @@ class NewsProvider {
         throw Exception('Notícia não encontrada no Hive local.');
       }
 
-      final mergedData = existingNews.toMap()..addAll(updatedData);
+      final mergedData = existingNews.toFirebase()..addAll(updatedData);
       mergedData['id'] = newsId;
 
       final updatedNews = NewsModel.fromMap(mergedData);

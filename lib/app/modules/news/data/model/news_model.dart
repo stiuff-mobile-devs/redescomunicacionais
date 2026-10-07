@@ -140,10 +140,8 @@ class NewsModel {
     this.collaborators,
   }) : id = id ?? const Uuid().v4();
 
-  // ==========================================
-  // SERIALIZAÇÃO PARA O FIREBASE (Usa Timestamp)
-  // ==========================================
-  Map<String, dynamic> toMap() {
+ 
+  Map<String, dynamic> toFirebase() {
     final Map<String, dynamic> data = {
       'id': id,
       'title': title,
@@ -155,23 +153,23 @@ class NewsModel {
       'videoUrl': videoUrl,
       'type': type,
       'status': status,
-      'lastUpdated': Timestamp.fromDate(lastUpdated),
+      'lastUpdated': lastUpdated, // DateTime nativo suportado pelo Firestore
       'author': author,
       'createdBy': createdBy,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt, // DateTime nativo suportado pelo Firestore
       'validatedBy': validatedBy,
       'validatedByName': validatedByName,
-      'validatedAt': validatedAt != null ? Timestamp.fromDate(validatedAt!) : null,
+      'validatedAt': validatedAt,
       'validatedObservation': validatedObservation,
       'rejectedBy': rejectedBy,
-      'rejectedAt': rejectedAt != null ? Timestamp.fromDate(rejectedAt!) : null,
+      'rejectedAt': rejectedAt,
       'rejectedObservation': rejectedObservation,
-      'editedAt': editedAt != null ? Timestamp.fromDate(editedAt!) : null,
+      'editedAt': editedAt,
       'excludedBy': excludedBy,
-      'excludedAt': excludedAt != null ? Timestamp.fromDate(excludedAt!) : null,
+      'excludedAt': excludedAt,
       'excludedObservation': excludedObservation,
       'publicationTerms': publicationTerms,
-      'collaborators' : collaborators,
+      'collaborators': collaborators,
     };
 
     const requiredKeys = {
@@ -190,59 +188,6 @@ class NewsModel {
     return data;
   }
 
-  factory NewsModel.fromMap(Map<String, dynamic> map) {
-    return NewsModel(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      subtitle: map['subtitle'] as String?,
-      body: map['body'] as String,
-      cities: List<String>.from(map['cities'] ?? []),
-      categories: List<String>.from(map['categories'] ?? []),
-      urlImages: List<String>.from(map['urlImages'] ?? []),
-      videoUrl: map['videoUrl'] as String?,
-      type: map['type'] as String,
-      status: map['status'] as String,
-      
-      lastUpdated: _parseDate(map['lastUpdated']) ?? DateTime.now(),
-      author: map['author'] as String,
-      createdBy: map['createdBy'] as String,
-      createdAt: _parseDate(map['createdAt'])!, 
-
-      validatedBy: map['validatedBy'] as String?,
-      validatedByName: map['validatedByName'] as String?,
-      validatedAt: _parseDate(map['validatedAt']),
-      validatedObservation: map['validatedObservation'] as String?,
-      rejectedBy: map['rejectedBy'] as String?,
-      rejectedAt: _parseDate(map['rejectedAt']),
-      rejectedObservation: map['rejectedObservation'] as String?,
-      editedAt: _parseDate(map['editedAt']),
-      excludedBy: map['excludedBy'] as String?,
-      excludedAt: _parseDate(map['excludedAt']),
-      excludedObservation: map['excludedObservation'] as String?,
-      publicationTerms: map['publicationTerms'] != null
-          ? Map<String, dynamic>.from(map['publicationTerms'])
-          : null,
-      collaborators : List<String>.from(map['collaborators'] ?? [])
-    );
-  }
-
-  // Permite ler datas tanto do Firebase (Timestamp) quanto da Rede Mesh (String ISO)
-  static DateTime? _parseDate(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is DateTime) {
-      return value;
-    }
-    if (value is String) {
-      return DateTime.tryParse(value); // <-- Essencial para decodificar o JSON recebido via rádio
-    }
-    return null;
-  }
-
-  // ==========================================
-  // SERIALIZAÇÃO PARA A REDE MESH (Usa String ISO-8601)
-  // ==========================================
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       'id': id,
@@ -255,7 +200,7 @@ class NewsModel {
       'videoUrl': videoUrl,
       'type': type,
       'status': status,
-      // Converte as datas diretamente para texto para não quebrar o jsonEncode
+      // Datas convertidas estritamente para String ISO-8601
       'lastUpdated': lastUpdated.toIso8601String(),
       'author': author,
       'createdBy': createdBy,
@@ -275,9 +220,55 @@ class NewsModel {
       'collaborators': collaborators,
     };
 
-    // Remove os campos nulos para economizar banda na transferência via Bluetooth
+    // Remove campos nulos para reduzir o tamanho dos pacotes na malha P2P
     data.removeWhere((key, value) => value == null);
 
     return data;
+  }
+
+  factory NewsModel.fromMap(Map<String, dynamic> map) {
+    return NewsModel(
+      id: map['id'] as String,
+      title: map['title'] as String,
+      subtitle: map['subtitle'] as String?,
+      body: map['body'] as String,
+      cities: List<String>.from(map['cities'] ?? []),
+      categories: List<String>.from(map['categories'] ?? []),
+      urlImages: List<String>.from(map['urlImages'] ?? []),
+      videoUrl: map['videoUrl'] as String?,
+      type: map['type'] as String,
+      status: map['status'] as String,
+      lastUpdated: _parseDate(map['lastUpdated']) ?? DateTime.now(),
+      author: map['author'] as String,
+      createdBy: map['createdBy'] as String,
+      createdAt: _parseDate(map['createdAt']) ?? DateTime.now(),
+      validatedBy: map['validatedBy'] as String?,
+      validatedByName: map['validatedByName'] as String?,
+      validatedAt: _parseDate(map['validatedAt']),
+      validatedObservation: map['validatedObservation'] as String?,
+      rejectedBy: map['rejectedBy'] as String?,
+      rejectedAt: _parseDate(map['rejectedAt']),
+      rejectedObservation: map['rejectedObservation'] as String?,
+      editedAt: _parseDate(map['editedAt']),
+      excludedBy: map['excludedBy'] as String?,
+      excludedAt: _parseDate(map['excludedAt']),
+      excludedObservation: map['excludedObservation'] as String?,
+      publicationTerms: map['publicationTerms'] != null
+          ? Map<String, dynamic>.from(map['publicationTerms'])
+          : null,
+      collaborators: map['collaborators'] != null
+          ? List<String>.from(map['collaborators'])
+          : null,
+    );
+  }
+
+  factory NewsModel.fromJson(Map<String, dynamic> json) => NewsModel.fromMap(json);
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 }

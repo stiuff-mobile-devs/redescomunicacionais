@@ -88,13 +88,33 @@ class UserModel extends HiveObject {
   }
 
   Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'name': name,
+      'email': email,
+      'urlImage': urlImage,
+      'role': role,
+      'createdAt': createdAt.toIso8601String(), // Converte para texto
+      'roleUpdatedAt': roleUpdatedAt?.toIso8601String(), // Converte para texto
+      'roleUpdatedBy': roleUpdatedBy,
+      'lastUpdated': lastUpdated?.toIso8601String(), // Converte para texto
+      'operationsCities': operationsCities,
+    };
+
+    // Remove os campos nulos para economizar banda na malha ad-hoc
+    data.removeWhere((key, value) => value == null);
+
+    return data;
+  }
+
+  Map<String, dynamic> toFirebase() {
     return {
       'id': id,
       'name': name,
       'email': email,
       'urlImage': urlImage,
       'role': role,
-      'createdAt': createdAt,
+      'createdAt': createdAt, // Envia o DateTime nativo (Firestore aceita)
       'roleUpdatedAt': roleUpdatedAt,
       'roleUpdatedBy': roleUpdatedBy,
       'lastUpdated': lastUpdated,

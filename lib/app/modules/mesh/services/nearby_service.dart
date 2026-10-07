@@ -57,6 +57,7 @@ class NearbyService extends GetxService {
     await _nearby.stopDiscovery();
     await _nearby.stopAllEndpoints();
     connectedEndpoints.clear();
+    debugPrint("Encerrando Malha Epidêmica");
   }
 
   Future<void> _startAdvertising(String userName) async {
@@ -66,6 +67,7 @@ class NearbyService extends GetxService {
       onConnectionResult: _onConnectionResult,
       onDisconnected: _onDisconnected,
     );
+    debugPrint("Começando a anunciar dispositivo $userName na rede");
   }
 
   Future<void> _startDiscovery(String userName) async {
@@ -79,6 +81,7 @@ class NearbyService extends GetxService {
       ),
       onEndpointLost: (id) => debugPrint('NearbyService: $id saiu do alcance.'),
     );
+    debugPrint("Começando a procurar dispositivos proximos");
   }
 
   void _onConnectionInitiated(String endpointId, ConnectionInfo info) async {
@@ -88,7 +91,7 @@ class NearbyService extends GetxService {
       onPayLoadRecieved: _onPayloadReceived, 
       onPayloadTransferUpdate: _onPayloadTransferUpdate,
     );
-    debugPrint('Conexão aceita');
+    debugPrint('Conexão com dispositivo $endpointId aceita');
   }
 
   void _onConnectionResult(String endpointId, Status status) {
@@ -100,10 +103,14 @@ class NearbyService extends GetxService {
     }
   }
 
-  void _onDisconnected(String endpointId) => connectedEndpoints.remove(endpointId);
+  void _onDisconnected(String endpointId) {
+    connectedEndpoints.remove(endpointId);
+    debugPrint("Removendo conexão com dispositivo $endpointId");
+  }
 
   void _onPayloadReceived(String endpointId, Payload payload) async {
     if (payload.type == PayloadType.BYTES) {
+      debugPrint('NearbyService: Arquivo leve recebido de $endpointId.');
       String jsonString = String.fromCharCodes(payload.bytes!);
       _processIncomingJson(endpointId, jsonString);
     } 
@@ -143,6 +150,7 @@ class NearbyService extends GetxService {
       
       String jsonString = jsonEncode(handshakeData);
       await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonString.codeUnits));
+      debugPrint("Enviou o handshak para o dispositivo $endpointId");
       
     } catch (e) {
       debugPrint('NearbyService: Erro ao gerar Handshake: $e');
@@ -155,6 +163,7 @@ class NearbyService extends GetxService {
       
       // === CASO 1: HANDSHAKE ===
       if (data['type'] == 'HANDSHAKE') {
+        debugPrint("Começou a Conferir as matérias");
         final List<dynamic> remoteItems = data['items']; // Pega endpoints das matérias
         final localNews = await newsRepository.getAllPackageNews();
 
@@ -175,6 +184,9 @@ class NearbyService extends GetxService {
           }
         }
 
+        debugPrint("Parou de Conferir as matérias");
+        debugPrint("Começou a conferir o pacote de chaves");
+
         // Compara Chaves Públicas para evitar ataques de repetição
         DateTime remoteKeysDate = DateTime.parse(data['keysTimestamp']);
         PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
@@ -192,7 +204,9 @@ class NearbyService extends GetxService {
           debugPrint('NearbyService: Minhas chaves são mais novas. Enviando pacote...');
           
           _sendKeysPackage(endpointId);
-        }
+       }
+
+        debugPrint("Parou de Conferir o pacote de chaves");
       }
       
       // === CASOS 2 e 3: PEDIDOS ESPECÍFICOS ===
@@ -205,12 +219,13 @@ class NearbyService extends GetxService {
       
       // === CASO 4: RECEBIMENTO DA MATÉRIA (SEGURANÇA DO EDITOR) ===
       else if (data['type'] == 'FULL_NEWS_PACKAGE') {
+
         NewsPackageModel receivedPackage = NewsPackageModel.fromJson(data['package']);
         
         // Identifica quem é a ultima pessoa que assinou o pacote
         String authorEmail = receivedPackage.email ?? '';
         
-        debugPrint('NearbyService: Pacote assino por $authorEmail recebido. Validando...');
+        debugPrint('NearbyService: Pacote assinado por $authorEmail recebido. Validando...');
         
         // Busca a lista ordenada de chaves do ultimo assinador no banco local (Chave Atual + Histórico Invertido)
         List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
@@ -267,13 +282,14 @@ class NearbyService extends GetxService {
       }
 
     } catch (e) {
-      debugPrint('NearbyService: Erro ao processar JSON: $e');
+      debugPrint('NearbyService: Erro ao processar JSON de chaves: $e');
     }
   }
 
   void _requestSpecificNews(String endpointId, String newsId) async {
     Map<String, dynamic> requestData = {'type': 'REQUEST_NEWS', 'newsId': newsId};
     await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonEncode(requestData).codeUnits));
+    debugPrint("Pediu a matéria: $newsId para o dispositivo:  $endpointId ");
   }
 
   void _sendFullNewsPackage(String endpointId, String? newsId) async {
@@ -289,7 +305,7 @@ class NearbyService extends GetxService {
         await tempFile.writeAsString(jsonString);
 
         await _nearby.sendFilePayload(endpointId, tempFile.path);
-        debugPrint('Enviando noticia $newsId');
+        debugPrint('Enviando noticia $newsId para o dispositivo: $endpointId');
       }
     } catch (e) {
       debugPrint('NearbyService: Erro ao enviar matéria completa: $e');
