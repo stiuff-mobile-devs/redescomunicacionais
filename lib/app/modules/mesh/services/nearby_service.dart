@@ -20,13 +20,16 @@ class NearbyService extends GetxService {
   final NewsRepository newsRepository = NewsRepository();
   final OfflinePackageService offlinePackageService = OfflinePackageService();
 
+  // Guarda arquivos em transferência até que o download termine por completo
+  final Map<int, Payload> _incomingFilePayloads = {};
+
   @override
   void onInit() {
     super.onInit();
     debugPrint('NearbyService: Serviço inicializado.');
   }
   
- Future<bool> requestPermissions() async {
+  Future<bool> requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.bluetooth,
       Permission.bluetoothAdvertise,
@@ -57,6 +60,7 @@ class NearbyService extends GetxService {
     await _nearby.stopDiscovery();
     await _nearby.stopAllEndpoints();
     connectedEndpoints.clear();
+    _incomingFilePayloads.clear();
     debugPrint("Encerrando Malha Epidêmica");
   }
 
@@ -85,7 +89,6 @@ class NearbyService extends GetxService {
   }
 
   void _onConnectionInitiated(String endpointId, ConnectionInfo info) async {
-    // A conexão torna-se simétrica após aceita, removendo a distinção entre anunciante e descobridor.
     await _nearby.acceptConnection(
       endpointId,
       onPayLoadRecieved: _onPayloadReceived, 
@@ -110,35 +113,55 @@ class NearbyService extends GetxService {
 
   void _onPayloadReceived(String endpointId, Payload payload) async {
     if (payload.type == PayloadType.BYTES) {
-      debugPrint('NearbyService: Arquivo leve recebido de $endpointId.');
-      String jsonString = String.fromCharCodes(payload.bytes!);
-      _processIncomingJson(endpointId, jsonString);
+      debugPrint('NearbyService: Payload leve (BYTES) recebido de $endpointId.');
+      try {
+        String jsonString = utf8.decode(payload.bytes!);
+        _processIncomingJson(endpointId, jsonString);
+      } catch (e) {
+        debugPrint('NearbyService: Erro ao decodificar bytes recebidos: $e');
+      }
     } 
     else if (payload.type == PayloadType.FILE) {
-      debugPrint('NearbyService: Arquivo pesado recebido de $endpointId.');
-      try {
-        File receivedFile = File(payload.filePath!);
-        String jsonString = await receivedFile.readAsString();
-        _processIncomingJson(endpointId, jsonString);
-        await receivedFile.delete(); 
-      } catch (e) {
-        debugPrint('NearbyService: Erro ao ler arquivo recebido: $e');
-      }
+      debugPrint('NearbyService: Transferência de arquivo iniciada de $endpointId (Payload ID: ${payload.id}).');
+      // Registra o payload para ser processado no onPayloadTransferUpdate quando terminar
+      _incomingFilePayloads[payload.id] = payload;
     }
   }
 
-  void _onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {}
+ void _onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) async {
+    if (update.status == PayloadStatus.SUCCESS) {
+      if (_incomingFilePayloads.containsKey(update.id)) {
+        final payload = _incomingFilePayloads.remove(update.id)!;
+        final String? path = payload.filePath;
+
+        if (path != null && path.isNotEmpty) {
+          debugPrint('NearbyService: Arquivo pesado transferido com sucesso ($path). Processando...');
+          try {
+            File receivedFile = File(path);
+            String jsonString = await receivedFile.readAsString();
+            _processIncomingJson(endpointId, jsonString);
+            await receivedFile.delete(); // Limpa o arquivo temporário
+          } catch (e) {
+            debugPrint('NearbyService: Erro ao ler arquivo baixado: $e');
+          }
+        } else {
+          debugPrint('NearbyService: Sucesso reportado, mas payload.filePath continua vazio.');
+        }
+      }
+    } else if (update.status == PayloadStatus.FAILURE || update.status == PayloadStatus.CANCELED) {
+      _incomingFilePayloads.remove(update.id);
+      debugPrint('NearbyService: Transferência do payload ${update.id} falhou ou foi cancelada.');
+    }
+  }
 
   void _sendHandshake(String endpointId) async {
     debugPrint('NearbyService: Preparando Handshake para $endpointId.');
     try {
-      // Busca metadados das Notícias
       final localNews = await newsRepository.getAllPackageNews(); 
       List<Map<String, dynamic>> handshakeItems = localNews.map((news) {
         return {'id': news.id, 'lastUpdated': news.lastUpdated?.toIso8601String()};
       }).toList();
 
-      // Busca a data do Pacote de Chaves Públicas local
       PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
       DateTime localKeysDate = DateTime(1970); 
 
@@ -149,25 +172,24 @@ class NearbyService extends GetxService {
       };
       
       String jsonString = jsonEncode(handshakeData);
-      await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonString.codeUnits));
-      debugPrint("Enviou o handshak para o dispositivo $endpointId");
+      await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(utf8.encode(jsonString)));
+      debugPrint("Enviou o handshake para o dispositivo $endpointId");
       
     } catch (e) {
       debugPrint('NearbyService: Erro ao gerar Handshake: $e');
     }
   }
 
-   void _processIncomingJson(String endpointId, String jsonString) async {
+  void _processIncomingJson(String endpointId, String jsonString) async {
     try {
       final Map<String, dynamic> data = jsonDecode(jsonString);
       
       // === CASO 1: HANDSHAKE ===
       if (data['type'] == 'HANDSHAKE') {
         debugPrint("Começou a Conferir as matérias");
-        final List<dynamic> remoteItems = data['items']; // Pega endpoints das matérias
+        final List<dynamic> remoteItems = data['items'] ?? [];
         final localNews = await newsRepository.getAllPackageNews();
 
-        // Compara matérias (Last Write Wins)
         for (var remoteItem in remoteItems) {
           String remoteId = remoteItem['id'];
           DateTime remoteDate = DateTime.parse(remoteItem['lastUpdated']);
@@ -176,9 +198,10 @@ class NearbyService extends GetxService {
           if (localMatch == null) {
             _requestSpecificNews(endpointId, remoteId);
           } else {
-            if (remoteDate.isAfter(localMatch.lastUpdated!)) {
+            final DateTime localDate = localMatch.lastUpdated ?? DateTime(1970);
+            if (remoteDate.isAfter(localDate)) {
               _requestSpecificNews(endpointId, remoteId);
-            } else if (localMatch.lastUpdated!.isAfter(remoteDate)) {
+            } else if (localDate.isAfter(remoteDate)) {
               _sendFullNewsPackage(endpointId, localMatch.id);
             }
           }
@@ -187,24 +210,18 @@ class NearbyService extends GetxService {
         debugPrint("Parou de Conferir as matérias");
         debugPrint("Começou a conferir o pacote de chaves");
 
-        // Compara Chaves Públicas para evitar ataques de repetição
         DateTime remoteKeysDate = DateTime.parse(data['keysTimestamp']);
         PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
-        
-        // Se o usuário não tiver chaves salvas, assume 1970 para forçar o download da lista do vizinho
         DateTime localKeysDate = localKeyPackage?.timestamp ?? DateTime(1970);
 
         if (remoteKeysDate.isAfter(localKeysDate)) {
           debugPrint('NearbyService: Vizinho tem chaves mais novas. Solicitando...');
-          
           Map<String, dynamic> requestData = {'type': 'REQUEST_KEYS'};
-          await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonEncode(requestData).codeUnits));
-          
+          await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(utf8.encode(jsonEncode(requestData))));
         } else if (localKeysDate.isAfter(remoteKeysDate) && localKeyPackage != null) {
           debugPrint('NearbyService: Minhas chaves são mais novas. Enviando pacote...');
-          
           _sendKeysPackage(endpointId);
-       }
+        }
 
         debugPrint("Parou de Conferir o pacote de chaves");
       }
@@ -219,77 +236,56 @@ class NearbyService extends GetxService {
       
       // === CASO 4: RECEBIMENTO DA MATÉRIA (SEGURANÇA DO EDITOR) ===
       else if (data['type'] == 'FULL_NEWS_PACKAGE') {
-
         NewsPackageModel receivedPackage = NewsPackageModel.fromJson(data['package']);
-        
-        // Identifica quem é a ultima pessoa que assinou o pacote
         String authorEmail = receivedPackage.email ?? '';
         
         debugPrint('NearbyService: Pacote assinado por $authorEmail recebido. Validando...');
         
-        // Busca a lista ordenada de chaves do ultimo assinador no banco local (Chave Atual + Histórico Invertido)
         List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
 
         if (keysToTest.isNotEmpty) {
           bool isAuthentic = false;
 
-          // Itera pela lista de chaves e testa até conseguir validar a assinatura
           for (String keyStr in keysToTest) {
             isAuthentic = offlinePackageService.verifyNewsPackage(receivedPackage, keyStr);
-            
-            if (isAuthentic) {
-              // Se a assinatura for verdadeira, para o laço imediatamente
-              break; 
-            }
+            if (isAuthentic) break; 
           }
 
           if (isAuthentic && receivedPackage.news != null) {
-          debugPrint('NearbyService: SUCESSO! Assinatura autêntica. Matéria visível e pacote salvos.');
-          
-          // Salva a matéria extraída para o leitor ver na tela do app
-          await newsRepository.saveNewsToHive(receivedPackage.news!);
-          
-          // Salva o pacote para continuar a propagação na rede
-          await newsRepository.saveNewsPackageInHive(receivedPackage);
-        } else {
-          debugPrint('NearbyService: Falha na validação (Chaves desatualizadas ou pacote adulterado).');
-          debugPrint('NearbyService: Salvando APENAS o pacote para atuar como ponte na rede Mesh.');
-          
-          // NÃO salva o `newsToHive` (o usuário não consegue ler a matéria no front-end),
-          // mas salva o pacote estruturado no banco para continuar a transmissão epidêmica.
-          await newsRepository.saveNewsPackageInHive(receivedPackage);
-        }
+            debugPrint('NearbyService: SUCESSO! Assinatura autêntica. Matéria e pacote salvos.');
+            await newsRepository.saveNewsToHive(receivedPackage.news!);
+            await newsRepository.saveNewsPackageInHive(receivedPackage);
+          } else {
+            debugPrint('NearbyService: Falha na validação. Salvando como nó de retransmissão.');
+            await newsRepository.saveNewsPackageInHive(receivedPackage);
+          }
         }
       }
 
       // === CASO 5: RECEBIMENTO DO PACOTE DE CHAVES (SEGURANÇA DA API) ===
       else if (data['type'] == 'FULL_KEYS_PACKAGE') {
         debugPrint('NearbyService: Pacote de Chaves recebido. Validando com a API...');
-        
         PublicKeyPackage receivedKeys = PublicKeyPackage.fromJson(data['package']);
         
         bool isKeysAuthentic = offlinePackageService.verifyKeysPackage(receivedKeys);
 
         if (isKeysAuthentic) {
-          debugPrint('NearbyService: SUCESSO! Autoridade Certificadora autêntica. Atualizando chaves...');
-          
-          // Salva o novo pacote validado no Hive para ser usado em futuras verificações
+          debugPrint('NearbyService: SUCESSO! Chaves validadas. Atualizando localmente...');
           await newsRepository.savePublicKeyPackage(receivedKeys);
         } else {
-          // Se a assinatura da API não bater, alguém tentou injetar chaves falsas na rede
-          debugPrint('NearbyService: ALERTA! Pacote de Chaves FALSO ou corrompido. Descartado.');
+          debugPrint('NearbyService: ALERTA! Pacote de Chaves falso ou corrompido. Descartado.');
         }
       }
 
     } catch (e) {
-      debugPrint('NearbyService: Erro ao processar JSON de chaves: $e');
+      debugPrint('NearbyService: Erro ao processar JSON: $e');
     }
   }
 
   void _requestSpecificNews(String endpointId, String newsId) async {
     Map<String, dynamic> requestData = {'type': 'REQUEST_NEWS', 'newsId': newsId};
-    await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(jsonEncode(requestData).codeUnits));
-    debugPrint("Pediu a matéria: $newsId para o dispositivo:  $endpointId ");
+    await _nearby.sendBytesPayload(endpointId, Uint8List.fromList(utf8.encode(jsonEncode(requestData))));
+    debugPrint("Pediu a matéria: $newsId para o dispositivo: $endpointId");
   }
 
   void _sendFullNewsPackage(String endpointId, String? newsId) async {
@@ -315,15 +311,17 @@ class NearbyService extends GetxService {
   void _sendKeysPackage(String endpointId) async {
     debugPrint('NearbyService: Preparando Pacote de Chaves para $endpointId...');
     try {
-       PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
-       if (localKeyPackage != null) {
-         Map<String, dynamic> payloadData = {'type': 'FULL_KEYS_PACKAGE', 'package': localKeyPackage.toJson()};
-         String jsonString = jsonEncode(payloadData);
-         Directory tempDir = await getTemporaryDirectory();
-         File tempFile = File('${tempDir.path}/keys.json');
-         await tempFile.writeAsString(jsonString);
-         await _nearby.sendFilePayload(endpointId, tempFile.path);
-       }
+      PublicKeyPackage? localKeyPackage = await newsRepository.getPublicKeyPackage();
+      if (localKeyPackage != null) {
+        Map<String, dynamic> payloadData = {'type': 'FULL_KEYS_PACKAGE', 'package': localKeyPackage.toJson()};
+        String jsonString = jsonEncode(payloadData);
+        
+        Directory tempDir = await getTemporaryDirectory();
+        File tempFile = File('${tempDir.path}/keys.json');
+        await tempFile.writeAsString(jsonString);
+        
+        await _nearby.sendFilePayload(endpointId, tempFile.path);
+      }
     } catch (e) {
       debugPrint('NearbyService: Erro ao enviar pacote de chaves: $e');
     }
