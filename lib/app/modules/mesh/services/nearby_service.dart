@@ -113,46 +113,40 @@ class NearbyService extends GetxService {
 
   void _onPayloadReceived(String endpointId, Payload payload) async {
     if (payload.type == PayloadType.BYTES) {
-      debugPrint('NearbyService: Payload leve (BYTES) recebido de $endpointId.');
+      debugPrint('NearbyService: Arquivo leve recebido de $endpointId.');
       try {
+        // Usa utf8.decode para garantir que acentos e caracteres especiais não quebrem o JSON
         String jsonString = utf8.decode(payload.bytes!);
         _processIncomingJson(endpointId, jsonString);
       } catch (e) {
-        debugPrint('NearbyService: Erro ao decodificar bytes recebidos: $e');
+        debugPrint('NearbyService: Erro ao decodificar bytes: $e');
       }
     } 
     else if (payload.type == PayloadType.FILE) {
-      debugPrint('NearbyService: Transferência de arquivo iniciada de $endpointId (Payload ID: ${payload.id}).');
-      // Registra o payload para ser processado no onPayloadTransferUpdate quando terminar
-      _incomingFilePayloads[payload.id] = payload;
-    }
-  }
+      debugPrint('NearbyService: Arquivo pesado recebido de $endpointId.');
+      try {
+        // Substitui o filePath obsoleto por payload.uri com fallback
+        final String? pathOrUri = payload.uri ?? payload.filePath;
 
- void _onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) async {
-    if (update.status == PayloadStatus.SUCCESS) {
-      if (_incomingFilePayloads.containsKey(update.id)) {
-        final payload = _incomingFilePayloads.remove(update.id)!;
-        final String? path = payload.filePath;
+        if (pathOrUri != null && pathOrUri.isNotEmpty) {
+          final Uri uri = Uri.parse(pathOrUri);
+          final File receivedFile = uri.hasScheme ? File.fromUri(uri) : File(pathOrUri);
 
-        if (path != null && path.isNotEmpty) {
-          debugPrint('NearbyService: Arquivo pesado transferido com sucesso ($path). Processando...');
-          try {
-            File receivedFile = File(path);
+          if (await receivedFile.exists()) {
             String jsonString = await receivedFile.readAsString();
             _processIncomingJson(endpointId, jsonString);
-            await receivedFile.delete(); // Limpa o arquivo temporário
-          } catch (e) {
-            debugPrint('NearbyService: Erro ao ler arquivo baixado: $e');
+            await receivedFile.delete(); // Remove o arquivo temporário da memória
+          } else {
+            debugPrint('NearbyService: O arquivo ainda não está pronto no disco.');
           }
-        } else {
-          debugPrint('NearbyService: Sucesso reportado, mas payload.filePath continua vazio.');
         }
+      } catch (e) {
+        debugPrint('NearbyService: Erro ao ler arquivo recebido: $e');
       }
-    } else if (update.status == PayloadStatus.FAILURE || update.status == PayloadStatus.CANCELED) {
-      _incomingFilePayloads.remove(update.id);
-      debugPrint('NearbyService: Transferência do payload ${update.id} falhou ou foi cancelada.');
     }
   }
+
+  void _onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {}
 
   void _sendHandshake(String endpointId) async {
     debugPrint('NearbyService: Preparando Handshake para $endpointId.');
