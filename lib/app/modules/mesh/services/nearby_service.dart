@@ -113,9 +113,8 @@ class NearbyService extends GetxService {
 
   void _onPayloadReceived(String endpointId, Payload payload) async {
     if (payload.type == PayloadType.BYTES) {
-      debugPrint('NearbyService: Arquivo leve recebido de $endpointId.');
+      debugPrint('NearbyService: Payload leve (BYTES) recebido de $endpointId.');
       try {
-        // Usa utf8.decode para garantir que acentos e caracteres especiais não quebrem o JSON
         String jsonString = utf8.decode(payload.bytes!);
         _processIncomingJson(endpointId, jsonString);
       } catch (e) {
@@ -123,30 +122,51 @@ class NearbyService extends GetxService {
       }
     } 
     else if (payload.type == PayloadType.FILE) {
-      debugPrint('NearbyService: Arquivo pesado recebido de $endpointId.');
-      try {
-        // Substitui o filePath obsoleto por payload.uri com fallback
-        final String? pathOrUri = payload.uri ?? payload.filePath;
-
-        if (pathOrUri != null && pathOrUri.isNotEmpty) {
-          final Uri uri = Uri.parse(pathOrUri);
-          final File receivedFile = uri.hasScheme ? File.fromUri(uri) : File(pathOrUri);
-
-          if (await receivedFile.exists()) {
-            String jsonString = await receivedFile.readAsString();
-            _processIncomingJson(endpointId, jsonString);
-            await receivedFile.delete(); // Remove o arquivo temporário da memória
-          } else {
-            debugPrint('NearbyService: O arquivo ainda não está pronto no disco.');
-          }
-        }
-      } catch (e) {
-        debugPrint('NearbyService: Erro ao ler arquivo recebido: $e');
-      }
+      debugPrint('NearbyService: Transferência de arquivo iniciada de $endpointId (Payload ID: ${payload.id}).');
+      // Registra o payload para ser processado assim que a transferência concluir
+      _incomingFilePayloads[payload.id] = payload;
     }
   }
 
-  void _onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {}
+  void _onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) async {
+    if (update.status == PayloadStatus.SUCCESS) {
+      if (_incomingFilePayloads.containsKey(update.id)) {
+        final payload = _incomingFilePayloads.remove(update.id)!;
+
+        try {
+          // Obtém a URI fornecida pelo Android moderno (ou filePath como fallback)
+          final String? uriString = payload.uri ?? payload.filePath;
+
+          if (uriString != null && uriString.isNotEmpty) {
+            final Directory tempDir = await getTemporaryDirectory();
+            final String targetPath = '${tempDir.path}/incoming_${update.id}.json';
+
+            // Utiliza o método nativo existente no seu plugin Nearby
+            final bool copied = await _nearby.copyFileAndDeleteOriginal(uriString, targetPath);
+
+            if (copied) {
+              final File receivedFile = File(targetPath);
+              if (await receivedFile.exists()) {
+                String jsonString = await receivedFile.readAsString();
+                _processIncomingJson(endpointId, jsonString);
+                await receivedFile.delete(); // Limpa o arquivo processado
+                debugPrint('NearbyService: Arquivo pesado copiado, lido e processado com sucesso.');
+              }
+            } else {
+              debugPrint('NearbyService: Falha ao copiar arquivo da URI $uriString para $targetPath.');
+            }
+          } else {
+            debugPrint('NearbyService: URI ou caminho ausente para o payload ${update.id}.');
+          }
+        } catch (e) {
+          debugPrint('NearbyService: Erro ao processar arquivo recebido: $e');
+        }
+      }
+    } else if (update.status == PayloadStatus.FAILURE || update.status == PayloadStatus.CANCELED) {
+      _incomingFilePayloads.remove(update.id);
+      debugPrint('NearbyService: Transferência do payload ${update.id} falhou ou foi cancelada.');
+    }
+  }
 
   void _sendHandshake(String endpointId) async {
     debugPrint('NearbyService: Preparando Handshake para $endpointId.');
@@ -235,7 +255,7 @@ class NearbyService extends GetxService {
         
         debugPrint('NearbyService: Pacote assinado por $authorEmail recebido. Validando...');
         
-        List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
+        List<String> keysToTest = await newsRepository.getKeysListByEmail('jfontinele@id.uff.br');
 
         if (keysToTest.isNotEmpty) {
           bool isAuthentic = false;

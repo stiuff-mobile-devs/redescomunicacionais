@@ -35,7 +35,7 @@ class OfflinePackageService {
       final package = NewsPackageModel(
         news: news,
         signature: signature,
-        email: news.author,
+        email: news.createdBy,
         lastUpdated: DateTime.now(),
         isUploaded: false,
         id: news.id,
