@@ -31,7 +31,6 @@ export const savePublicKey = onCall<any>(
 export const getPublicKeysPackage = onCall<any>({ secrets: [apiPrivateKey] },
   async (request: CallableRequest<any>): Promise<KeysPackageJson> => {
     try {
-      getLoggedUser(request.auth);
       const privateKeyStr = apiPrivateKey.value();
 
       return await PublicKeyService.getPublicKeysPackage(privateKeyStr)

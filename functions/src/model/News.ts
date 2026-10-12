@@ -1,3 +1,5 @@
+import * as admin from "firebase-admin";
+
 export interface News {
   id: string;
   title: string;
@@ -71,6 +73,49 @@ export function jsonToNews(data: any): News {
     editedAt: data.editedAt ? new Date(data.editedAt) : undefined,
     excludedAt: data.excludedAt ? new Date(data.excludedAt) : undefined,
   };
+}
+
+export function newsToFirestore(data: News): any {
+  const firestoreData: Record<string, any> = {
+    id: data.id,
+    title: data.title,
+    subtitle: data.subtitle,
+    body: data.body,
+    cities: data.cities || [],
+    categories: data.categories || [],
+    urlImages: data.urlImages || [],
+    videoUrl: data.videoUrl,
+    type: data.type,
+    status: data.status,
+    lastUpdated: data.lastUpdated
+      ? admin.firestore.Timestamp.fromDate(data.lastUpdated)
+      : admin.firestore.FieldValue.serverTimestamp(),
+    author: data.author,
+    createdBy: data.createdBy,
+    createdAt: data.createdAt
+      ? admin.firestore.Timestamp.fromDate(data.createdAt)
+      : admin.firestore.FieldValue.serverTimestamp(),
+    validatedBy: data.validatedBy,
+    validatedByName: data.validatedByName,
+    validatedAt: data.validatedAt ? admin.firestore.Timestamp.fromDate(data.validatedAt) : undefined,
+    validatedObservation: data.validatedObservation,
+    rejectedBy: data.rejectedBy,
+    rejectedAt: data.rejectedAt ? admin.firestore.Timestamp.fromDate(data.rejectedAt) : undefined,
+    rejectedObservation: data.rejectedObservation,
+    editedAt: data.editedAt ? admin.firestore.Timestamp.fromDate(data.editedAt) : undefined,
+    excludedBy: data.excludedBy,
+    excludedAt: data.excludedAt ? admin.firestore.Timestamp.fromDate(data.excludedAt) : undefined,
+    excludedObservation: data.excludedObservation,
+    publicationTerms: data.publicationTerms,
+  };
+
+  Object.keys(firestoreData).forEach((key) => {
+    if (firestoreData[key] === undefined) {
+      delete firestoreData[key];
+    }
+  });
+
+  return firestoreData;
 }
 
 

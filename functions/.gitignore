@@ -9,4 +9,5 @@ typings/
 node_modules/
 *.local
 
-src/service/generate-keys.ts
+src/scripts/
+admin-sdk.json

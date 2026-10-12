@@ -1,5 +1,6 @@
 import * as admin from "firebase-admin";
 import { NewsPackage, newsPackageToFirestore } from "../model/NewsPackage";
+import { newsToFirestore } from "../model/News";
 import Firestore = admin.firestore.Firestore;
 
 export const NewsRepository = {
@@ -8,12 +9,13 @@ export const NewsRepository = {
     const db: Firestore = admin.firestore();
 
     try {
-      const docRef = db.collection("news")
-        .doc(newsPackage.news.id)
-        .collection("packages")
-        .doc(newsPackage.id);
+      // salva a noticia na colecao 'news'
+      const newsDocRef = db.collection("news").doc(newsPackage.news.id);
+      await newsDocRef.set(newsToFirestore(newsPackage.news), { merge: true });
 
-      await docRef.set(newsPackageToFirestore(newsPackage), { merge: true });
+      // salva o pacote assinado na subcoleção 'packages'
+      const packageDocRef = newsDocRef.collection("packages").doc(newsPackage.id);
+      await packageDocRef.set(newsPackageToFirestore(newsPackage), { merge: true });
     } catch (e) {
       throw e;
     }
