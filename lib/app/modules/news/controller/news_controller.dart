@@ -6,6 +6,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -71,38 +72,50 @@ class NewsController extends GetxController {
   Future<void> getOuthersNewsFromHive() async {
     try {
       isLoading(true);
-       // So admin e editor veem as listas de análise, rascunho, rejeitado e deletado
+      // So admin e editor veem as listas de análise, rascunho, rejeitado e deletado
       if (user.role == UserRoles.admin || user.role == UserRoles.editor) {
-        await _repository
-            .getOuthersNewsFromFirebase(user); // Atualiza o Hive com os dados do Firebase
+        await _repository.getOuthersNewsFromFirebase(
+            user); // Atualiza o Hive com os dados do Firebase
 
-        List<NewsModel> outhersNews = await _repository.getNewsFromHive(isPublic: false);
+        List<NewsPackageModel> outhersNews =
+            await _repository.getAllPackageNews();
 
         outhersNews.sort((a, b) {
-          final dateA = a.lastUpdated;
-          final dateB = b.lastUpdated;
-          return dateB.compareTo(dateA);
+          final dateA = a.news?.lastUpdated;
+          final dateB = b.news?.lastUpdated;
+
+          final compareB = dateB ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final compareA = dateA ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+          return compareB.compareTo(compareA);
         });
 
         inAnalysisNewsList.assignAll(
           outhersNews
-              .where((news) => news.status == NewsStates.emAnalise)
-              .toList(),
+              .where((item) => item.news?.status == NewsStates.emAnalise)
+              .map((item) => item.news)
+              .whereType<NewsModel>(),
         );
+
         myDraftsList.assignAll(
           outhersNews
-              .where((news) => news.status == NewsStates.rascunho)
-              .toList(),
+              .where((item) => item.news?.status == NewsStates.rascunho)
+              .map((item) => item.news)
+              .whereType<NewsModel>(),
         );
+
         rejectedNewsList.assignAll(
           outhersNews
-              .where((news) => news.status == NewsStates.rejeitado)
-              .toList(),
+              .where((item) => item.news?.status == NewsStates.rejeitado)
+              .map((item) => item.news)
+              .whereType<NewsModel>(),
         );
+
         deletedNewsList.assignAll(
           outhersNews
-              .where((news) => news.status == NewsStates.deletado)
-              .toList(),
+              .where((item) => item.news?.status == NewsStates.deletado)
+              .map((item) => item.news)
+              .whereType<NewsModel>(),
         );
       }
     } catch (e) {
@@ -121,18 +134,22 @@ class NewsController extends GetxController {
       }
       lastDocument = await _repository.getPublicNewsPaginatedFromFirebase(
           ld); // Atualiza o Hive com os dados do Firebase e obtém o próximo ponteiro de paginação
-      List<NewsModel> publicNews = await _repository.getNewsFromHive(isPublic: true);
+      List<NewsPackageModel> publicNews = await _repository.getAllPackageNews();
 
       publicNews.sort((a, b) {
-        final dateA = a.createdAt;
-        final dateB = b.createdAt;
-        return dateB.compareTo(dateA);
+        final dateA = a.news?.createdAt;
+        final dateB = b.news?.createdAt;
+        final compareB = dateB ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final compareA = dateA ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+        return compareB.compareTo(compareA);
       });
 
       publishedNewsList.assignAll(
         publicNews
-            .where((news) => news.status == NewsStates.publicado)
-            .toList(),
+            .where((item) => item.news?.status == NewsStates.publicado)
+            .map((item) => item.news)
+            .whereType<NewsModel>(),
       );
     } catch (e) {
       debugPrint("Erro no Controller (Hive): $e");
@@ -142,19 +159,19 @@ class NewsController extends GetxController {
   }
 
   Future<String> addNews(
-      String title,
-      String? subtitle,
-      List<String> cities,
-      List<String> categories,
-      String body,
-      List<String> urlImages,
-      String author,
-      String email,
-      String type,
-      String status,
-      String? videoUrl,
-      List<String> collaborators,
-      ) async {
+    String title,
+    String? subtitle,
+    List<String> cities,
+    List<String> categories,
+    String body,
+    List<String> urlImages,
+    String author,
+    String email,
+    String type,
+    String status,
+    String? videoUrl,
+    List<String> collaborators,
+  ) async {
     isLoading(true);
 
     try {
@@ -175,35 +192,15 @@ class NewsController extends GetxController {
         collaborators: collaborators,
       );
 
-      await _repository.saveNewsToHive(news);
-
-      if (status == NewsStates.emAnalise || status == NewsStates.publicado || status == NewsStates.rascunho) {
-        await _repository.saveNewsToPackage(news);
-      }
+      await _repository.saveNewsToPackage(news);
 
       await syncNews(null);
 
       return news.id;
-
     } catch (e) {
       throw Exception("Erro ao salvar notícia: $e");
-
     } finally {
       isLoading(false);
-    }
-  }
-
-  Future<void> savePublicationTerms({
-    required String newsId,
-    required Map<String, dynamic> terms,
-  }) async {
-    try {
-      await _repository.savePublicationTermsToFirebase(
-        newsId: newsId,
-        terms: terms,
-      );
-    } catch (e) {
-      throw Exception("Erro ao salvar formulário: $e");
     }
   }
 
@@ -402,6 +399,4 @@ class NewsController extends GetxController {
     }
     return publishedNewsList.toList();
   }
-
-
 }

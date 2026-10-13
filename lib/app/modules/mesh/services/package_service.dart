@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:redescomunicacionais/app/config/secrets.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
-import '../model/news_package_model.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
@@ -48,6 +48,49 @@ class OfflinePackageService {
       return package;
     } catch (e) {
       debugPrint("Error creating news package: $e");
+      return null;
+    }
+  }
+
+  // assina novamente um pacote existente e salva no Hive
+  Future<NewsPackageModel?> resignNewsPackage(NewsPackageModel package) async {
+    try {
+      final news = package.news;
+      if (news == null) {
+        throw Exception("News package has no news to sign");
+      }
+
+      // Recupera a chave privada do armazenamento seguro
+      final privateKeyStr = await _userRepository.getPrivateKeyInStorage();
+      if (privateKeyStr == null) {
+        throw Exception("Private key not found on device");
+      }
+
+      final RSAPrivateKey privateKey =
+          KeysServices.importPrivateKey(privateKeyStr);
+
+      // Quem assina agora passa a ser o dono da assinatura do pacote
+      final currentUser = await _userRepository.getCurrentUserFromHive();
+
+      // Gera a nova assinatura a partir do estado atual da notícia
+      final String newsString = jsonEncode(news.toJson());
+      final String signature = KeysServices.toSign(newsString, privateKey);
+
+      final resignedPackage = NewsPackageModel(
+        news: news,
+        signature: signature,
+        email: currentUser.email,
+        lastUpdated: DateTime.now(),
+        isUploaded: false,
+        id: package.id ?? news.id,
+      );
+
+      // Salva o pacote atualizado no Hive local
+      await newsRepository.saveNewsPackageInHive(resignedPackage);
+
+      return resignedPackage;
+    } catch (e) {
+      debugPrint("Error re-signing news package: $e");
       return null;
     }
   }

@@ -262,8 +262,6 @@ class NewsModel {
     );
   }
 
-  factory NewsModel.fromJson(Map<String, dynamic> json) => NewsModel.fromMap(json);
-
   static DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
     if (value is Timestamp) return value.toDate();

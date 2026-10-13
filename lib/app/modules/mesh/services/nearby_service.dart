@@ -6,7 +6,7 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart' show NewsRepository;
 
@@ -267,7 +267,6 @@ class NearbyService extends GetxService {
 
           if (isAuthentic && receivedPackage.news != null) {
             debugPrint('NearbyService: SUCESSO! Assinatura autêntica. Matéria e pacote salvos.');
-            await newsRepository.saveNewsToHive(receivedPackage.news!);
             await newsRepository.saveNewsPackageInHive(receivedPackage);
           } else {
             debugPrint('NearbyService: Falha na validação. Salvando como nó de retransmissão.');

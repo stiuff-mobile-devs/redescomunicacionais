@@ -205,18 +205,6 @@ class CreateNewsFormController extends GetxController {
         collaborators,
       );
 
-      if (!draft && publicationTerms != null) {
-        await _newsController.savePublicationTerms(
-          newsId: newsId,
-          terms: {
-            ...publicationTerms,
-            "acceptedAll": true,
-            "author": email,
-            "acceptedAt": DateTime.now(),
-          },
-        );
-      }
-
       if (draft) {
         PopUps.snackbar(
           texto: 'Rascunho salvo com sucesso!'.tr,

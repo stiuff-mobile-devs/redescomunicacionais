@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart' show Inst;
-import 'package:redescomunicacionais/app/modules/mesh/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
@@ -13,16 +13,8 @@ class NewsRepository {
   final NewsProvider newsProvider = NewsProvider();
   OfflinePackageService get _offlinePackageService => Get.find<OfflinePackageService>();
 
-  Future<void> saveNewsToHive(NewsModel news) async {
-    await newsProvider.saveNewsToHive([news]);
-  }
-
   Future<void> syncNewsHiveAndFirebase(UserModel user) async {
     await newsProvider.syncNewsHiveAndFirebase(user);
-  }
-
-  Future<List<NewsModel>> getNewsFromHive({bool isPublic = false}) async {
-    return newsProvider.getNewsFromHive(isPublic: isPublic);
   }
 
   Future<QueryDocumentSnapshot<Map<String, dynamic>>?>
@@ -62,26 +54,16 @@ class NewsRepository {
     );
   }
 
-  Future<void> savePublicationTermsToFirebase({
-    required String newsId,
-    required Map<String, dynamic> terms,
-  }) async {
-    await newsProvider.savePublicationTermsToFirebase(
-      newsId: newsId,
-      terms: terms,
-    );
-  }
-
   Future<void> saveNewsToPackage(NewsModel news) async {
     await _offlinePackageService.createNewsPackage(news);
   }
 
   Future<NewsPackageModel?> getPackageNews(String id) async {
-    return await newsProvider.getPackageNews(id);
+    return await newsProvider.getPackageNewsFromHive(id);
   }
 
   Future<List<NewsPackageModel>> getAllPackageNews() async {
-    return await newsProvider.getAllPackageNews();
+    return await newsProvider.getAllPackageNewsFromHive();
   }
 
   Future<void> saveNewsPackageInHive(NewsPackageModel package) async {
