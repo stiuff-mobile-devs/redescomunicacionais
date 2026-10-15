@@ -10,11 +10,11 @@ import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
 
 class OfflinePackageService {
-  final NewsRepository newsRepository = NewsRepository();
+  late final NewsRepository newsRepository = NewsRepository();
   final UserRepository _userRepository = UserRepository();
 
   // cria o pacote a ser enviado
-  Future<NewsPackageModel?> createNewsPackage(NewsModel news) async {
+  Future<void> createNewsPackage(NewsModel news, String email) async {
     try {
       // Recupera a chave privada do armazenamento seguro
       final privateKeyStr = await _userRepository.getPrivateKeyInStorage();
@@ -35,7 +35,7 @@ class OfflinePackageService {
       final package = NewsPackageModel(
         news: news,
         signature: signature,
-        email: news.createdBy,
+        email: email,
         lastUpdated: DateTime.now(),
         isUploaded: false,
         id: news.id,
@@ -44,11 +44,8 @@ class OfflinePackageService {
       // Salva o pacote no Hive local
       await newsRepository.saveNewsPackageInHive(package);
 
-      // Cria o pacote
-      return package;
     } catch (e) {
-      debugPrint("Error creating news package: $e");
-      return null;
+      throw Exception("Error creating news package: $e");
     }
   }
 

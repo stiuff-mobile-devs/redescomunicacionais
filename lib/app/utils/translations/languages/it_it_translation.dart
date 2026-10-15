@@ -104,6 +104,7 @@ final Map<String, String> itItTranslation = {
   'categories': 'Categorie',
   'all_categories': 'Tutte le categorie',
   'no_news_found': 'Nessuna notizia trovata',
+  'no_news_available': 'Nessuna notizia disponibile',
   'edit': 'Modifica',
   'delete': 'Elimina',
   'review': 'Revisione',

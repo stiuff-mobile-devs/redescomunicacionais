@@ -105,6 +105,7 @@ final Map<String, String> ptBrTranslation = {
   'categories': 'Categorias',
   'all_categories': 'Todas as categorias',
   'no_news_found': 'Nenhuma matéria encontrada',
+  'no_news_available': 'Não há notícias disponíveis',
   'edit': 'Editar',
   'delete': 'Excluir',
   'review': 'Revisar',

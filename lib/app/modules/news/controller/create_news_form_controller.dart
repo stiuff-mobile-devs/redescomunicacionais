@@ -162,7 +162,6 @@ class CreateNewsFormController extends GetxController {
       if (terms != null) {
         await _publishNews(
           draft,
-          publicationTerms: terms,
         );
       }
     } else {
@@ -173,24 +172,21 @@ class CreateNewsFormController extends GetxController {
     }
   }
 
-  Future<void> _publishNews(
-    bool draft, {
-    Map<String, dynamic>? publicationTerms,
-  }) async {
+  Future<void> _publishNews( bool draft ) async {
+
     final String title = _titleController.text;
     final String subtitle = _subtitleController.text;
     final String body = _getBodyText();
     List<String> urlImages = [_imageController.base64String ?? ""];
-
     final String author = _homeController.user.name!;
     final String email = _homeController.user.email;
     final String videoUrl = _videoUrlController.text;
     final String newsState = draft ? NewsStates.rascunho : NewsStates.emAnalise;
     final List<String> collaborators = _selectedCollaborators;
 
-
     try {
-      String newsId = await _newsController.addNews(
+      
+      await _newsController.addNews(
         title,
         subtitle,
         _selectedCities.toList(),

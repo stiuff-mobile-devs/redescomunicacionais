@@ -104,6 +104,7 @@ final Map<String, String> esEsTranslation = {
   'categories': 'Categorias',
   'all_categories': 'Todas las categorias',
   'no_news_found': 'No se encontraron noticias',
+  'no_news_available': 'No hay noticias disponibles',
   'edit': 'Editar',
   'delete': 'Eliminar',
   'review': 'Revisar',

@@ -12,7 +12,7 @@ import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 
 class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final OfflinePackageService offlinePackageService = OfflinePackageService();
+  late final OfflinePackageService offlinePackageService = OfflinePackageService();
   final String collectionPath = "news_test";
   final String publicKeyPackageKey = "publicKeyPackage";
   final String publicKeyPackagePath = "public_key_packages";
@@ -180,9 +180,17 @@ class NewsProvider {
           ? Hive.box<NewsPackageModel>(collectionPackageNews)
           : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
 
-      final Map<String, NewsPackageModel> newsMap = {
-        for (var news in newsList) news.news?.id ?? "": news
-      };
+      final Map<String, NewsPackageModel> newsMap = {};
+      for (var news in newsList) {
+        final key = news.id ?? news.news?.id ?? "";
+        final local = box.get(key);
+
+        // Não sobrescreve uma versão local mais nova (ex.: edição que ainda
+        // não subiu pro Firebase) com a versão antiga vinda do servidor
+        if (local != null && _isLocalNewer(local, news)) continue;
+
+        newsMap[key] = news;
+      }
 
       await box.putAll(newsMap);
     } catch (e) {
@@ -205,7 +213,7 @@ class NewsProvider {
         news.news?.excludedAt = now;
         news.news?.excludedBy = userEmail;
         news.news?.lastUpdated = now;
-        offlinePackageService.resignNewsPackage(news);
+        await offlinePackageService.resignNewsPackage(news);
       }
     } catch (e) {
       debugPrint("Erro crítico ao atualizar Hive local: $e");
@@ -229,9 +237,22 @@ class NewsProvider {
       final mergedData = existingNews.news!.toFirebase()..addAll(updatedData);
       mergedData['id'] = newsId;
 
-      final updatedNews = NewsPackageModel.fromJson(mergedData);
-      offlinePackageService.resignNewsPackage(updatedNews);
+      // mergedData é o mapa da notícia, não do pacote: monta o NewsModel e
+      // embrulha num pacote, senão o pacote fica sem notícia e nada é salvo
+      final updatedNews = NewsPackageModel(
+        news: NewsModel.fromMap(mergedData),
+        signature: existingNews.signature,
+        email: existingNews.email,
+        lastUpdated: existingNews.lastUpdated,
+        isUploaded: existingNews.isUploaded,
+        id: existingNews.id ?? newsId,
+      );
 
+      final resigned =
+          await offlinePackageService.resignNewsPackage(updatedNews);
+      if (resigned == null) {
+        throw Exception('Falha ao assinar e salvar a notícia atualizada.');
+      }
     } catch (e) {
       throw Exception("Erro ao atualizar notícia no Hive local: $e");
     }
@@ -280,7 +301,7 @@ class NewsProvider {
               news.news?.rejectedObservation = reason;
             }
           }
-          offlinePackageService.resignNewsPackage(news);
+          await offlinePackageService.resignNewsPackage(news);
         }
       }
     } catch (e) {
@@ -313,14 +334,17 @@ class NewsProvider {
                 !_isLessThan30DaysOld(hiveNews.news?.lastUpdated)) {
               continue;
             } else {
-              _savePackageNewsToFirebase(hiveNews);
+              await _savePackageNewsToFirebase(hiveNews);
             }
           } else {
             // Ambas existem: compara as datas de modificação para ver quem ganha
             DateTime? fbDate = fbNews.lastUpdated;
-            DateTime? hiveDate = hiveNews.news?.lastUpdated;
+            DateTime? hiveDate = hiveNews.lastUpdated;
 
-            if (fbDate != null && hiveDate != null) {
+            if (fbDate == null && hiveDate != null) {
+              // Documento antigo no Firebase sem data no pacote: o local vence
+              await _savePackageNewsToFirebase(hiveNews);
+            } else if (fbDate != null && hiveDate != null) {
               DateTime cleanFbDate = _trimDateTime(fbDate);
               DateTime cleanHiveDate = _trimDateTime(hiveDate);
 
@@ -338,6 +362,14 @@ class NewsProvider {
     } catch (e) {
       throw Exception("Erro fatal ao sincronizar Hive e Firebase: $e");
     }
+  }
+
+  bool _isLocalNewer(NewsPackageModel local, NewsPackageModel remote) {
+    final localDate = local.lastUpdated;
+    final remoteDate = remote.lastUpdated;
+    if (localDate == null) return false;
+    if (remoteDate == null) return true;
+    return _trimDateTime(localDate).isAfter(_trimDateTime(remoteDate));
   }
 
   DateTime _trimDateTime(DateTime dt) {

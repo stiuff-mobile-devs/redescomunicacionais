@@ -104,6 +104,7 @@ final Map<String, String> enUsTranslation = {
   'categories': 'Categories',
   'all_categories': 'All categories',
   'no_news_found': 'No news found',
+  'no_news_available': 'No news available',
   'edit': 'Edit',
   'delete': 'Delete',
   'review': 'Review',

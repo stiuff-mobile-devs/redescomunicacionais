@@ -40,13 +40,18 @@ class NewsWidgets extends GetView<NewsController> {
         ),
         child: Obx(
               () {
-            if (controller.isLoading.value || controller.isAllListsEmpty()) {
+            if (!controller.initialLoadDone.value ||
+                (controller.isLoading.value && controller.isAllListsEmpty())) {
               return Center(
                 child: BlinkingLoadingIcon(
                   size: 36,
                   color: theme.colorScheme.onSurface,
                 ),
               );
+            }
+
+            if (controller.isAllListsEmpty()) {
+              return _buildEmptyState(theme);
             }
 
             List<NewsModel> selectedNewss = controller.getNewsForCurrentMode();
@@ -59,15 +64,7 @@ class NewsWidgets extends GetView<NewsController> {
             }
 
             if (selectedNewss.isEmpty) {
-              return Center(
-                child: Text(
-                  'no_news_found'.tr,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              );
+              return _buildEmptyState(theme);
             }
 
             return GestureDetector(
@@ -77,6 +74,7 @@ class NewsWidgets extends GetView<NewsController> {
               },
               child: ListView(
                 controller: ScrollController(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   const SizedBox(height: 16.0),
                   // Lista vertical de notícias
@@ -89,6 +87,27 @@ class NewsWidgets extends GetView<NewsController> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  // Rolável para que o RefreshIndicator da Home funcione mesmo sem notícias
+  Widget _buildEmptyState(ThemeData theme) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Text(
+              'no_news_available'.tr,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );

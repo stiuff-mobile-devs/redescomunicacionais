@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,13 +35,21 @@ class NewsController extends GetxController {
 
   late NewsModel selectedNews;
   RxBool isLoading = false.obs;
+  // Fica true quando a primeira busca termina (com sucesso, erro ou timeout)
+  RxBool initialLoadDone = false.obs;
   RxnInt selectedCardIndex = RxnInt();
+
+  static const Duration fetchTimeout = Duration(seconds: 10);
 
   @override
   onInit() async {
     super.onInit();
-    user = await _userRepository.getCurrentUserFromHive();
     homeController = Get.find<HomeController>();
+    try {
+      user = await _userRepository.getCurrentUserFromHive();
+    } catch (e) {
+      debugPrint("Erro ao carregar usuário: $e");
+    }
     await syncNews(null);
   }
 
@@ -48,17 +57,22 @@ class NewsController extends GetxController {
       QueryDocumentSnapshot<Map<String, dynamic>>? lastDoc) async {
     isLoading(true);
     try {
-      try {
-        await _repository.syncNewsHiveAndFirebase(user);
-      } catch (e) {
-        debugPrint("Erro ao sincronizar notícias: $e");
-      }
-      await getPublicNewsFromHive(lastDoc);
-      await getOuthersNewsFromHive();
+      await Future(() async {
+        try {
+          await _repository.syncNewsHiveAndFirebase(user);
+        } catch (e) {
+          debugPrint("Erro ao sincronizar notícias: $e");
+        }
+        await getPublicNewsFromHive(lastDoc);
+        await getOuthersNewsFromHive();
+      }).timeout(fetchTimeout);
+    } on TimeoutException {
+      debugPrint("Timeout ao buscar notícias (${fetchTimeout.inSeconds}s)");
     } catch (e) {
-      throw Exception("Erro ao sincronizar notícias: $e");
+      debugPrint("Erro ao sincronizar notícias: $e");
     } finally {
       isLoading(false);
+      initialLoadDone(true);
     }
   }
 
@@ -158,7 +172,7 @@ class NewsController extends GetxController {
     }
   }
 
-  Future<String> addNews(
+  Future<void> addNews(
     String title,
     String? subtitle,
     List<String> cities,
@@ -175,6 +189,8 @@ class NewsController extends GetxController {
     isLoading(true);
 
     try {
+      UserModel user = await _userRepository.getCurrentUserFromHive();
+
       NewsModel news = NewsModel(
         title: title,
         subtitle: subtitle,
@@ -192,11 +208,10 @@ class NewsController extends GetxController {
         collaborators: collaborators,
       );
 
-      await _repository.saveNewsToPackage(news);
+      await _repository.saveNewsToPackage(news, user.email);
 
       await syncNews(null);
 
-      return news.id;
     } catch (e) {
       throw Exception("Erro ao salvar notícia: $e");
     } finally {
