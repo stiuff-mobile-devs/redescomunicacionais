@@ -22,6 +22,7 @@ import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
 import 'package:redescomunicacionais/app/modules/user/ui/user_page.dart';
 import 'package:redescomunicacionais/app/modules/web/ui/webview_page.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
+import 'package:redescomunicacionais/app/modules/welcome/ui/welcome_page.dart';
 
 class AppPages {
   static final routes = [
@@ -29,6 +30,10 @@ class AppPages {
       name: Routes.INITIAL,
       page: () => SplashPage(),
       bindings: [LoginBinding(), SplashBindings()],
+    ),
+    GetPage(
+      name: Routes.WELCOME,
+      page: () => const WelcomePage(),
     ),
     GetPage(
         name: Routes.LOGIN,
