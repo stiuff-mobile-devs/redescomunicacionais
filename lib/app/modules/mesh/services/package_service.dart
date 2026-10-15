@@ -116,10 +116,15 @@ class OfflinePackageService {
       final RSAPublicKey apiPublicKey = KeysServices.importPublicKey(Secrets.apiPublicKey);
 
       // Reconstrói o mapa que foi assinado pela API no servidor
+      // Emails em ordem alfabética e timestamp em UTC, para o JSON ficar
+      // idêntico ao que a API assinou (JS toISOString() é sempre UTC)
+      final sortedEmails = package.publicKeys.keys.toList()..sort();
       final Map<String, dynamic> mapToCheck = {
-        'publicKeys': package.publicKeys.map((k) => k.toJson()).toList(),
-        'senderEmail': package.senderEmail,
-        'timestamp': package.timestamp.toIso8601String(),
+        'publicKeys': {
+          for (final email in sortedEmails) email: package.publicKeys[email],
+        },
+        'sender': package.sender,
+        'timestamp': package.timestamp.toUtc().toIso8601String(),
       };
 
       // Verifica a assinatura usando a chave mestre da API

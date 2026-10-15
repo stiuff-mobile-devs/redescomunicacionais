@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
@@ -417,64 +416,15 @@ class NewsProvider {
     }
   }
 
-  /// Retorna uma lista ordenada de chaves públicas para um dado e-mail.
-  /// A primeira posição [0] é a chave pública atual.
-  /// As posições seguintes contêm as chaves antigas em ordem reversa (da mais recente para a mais antiga).
+  /// Retorna a lista de chaves públicas de um e-mail.
+  /// A primeira posição [0] é a chave pública atual, as seguintes são as antigas.
   Future<List<String>> getKeysListByEmail(String email) async {
-    List<String> orderedKeys = [];
-
     try {
-      // 1. Busca o modelo completo do autor usando a função do repositório
-      // Substitua `keyRepository` pela instância correta do seu projeto, ou passe o modelo como parâmetro.
-      PublicKeyModel? authorKeyModel =
-          await getAuthorKeyModelFromPackage(email);
-
-      if (authorKeyModel != null) {
-        /*
-        // Regra de Segurança Opcional: Se a chave foi revogada, retorna lista vazia para bloquear a leitura
-        if (authorKeyModel.revocationInfo?.isRevoked == true) {
-          debugPrint("Atenção: As chaves do e-mail $email foram revogadas.");
-          return orderedKeys; // Retorna vazio
-        }*/
-
-        // 2. Adiciona a chave pública ativa no momento (a mais atual)
-        if (authorKeyModel.publicKey != null &&
-            authorKeyModel.publicKey!.isNotEmpty) {
-          orderedKeys.add(authorKeyModel.publicKey!);
-        }
-
-        // 3. Adiciona o histórico de chaves antigas (oldPublicKeys) de forma invertida
-        if (authorKeyModel.oldPublicKeys != null &&
-            authorKeyModel.oldPublicKeys!.isNotEmpty) {
-          // O comando .reversed do Dart inverte a ordem da lista automaticamente
-          orderedKeys.addAll(authorKeyModel.oldPublicKeys!.reversed);
-        }
-      }
+      PublicKeyPackage? localKeyPackage = await getPublicKeyPackage();
+      return List<String>.from(localKeyPackage?.keysByEmail(email) ?? []);
     } catch (e) {
       debugPrint("Erro ao processar lista de chaves para $email: $e");
+      return [];
     }
-
-    return orderedKeys;
-  }
-
-  /// Busca um PublicKeyModel específico dentro de um PublicKeyPackage através do e-mail.
-  /// Retorna o modelo se encontrado, ou null caso o e-mail não esteja no pacote.
-  Future<PublicKeyModel?> getAuthorKeyModelFromPackage(String email) async {
-    PublicKeyPackage? localKeyPackage = await getPublicKeyPackage();
-
-    try {
-      // Itera sobre a lista de chaves públicas do pacote
-      for (var keyModel in localKeyPackage!.publicKeys) {
-        // Verifica se o e-mail do modelo bate com o e-mail procurado
-        if (keyModel.email == email) {
-          return keyModel; // Retorna o modelo completo do autor encontrado
-        }
-      }
-    } catch (e) {
-      debugPrint("Erro ao buscar a chave do e-mail $email no pacote: $e");
-    }
-
-    // Retorna nulo se o laço terminar sem encontrar o e-mail
-    return null;
   }
 }

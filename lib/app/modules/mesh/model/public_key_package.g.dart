@@ -17,8 +17,11 @@ class PublicKeyPackageAdapter extends TypeAdapter<PublicKeyPackage> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return PublicKeyPackage(
-      publicKeys: (fields[0] as List).cast<PublicKeyModel>(),
-      senderEmail: fields[1] as String,
+      publicKeys: fields[4] == null
+          ? {}
+          : (fields[4] as Map).map((dynamic k, dynamic v) =>
+              MapEntry(k as String, (v as List).cast<String>())),
+      sender: fields[1] as String,
       timestamp: fields[2] as DateTime,
       signature: fields[3] as String,
     );
@@ -28,10 +31,10 @@ class PublicKeyPackageAdapter extends TypeAdapter<PublicKeyPackage> {
   void write(BinaryWriter writer, PublicKeyPackage obj) {
     writer
       ..writeByte(4)
-      ..writeByte(0)
+      ..writeByte(4)
       ..write(obj.publicKeys)
       ..writeByte(1)
-      ..write(obj.senderEmail)
+      ..write(obj.sender)
       ..writeByte(2)
       ..write(obj.timestamp)
       ..writeByte(3)
