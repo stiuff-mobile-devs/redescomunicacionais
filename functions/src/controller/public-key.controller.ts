@@ -9,13 +9,14 @@ import { KeysPackageJson} from "../model/KeysPackage";
 
 const apiPrivateKey = defineSecret("API_PRIVATE_KEY");
 
-export const savePublicKey = onCall<any>(
+export const savePublicKey = onCall<any>({ secrets: [apiPrivateKey] },
   async (request: CallableRequest<any>): Promise<{message: string}> => {
   try {
     const loggedUser: User = getLoggedUser(request.auth);
     const publicKey = jsonToPublicKey(request.data);
+    const privateKeyStr = apiPrivateKey.value();
 
-    await PublicKeyService.saveNewKey(publicKey, loggedUser);
+    await PublicKeyService.saveNewKey(publicKey, loggedUser, privateKeyStr);
 
     return {
       message: "Public key saved successfully."
@@ -28,12 +29,9 @@ export const savePublicKey = onCall<any>(
   }
 });
 
-export const getPublicKeysPackage = onCall<any>({ secrets: [apiPrivateKey] },
-  async (request: CallableRequest<any>): Promise<KeysPackageJson> => {
+export const getPublicKeysPackage = onCall<any>(async (request: CallableRequest<any>): Promise<KeysPackageJson> => {
     try {
-      const privateKeyStr = apiPrivateKey.value();
-
-      return await PublicKeyService.getPublicKeysPackage(privateKeyStr)
+      return await PublicKeyService.getPublicKeysPackage();
     } catch (e) {
       throw new HttpsError(
         "internal",

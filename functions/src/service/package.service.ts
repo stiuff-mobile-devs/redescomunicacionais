@@ -1,5 +1,5 @@
 import { KeysService } from './keys.service';
-import { KeysPackage } from '../model/KeysPackage';
+import {buildPublicKeysMap, KeysPackage} from '../model/KeysPackage';
 import { PublicKey } from '../model/PublicKey';
 import { NewsPackage } from '../model/NewsPackage';
 
@@ -45,9 +45,10 @@ export const PackageService = {
     }
   },
 
-  createKeysPackage: (publicKeys: PublicKey[], sender: string, privateKeyStr: string): KeysPackage => {
+  createKeysPackage: (publicKeysRaw: PublicKey[], sender: string, privateKeyStr: string): KeysPackage => {
     try {
       const privateKey = KeysService.importPrivateKey(privateKeyStr);
+      const publicKeys = buildPublicKeysMap(publicKeysRaw);
       const timestamp = new Date();
 
       const mapToSign = {

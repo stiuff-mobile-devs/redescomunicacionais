@@ -7,7 +7,7 @@ import {KeysPackageJson, keysPackageToJson} from "../model/KeysPackage";
 
 export const PublicKeyService = {
 
-  saveNewKey: async (data: PublicKey, loggedUser: User): Promise<void> => {
+  saveNewKey: async (data: PublicKey, loggedUser: User, serverPrivateKey: string): Promise<void> => {
     if (data.email !== loggedUser.email || data.id !== loggedUser.email) {
       throw new HttpsError("permission-denied", "Key does not belong to this user.");
     }
@@ -33,9 +33,21 @@ export const PublicKeyService = {
     } else {
       await PublicKeyRepository.save(data, loggedUser);
     }
+
+    await PublicKeyService.updatePublicKeysPackage(serverPrivateKey);
   },
 
-  getPublicKeysPackage: async (privateKey: string): Promise<KeysPackageJson> => {
+  getPublicKeysPackage: async (): Promise<KeysPackageJson> => {
+    const keysPackage = await PublicKeyRepository.getPackage();
+
+    if (!keysPackage) {
+      throw new HttpsError("not-found", "Keys package not found.");
+    }
+
+    return keysPackageToJson(keysPackage);
+  },
+
+  updatePublicKeysPackage: async (privateKey: string): Promise<void> => {
     const publicKeys = await PublicKeyRepository.getAll();
 
     const keysPackage = PackageService.createKeysPackage(
@@ -44,6 +56,6 @@ export const PublicKeyService = {
       privateKey
     );
 
-    return keysPackageToJson(keysPackage);
+    await PublicKeyRepository.savePackage(keysPackage);
   }
 };

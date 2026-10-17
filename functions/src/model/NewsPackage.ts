@@ -1,4 +1,4 @@
-import { News, NewsJson, newsToJson, jsonToNews } from "./News";
+import {News, NewsJson, newsToJson, jsonToNews, newsToFirestore} from "./News";
 import * as admin from "firebase-admin";
 export interface NewsPackage {
   id: string;
@@ -34,6 +34,7 @@ export function jsonToNewsPackage(data: any): NewsPackage {
 export function newsPackageToFirestore(data: NewsPackage): any {
   return {
     id: data.id,
+    news: newsToFirestore(data.news),
     sender: data.sender,
     lastUpdated: data.lastUpdated
       ? admin.firestore.Timestamp.fromDate(data.lastUpdated)
