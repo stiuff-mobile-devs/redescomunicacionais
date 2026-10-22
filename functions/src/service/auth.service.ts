@@ -9,11 +9,11 @@ function isAuthenticated(authData?: AuthData): void {
   }
 }
 
-function parseUserRole(role: string): UserRole | undefined {
+function parseUserRole(role?: string): UserRole {
   if (role === "admin" || role === "editor" || role === "user") {
     return role;
   }
-  return undefined;
+  return "user";
 }
 
 export function getLoggedUser(authData?: AuthData): User {
@@ -41,8 +41,8 @@ export function getAdminUser(authData?: AuthData): User {
 
 export function getEditorUser(authData?: AuthData): User {
   const user = getLoggedUser(authData);
-  if (user.role !== "editor") {
-    throw new HttpsError("permission-denied", "Only editors can execute this action.");
+  if (user.role !== "admin" && user.role !== "editor") {
+    throw new HttpsError("permission-denied", "Only editors and admins can execute this action.");
   }
   return user;
 }

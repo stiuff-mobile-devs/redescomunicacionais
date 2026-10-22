@@ -1,5 +1,5 @@
 import { onCall } from "firebase-functions/https";
-import { getLoggedUser } from "../utils/auth-utils";
+import { getLoggedUser } from "../service/auth.service";
 import { User } from "../model/User";
 import {CallableRequest, HttpsError} from "firebase-functions/v2/https";
 import {jsonToPublicKey} from "../model/PublicKey";

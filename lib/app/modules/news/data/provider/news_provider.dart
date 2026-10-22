@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
@@ -11,6 +12,8 @@ import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 
 class NewsProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFunctions _functions = FirebaseFunctions
+      .instanceFor(region: 'southamerica-east1');
   late final OfflinePackageService offlinePackageService = OfflinePackageService();
   final String collectionPath = "news_test";
   final String publicKeyPackageKey = "publicKeyPackage";
@@ -23,12 +26,10 @@ class NewsProvider {
 
   Future<void> _savePackageNewsToFirebase(NewsPackageModel news) async {
     try {
-      await _firestore.collection(collectionPath).doc(news.id).set(
-            news.toFirebase(),
-            SetOptions(merge: true),
-          );
-    } on FirebaseException catch (e) {
-      throw Exception("Erro no Firebase (${e.code}): ${e.message}");
+      final payload = news.toJson();
+      await _functions.httpsCallable('uploadNewsPackage').call(payload);
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception("Erro no Firebase Functions (${e.code}): ${e.message}");
     } catch (e) {
       throw Exception("Erro desconhecido ao salvar: $e");
     }
@@ -313,9 +314,31 @@ class NewsProvider {
   // Função de sincronização entre Hive e Firebase
   //-----------------------------------------
 
+  // Busca o pacote de chaves na API, valida e salva no Hive se for mais novo.
+  Future<void> _syncPublicKeysPackage() async {
+    try {
+      final PublicKeyPackage? apiPackage = await offlinePackageService
+          .fetchPublicKeysPackageFromApi();
+
+      if (apiPackage == null) {
+        return;
+      }
+
+      final PublicKeyPackage? localPackage = await getPublicKeyPackage();
+      if (localPackage == null ||
+          apiPackage.timestamp.isAfter(localPackage.timestamp)) {
+        await savePublicKeyPackage(apiPackage);
+      }
+    } catch (e) {
+      debugPrint("Erro ao sincronizar pacote de chaves públicas: $e");
+    }
+  }
+
   Future<void> syncNewsHiveAndFirebase(UserModel user) async {
     /*bool isAdminOrEditor =
         user.role == UserRoles.admin || user.role == UserRoles.editor;*/
+
+    await _syncPublicKeysPackage();
 
     try {
       List<NewsPackageModel> hivePackageNewsList =

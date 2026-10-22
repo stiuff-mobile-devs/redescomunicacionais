@@ -10,7 +10,8 @@ import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dar
 
 class UserProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'southamerica-east1');
+  final FirebaseFunctions _functions = FirebaseFunctions
+      .instanceFor(region: 'southamerica-east1');
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final KeyStorageService _keyStorageService = KeyStorageService();
 
@@ -33,6 +34,7 @@ class UserProvider {
     );
 
     try {
+      await _auth.currentUser?.getIdToken(true);
       userFirebase = await _getCurrentUserFromFirebase(uid);
     } catch (e) {
       debugPrint("Usuário não encontrado no Firebase");
@@ -190,12 +192,11 @@ class UserProvider {
     try {
       final docRef = _firestore.collection(userCollection).doc(userId);
 
-      await docRef.update({
-        'operationsCities': operationsCities,
+      final callable = _functions.httpsCallable('setUserRole');
+      await callable.call({
+        'targetUid': userId,
         'role': role,
-        'roleUpdatedAt': FieldValue.serverTimestamp(),
-        'roleUpdatedBy': adminEmail,
-        'lastUpdated': FieldValue.serverTimestamp(),
+        'operationsCities': operationsCities,
       });
 
       DocumentSnapshot updatedDoc = await docRef.get();
@@ -206,8 +207,11 @@ class UserProvider {
           userId, role, adminEmail, operationsCities, updatedUser.email);
 
       if (updatedUser.email == adminEmail) {
+        await _auth.currentUser?.getIdToken(true);
         await _updateUserInHive(updatedUser);
       }
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception("Erro no Firebase Functions (${e.code}): ${e.message}");
     } catch (e) {
       throw Exception("Erro ao atualizar e recuperar usuário: $e");
     }

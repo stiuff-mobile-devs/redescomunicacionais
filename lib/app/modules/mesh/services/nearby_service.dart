@@ -255,7 +255,7 @@ class NearbyService extends GetxService {
         
         debugPrint('NearbyService: Pacote assinado por $authorEmail recebido. Validando...');
         
-        List<String> keysToTest = await newsRepository.getKeysListByEmail('jfontinele@id.uff.br');
+        List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
 
         if (keysToTest.isNotEmpty) {
           bool isAuthentic = false;

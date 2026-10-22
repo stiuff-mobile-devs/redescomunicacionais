@@ -1,5 +1,5 @@
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
-import { getAdminUser } from "../utils/auth-utils";
+import { getAdminUser } from "../service/auth.service";
 import { UserService } from "../service/user.service";
 
 interface SetUserRoleData {

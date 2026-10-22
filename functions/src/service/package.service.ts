@@ -11,11 +11,11 @@ export const PackageService = {
 
       const mapToCheck = {
         publicKeys: keysPackage.publicKeys,
-        senderEmail: keysPackage.sender,
+        sender: keysPackage.sender,
         timestamp: keysPackage.timestamp.toISOString()
       };
 
-      const payload = JSON.stringify(mapToCheck);
+      const payload = JSON.stringify(sortMapKeys(mapToCheck));
 
       return KeysService.toCheck(payload, keysPackage.signature ?? "", publicKey);
     } catch (e) {
@@ -31,12 +31,11 @@ export const PackageService = {
       const mapToCheck = {
         id: newsPackage.id,
         news: newsPackage.news,
-        senderEmail: newsPackage.sender,
+        email: newsPackage.email,
         lastUpdated: newsPackage.lastUpdated.toISOString(),
-        isUploaded: newsPackage.isUploaded
       };
 
-      const payload = JSON.stringify(mapToCheck);
+      const payload = JSON.stringify(sortMapKeys(mapToCheck));
 
       return KeysService.toCheck(payload, newsPackage.signature ?? "", publicKey);
     } catch (e) {
@@ -53,11 +52,11 @@ export const PackageService = {
 
       const mapToSign = {
         publicKeys: publicKeys,
-        senderEmail: sender,
+        sender: sender,
         timestamp: timestamp.toISOString(),
       };
 
-      const payload = JSON.stringify(mapToSign);
+      const payload = JSON.stringify(sortMapKeys(mapToSign));
       const signature = KeysService.toSign(payload, privateKey);
 
       return {
@@ -72,3 +71,24 @@ export const PackageService = {
     }
   }
 };
+
+function sortMapKeys(value: any): any {
+  if (Array.isArray(value)) {
+    return value.map(sortMapKeys);
+  }
+  if (value !== null && typeof value ===
+    "object" && !(value instanceof Date)) {
+    return Object.keys(value)
+      .sort()
+      .reduce((acc: Record<string, any>,
+               key) => {
+        if (value[key] !== undefined &&
+          value[key] !== null) {
+          acc[key] =
+            sortMapKeys(value[key]);
+        }
+        return acc;
+      }, {});
+  }
+  return value;
+}

@@ -160,14 +160,9 @@ class LoginController extends GetxController {
         final privateKeyString = KeysServices.exportPrivateKey(keys.privateKey);
         final publicKeyString = KeysServices.exportPublicKey(keys.publicKey);
 
-        bool isUpdatePublicKey = await _userRepository
-            .updatePublicKeyInFirebase(user.email, publicKeyString);
-
-        if (!isUpdatePublicKey) {
-          final publicKeyModel =
-              await _createPublicKeyModel(publicKeyString, user);
-          await _userRepository.createPublicKey(publicKeyModel);
-        }
+        final publicKeyModel =
+            await _createPublicKeyModel(publicKeyString, user);
+        await _userRepository.createPublicKey(publicKeyModel);
 
         await storage.savePrivateKey(privateKeyString);
       } catch (e) {

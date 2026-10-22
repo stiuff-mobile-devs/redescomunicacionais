@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:redescomunicacionais/app/config/secrets.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
@@ -8,10 +9,15 @@ import 'package:redescomunicacionais/app/modules/user/data/repository/user_repos
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
+import 'package:redescomunicacionais/app/modules/mesh/utils/date_utils.dart';
 
 class OfflinePackageService {
   late final NewsRepository newsRepository = NewsRepository();
   final UserRepository _userRepository = UserRepository();
+  final FirebaseFunctions _functions = FirebaseFunctions
+      .instanceFor(region: 'southamerica-east1');
+
+  static const String apiSender = 'INTERNAL_API';
 
   // cria o pacote a ser enviado
   Future<void> createNewsPackage(NewsModel news, String email) async {
@@ -26,17 +32,26 @@ class OfflinePackageService {
       final RSAPrivateKey privateKey =
           KeysServices.importPrivateKey(privateKeyStr);
 
-      // Converte a notícia em uma string para ser assinada
-      final String newsString = jsonEncode(news.toJson());
+      final DateTime lastUpdated = DateTime.now();
 
-      // Assina a string da notícia com a chave privada
-      final String signature = KeysServices.toSign(newsString, privateKey);
+      final Map<String, dynamic> mapToSign = {
+        'id': news.id,
+        'news': news.toJson(),
+        'email': email,
+        'lastUpdated': toJsIso(lastUpdated),
+      };
+
+      // Converte o mapa em uma string para ser assinada
+      final String payload = jsonEncode(_sortMapKeys(mapToSign));
+
+      // Assina a string com a chave privada
+      final String signature = KeysServices.toSign(payload, privateKey);
 
       final package = NewsPackageModel(
         news: news,
         signature: signature,
         email: email,
-        lastUpdated: DateTime.now(),
+        lastUpdated: lastUpdated,
         isUploaded: false,
         id: news.id,
       );
@@ -70,16 +85,26 @@ class OfflinePackageService {
       final currentUser = await _userRepository.getCurrentUserFromHive();
 
       // Gera a nova assinatura a partir do estado atual da notícia
-      final String newsString = jsonEncode(news.toJson());
-      final String signature = KeysServices.toSign(newsString, privateKey);
+      final DateTime lastUpdated = DateTime.now();
+      final String id = package.id ?? news.id;
+
+      final Map<String, dynamic> mapToSign = {
+        'id': id,
+        'news': news.toJson(),
+        'email': currentUser.email,
+        'lastUpdated': toJsIso(lastUpdated),
+      };
+
+      final String payload = jsonEncode(_sortMapKeys(mapToSign));
+      final String signature = KeysServices.toSign(payload, privateKey);
 
       final resignedPackage = NewsPackageModel(
         news: news,
         signature: signature,
         email: currentUser.email,
-        lastUpdated: DateTime.now(),
+        lastUpdated: lastUpdated,
         isUploaded: false,
-        id: package.id ?? news.id,
+        id: id,
       );
 
       // Salva o pacote atualizado no Hive local
@@ -97,15 +122,54 @@ class OfflinePackageService {
     try {
       final RSAPublicKey publicKey = KeysServices.importPublicKey(publicKeyStr);
 
-      // Transforma a noticia recebida na mesma string de quando foi assinada
-      final String newsString = jsonEncode(package.news?.toJson());
+      final Map<String, dynamic> mapToCheck = {
+        'id': package.id,
+        'news': package.news?.toJson(),
+        'email': package.email,
+        'lastUpdated': package.lastUpdated != null
+            ? toJsIso(package.lastUpdated!)
+            : null,
+      };
+
+      // Transforma o pacote recebido na mesma string de quando foi assinado
+      final String payload = jsonEncode(_sortMapKeys(mapToCheck));
 
       // Verifica a assinatura
       return KeysServices.toCheck(
-          newsString, package.signature ?? "", publicKey);
+          payload, package.signature ?? "", publicKey);
     } catch (e) {
       debugPrint("Error verifying news package: $e");
       return false;
+    }
+  }
+
+  // busca o pacote de chaves públicas na API (getPublicKeysPackage) e
+  // valida a assinatura com a chave da API. Retorna null se for inválido
+  Future<PublicKeyPackage?> fetchPublicKeysPackageFromApi() async {
+    try {
+      final result = await _functions.httpsCallable('getPublicKeysPackage').call();
+      final Map<String, dynamic> data =
+          jsonDecode(jsonEncode(result.data)) as Map<String, dynamic>;
+
+      final package = PublicKeyPackage.fromJson(data);
+
+      if (package.sender != apiSender) {
+        debugPrint("Public keys package has unexpected sender: ${package.sender}");
+        return null;
+      }
+
+      if (!verifyKeysPackage(package)) {
+        debugPrint("Public keys package signature is invalid");
+        return null;
+      }
+
+      return package;
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint("API error while fetching public keys package: ${e.code}");
+      return null;
+    } catch (e) {
+      debugPrint("Error fetching public keys package: $e");
+      return null;
     }
   }
 
@@ -118,20 +182,36 @@ class OfflinePackageService {
       // Reconstrói o mapa que foi assinado pela API no servidor
       // Emails em ordem alfabética e timestamp em UTC, para o JSON ficar
       // idêntico ao que a API assinou (JS toISOString() é sempre UTC)
-      final sortedEmails = package.publicKeys.keys.toList()..sort();
       final Map<String, dynamic> mapToCheck = {
-        'publicKeys': {
-          for (final email in sortedEmails) email: package.publicKeys[email],
-        },
+        'publicKeys': package.publicKeys,
         'sender': package.sender,
-        'timestamp': package.timestamp.toUtc().toIso8601String(),
+        'timestamp': toJsIso(package.timestamp),
       };
 
+      final String payload = jsonEncode(_sortMapKeys(mapToCheck));
       // Verifica a assinatura usando a chave mestre da API
-      return KeysServices.toCheck(jsonEncode(mapToCheck), package.signature, apiPublicKey);
+      return KeysServices.toCheck(payload, package.signature, apiPublicKey);
     } catch (e) {
       debugPrint("Error verifying public keys package: $e");
       return false;
     }
+  }
+
+  // ordena alfabeticamente as chaves do map para a assinatura
+  static dynamic _sortMapKeys(dynamic value) {
+    if (value is Map) {
+      final sortedKeys = value.keys.
+      map((k) => k.toString()).toList()..sort();
+      return {
+        for (final k in sortedKeys)
+          if (value[k] != null) k:
+          _sortMapKeys(value[k]),
+      };
+    }
+    if (value is List) {
+      return value.map(_sortMapKeys).
+      toList();
+    }
+    return value;
   }
 }

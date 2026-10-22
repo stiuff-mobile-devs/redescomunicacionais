@@ -7,7 +7,7 @@ import { NewsRepository } from "../repository/news.repository";
 export const NewsService = {
 
   uploadNewsPackage: async (newsPackage: NewsPackage): Promise<void> => {
-    const senderPublicKey = await PublicKeyRepository.getByEmail(newsPackage.sender);
+    const senderPublicKey = await PublicKeyRepository.getByEmail(newsPackage.email);
 
     if (!senderPublicKey) {
       throw new HttpsError("not-found", "Sender public key not found.");

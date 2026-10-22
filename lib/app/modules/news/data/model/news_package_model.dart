@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:redescomunicacionais/app/modules/mesh/utils/date_utils.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 
 part 'news_package_model.g.dart';
@@ -51,7 +52,7 @@ class NewsPackageModel {
       'news': news?.toJson(), 
       'signature': signature,
       'email': email,
-      'lastUpdated': lastUpdated?.toIso8601String(), 
+      'lastUpdated': lastUpdated != null ? toJsIso(lastUpdated!) : null, 
       'isUploaded': isUploaded,
       'id': id,
     };

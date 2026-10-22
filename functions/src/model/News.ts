@@ -18,6 +18,8 @@ export interface News {
   author: string;
   createdBy: string;
   createdAt: Date;
+
+  collaborators?: string[];
   
   validatedBy?: string;
   validatedByName?: string;
@@ -87,6 +89,7 @@ export function newsToFirestore(data: News): any {
     videoUrl: data.videoUrl,
     type: data.type,
     status: data.status,
+    collaborators: data.collaborators,
     lastUpdated: data.lastUpdated
       ? admin.firestore.Timestamp.fromDate(data.lastUpdated)
       : admin.firestore.FieldValue.serverTimestamp(),

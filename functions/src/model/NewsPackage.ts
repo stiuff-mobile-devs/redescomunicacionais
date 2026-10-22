@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 export interface NewsPackage {
   id: string;
   news: News;
-  sender: string;
+  email: string;
   lastUpdated: Date;
   signature: string;
   isUploaded: boolean;
@@ -35,7 +35,7 @@ export function newsPackageToFirestore(data: NewsPackage): any {
   return {
     id: data.id,
     news: newsToFirestore(data.news),
-    sender: data.sender,
+    email: data.email,
     lastUpdated: data.lastUpdated
       ? admin.firestore.Timestamp.fromDate(data.lastUpdated)
       : admin.firestore.FieldValue.serverTimestamp(),

@@ -8,7 +8,7 @@ export const NewsRepository = {
     const db: Firestore = admin.firestore();
 
     try {
-      const newsDocRef = db.collection("news").doc(newsPackage.news.id);
+      const newsDocRef = db.collection("news_test").doc(newsPackage.news.id);
       await newsDocRef.set(newsPackageToFirestore(newsPackage), { merge: true });
     } catch (e) {
       throw e;

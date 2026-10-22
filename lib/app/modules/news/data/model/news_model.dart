@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:redescomunicacionais/app/modules/mesh/utils/date_utils.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hive/hive.dart';
 part 'news_model.g.dart';
@@ -200,21 +201,21 @@ class NewsModel {
       'videoUrl': videoUrl,
       'type': type,
       'status': status,
-      // Datas convertidas estritamente para String ISO-8601
-      'lastUpdated': lastUpdated.toIso8601String(),
+      // Datas convertidas estritamente para String ISO-8601 (UTC em milissegundos, igual ao JS toISOString)
+      'lastUpdated': toJsIso(lastUpdated),
       'author': author,
       'createdBy': createdBy,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': toJsIso(createdAt),
       'validatedBy': validatedBy,
       'validatedByName': validatedByName,
-      'validatedAt': validatedAt?.toIso8601String(),
+      'validatedAt': validatedAt != null ? toJsIso(validatedAt!) : null,
       'validatedObservation': validatedObservation,
       'rejectedBy': rejectedBy,
-      'rejectedAt': rejectedAt?.toIso8601String(),
+      'rejectedAt': rejectedAt != null ? toJsIso(rejectedAt!) : null,
       'rejectedObservation': rejectedObservation,
-      'editedAt': editedAt?.toIso8601String(),
+      'editedAt': editedAt != null ? toJsIso(editedAt!) : null,
       'excludedBy': excludedBy,
-      'excludedAt': excludedAt?.toIso8601String(),
+      'excludedAt': excludedAt != null ? toJsIso(excludedAt!) : null,
       'excludedObservation': excludedObservation,
       'publicationTerms': publicationTerms,
       'collaborators': collaborators,

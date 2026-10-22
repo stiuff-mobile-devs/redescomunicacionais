@@ -22,8 +22,8 @@ export function firestoreToPublicKey(id: string, data: any): PublicKey {
     cities: data.cities || [],
     publicKey: data.publicKey || "",
     oldPublicKeys: data.oldPublicKeys || [],
-    createdAt: data.createdAt.toDate(),
-    lastUpdated: data.lastUpdated.toDate()
+    createdAt: parseFirestoreDate(data.createdAt),
+    lastUpdated: parseFirestoreDate(data.lastUpdated)
   };
 }
 
@@ -67,4 +67,10 @@ export function jsonToPublicKey(data: any): PublicKey {
       ? new Date(data.lastUpdated)
       : new Date(),
   };
+}
+
+function parseFirestoreDate(value: any): Date {
+  if (!value) return new Date();
+  if (typeof value.toDate === "function") return value.toDate();
+  return new Date(value);
 }
