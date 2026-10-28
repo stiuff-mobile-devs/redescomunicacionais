@@ -65,7 +65,16 @@ class MenuPage extends GetView<HomeController> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              child: Row(
+              child: InkWell(
+                // Abre o perfil do usuário (convidado não tem perfil)
+                onTap: controller.isAnonymousUser
+                    ? null
+                    : () {
+                        Get.back();
+                        Get.toNamed(Routes.USER);
+                      },
+                borderRadius: BorderRadius.circular(12),
+                child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   CircleAvatar(
@@ -107,7 +116,13 @@ class MenuPage extends GetView<HomeController> {
                       ],
                     ),
                   ),
+                  if (!controller.isAnonymousUser)
+                    Icon(
+                      Icons.chevron_right,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                 ],
+              ),
               ),
             ),
 
@@ -143,25 +158,6 @@ class MenuPage extends GetView<HomeController> {
                   Get.toNamed(
                     Routes.CENTRAL_DE_COMUNICACAO,
                   );
-                },
-              ),
-
-            // SEUS DADOS
-            if (!controller.isAnonymousUser)
-              ListTile(
-                leading: Icon(
-                  Icons.person_outline,
-                  color: theme.colorScheme.onSurface,
-                ),
-                title: Text(
-                  'Seus Dados'.tr,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                onTap: () {
-                  Get.back();
-                  Get.toNamed(Routes.USER);
                 },
               ),
 
@@ -318,7 +314,13 @@ class MenuPage extends GetView<HomeController> {
           ),
           child: Column(
             children: [
-              Row(
+              InkWell(
+                // Abre o perfil do usuário (convidado não tem perfil)
+                onTap: controller.isAnonymousUser
+                    ? null
+                    : () => Get.toNamed(Routes.USER),
+                borderRadius: BorderRadius.circular(12),
+                child: Row(
                 children: [
                   CircleAvatar(
                     radius: isTablet! ? 25 : 20,
@@ -353,7 +355,14 @@ class MenuPage extends GetView<HomeController> {
                       ],
                     ),
                   ),
+                  if (!controller.isAnonymousUser)
+                    Icon(
+                      Icons.chevron_right,
+                      size: iconSize,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                 ],
+              ),
               ),
               SizedBox(height: isTablet! ? 15.0 : 10.0),
               Divider(
@@ -404,12 +413,6 @@ class MenuPage extends GetView<HomeController> {
                     icon: Icons.chat_bubble_outline,
                     title: 'Central de Comnunicação'.tr,
                     onTap: () => Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO),
-                  ),
-                if (!controller.isAnonymousUser)
-                  _buildHorizontalMenuTile(
-                    icon: Icons.person_outline,
-                    title: 'Seus Dados'.tr,
-                    onTap: () => Get.toNamed(Routes.USER),
                   ),
 
                 _buildHorizontalMenuTile(

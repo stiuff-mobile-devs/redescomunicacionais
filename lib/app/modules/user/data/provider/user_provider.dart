@@ -235,6 +235,11 @@ class UserProvider {
       DocumentSnapshot updatedDoc = await docRef.get();
       UserModel updatedUser =
           UserModel.fromJson(updatedDoc.data() as Map<String, dynamic>);
+
+      // A cidade escolhida só existe no Hive; mantém ao sobrescrever
+      final UserModel localUser = await getCurrentUserFromHive();
+      updatedUser.selectedAppCity = localUser.selectedAppCity;
+
       await createUserDocInHive(updatedUser);
     } catch (e) {
       throw Exception("Erro ao atualizar e recuperar usuário: $e");

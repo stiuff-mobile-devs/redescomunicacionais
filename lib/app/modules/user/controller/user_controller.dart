@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:flutter/material.dart';
@@ -15,41 +16,69 @@ class UserController extends GetxController {
   RxBool isSavingData = false.obs;
   RxBool isDeletingAccount = false.obs;
 
-  UserModel currentUser = UserModel.empty();
+  final Rx<UserModel> currentUser = UserModel.empty().obs;
 
 
   @override
   Future<void> onInit() async {
-    currentUser = await _repository.getCurrentUserFromHive();
     super.onInit();
+    await _reloadCurrentUser();
+    isDataLoading.value = false;
   }
 
+  Future<void> _reloadCurrentUser() async {
+    currentUser.value = await _repository.getCurrentUserFromHive();
+    currentUser.refresh();
+  }
 
   Future<void> saveCurrentUserName(String newName) async {
-    isSavingData.value = true;
-
-    UserModel currentUser = await _repository.getCurrentUserFromHive();
-
     if (newName.trim().isEmpty) {
       PopUps.snackbar(
-        texto: 'Informe um nome válido.',
+        texto: 'invalid_name'.tr,
         cor: Colors.orange,
       );
       return;
     }
 
-    try {
-      await _repository.updateUserNameToFirebase(
-          currentUser.id!, newName.trim());
+    isSavingData.value = true;
 
+    try {
+      final UserModel user = await _repository.getCurrentUserFromHive();
+      await _repository.updateUserNameToFirebase(user.id!, newName.trim());
+      await _reloadCurrentUser();
+      _refreshMenuUser();
+
+      PopUps.snackbar(
+        texto: 'name_updated_success'.tr,
+        cor: Colors.green,
+      );
     } catch (e) {
       PopUps.snackbar(
-        texto: 'Não foi possível atualizar o nome: $e',
+        texto: '${'name_update_error'.tr}: $e',
         cor: Colors.red,
       );
     } finally {
       isSavingData.value = false;
     }
+  }
+
+  // Salva a cidade favorita e já aplica o filtro na Home, se ela estiver aberta
+  Future<void> updateFavoriteCity(String cityName) async {
+    if (Get.isRegistered<HomeController>()) {
+      await Get.find<HomeController>().updateSelectedCity(cityName);
+    } else {
+      await _repository.saveLocalSelectedCity(cityName);
+    }
+    await _reloadCurrentUser();
+  }
+
+  // Atualiza o usuário exibido no menu da Home
+  void _refreshMenuUser() {
+    if (!Get.isRegistered<HomeController>()) return;
+
+    final homeController = Get.find<HomeController>();
+    homeController.user = currentUser.value;
+    homeController.update();
   }
 
   Future<void> deleteCurrentUserAccount() async {
@@ -58,12 +87,12 @@ class UserController extends GetxController {
       await _repository.deleteCurrentUserDocFromFirebase();
       Get.offAllNamed(Routes.LOGIN);
       PopUps.snackbar(
-        texto: 'Sua conta foi excluída com sucesso.',
+        texto: 'account_deleted_success'.tr,
         cor: Colors.green,
       );
     } catch (e) {
       PopUps.snackbar(
-        texto: 'Não foi possível excluir a conta: $e',
+        texto: '${'account_delete_error'.tr}: $e',
         cor: Colors.red,
       );
     } finally {
