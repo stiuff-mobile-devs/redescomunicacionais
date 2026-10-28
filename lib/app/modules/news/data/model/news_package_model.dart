@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
-import 'package:redescomunicacionais/app/modules/mesh/utils/date_utils.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
+import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
 
 part 'news_package_model.g.dart';
 
@@ -41,7 +40,7 @@ class NewsPackageModel {
           : null,
       signature: json['signature'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      lastUpdated: _parseDate(json['lastUpdated']),
+      lastUpdated: DateParser.parse(json['lastUpdated']),
       isUploaded: json['isUploaded'] as bool? ?? false,
       id: json['id'] as String?,
     );
@@ -52,7 +51,7 @@ class NewsPackageModel {
       'news': news?.toJson(), 
       'signature': signature,
       'email': email,
-      'lastUpdated': lastUpdated != null ? toJsIso(lastUpdated!) : null, 
+      'lastUpdated': lastUpdated != null ? DateParser.toJsIso(lastUpdated!) : null,
       'isUploaded': isUploaded,
       'id': id,
     };
@@ -75,14 +74,5 @@ class NewsPackageModel {
     data.removeWhere((key, value) => value == null);
 
     return data;
-  }
-
-  // Interpretador Híbrido: Firestore, Dart e JSON/Mesh
-  static DateTime? _parseDate(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value); 
-    return null;
   }
 }

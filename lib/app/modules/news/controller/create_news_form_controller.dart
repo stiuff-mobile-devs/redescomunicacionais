@@ -179,7 +179,7 @@ class CreateNewsFormController extends GetxController {
     final String body = _getBodyText();
     List<String> urlImages = [_imageController.base64String ?? ""];
     final String author = _homeController.user.name!;
-    final String email = _homeController.user.email;
+    final String email = _homeController.user.email!;
     final String videoUrl = _videoUrlController.text;
     final String newsState = draft ? NewsStates.rascunho : NewsStates.emAnalise;
     final List<String> collaborators = _selectedCollaborators;

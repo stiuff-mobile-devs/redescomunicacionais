@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
 part 'user_model.g.dart';
 
 // ÍNDICES OBSOLETOS - NÃO REUTILIZAR:
@@ -12,22 +12,22 @@ part 'user_model.g.dart';
 @HiveType(typeId: 0)
 class UserModel extends HiveObject {
   @HiveField(0)
-  String id;
+  String? id;
 
   @HiveField(1)
   String? name;
 
   @HiveField(2)
-  String email;
+  String? email;
 
   @HiveField(3)
   String? urlImage;
 
   @HiveField(4)
-  String role;
+  String? role;
 
   @HiveField(5)
-  DateTime createdAt;
+  DateTime? createdAt;
 
   @HiveField(6)
   DateTime? roleUpdatedAt;
@@ -45,12 +45,12 @@ class UserModel extends HiveObject {
   String? selectedAppCity; 
 
   UserModel({
-    required this.id,
+    this.id,
     this.name,
-    required this.email,
+    this.email,
     this.urlImage,
-    required this.role,
-    required this.createdAt,
+    this.role,
+    this.createdAt,
     this.roleUpdatedAt,
     this.roleUpdatedBy,
     this.lastUpdated,
@@ -60,25 +60,23 @@ class UserModel extends HiveObject {
 
   factory UserModel.empty() {
     return UserModel(
-      id: '',
-      email: '',
+      name: 'Convidado',
+      email: 'Convidado',
       role: UserRoles.guest,
-      createdAt: DateTime.now(),
-      lastUpdated: DateTime.now(),
     );
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String? ?? '', 
-      email: json['email'] as String? ?? '',
-      role: json['role'] as String? ?? 'user', 
+      id: json['id'] as String?, 
+      email: json['email'] as String? ,
+      role: json['role'] as String? ?? UserRoles.user, 
       name: json['name'] as String?,
       urlImage: json['urlImage'] as String?,
       roleUpdatedBy: json['roleUpdatedBy'] as String?,
-      createdAt: _readDateTime(json['createdAt'], fallback: DateTime.now()),
-      roleUpdatedAt: _readNullableDateTime(json['roleUpdatedAt']),
-      lastUpdated: _readNullableDateTime(json['lastUpdated']),
+      createdAt: DateParser.parse(json['createdAt']),
+      roleUpdatedAt: DateParser.parse(json['roleUpdatedAt']),
+      lastUpdated: DateParser.parse(json['lastUpdated']),
       operationsCities: json['operationsCities'] != null
           ? (json['operationsCities'] as Map<dynamic, dynamic>).map(
               (key, value) => MapEntry(key.toString(), value.toString()),
@@ -94,7 +92,7 @@ class UserModel extends HiveObject {
       'email': email,
       'urlImage': urlImage,
       'role': role,
-      'createdAt': createdAt.toIso8601String(), // Converte para texto
+      'createdAt': createdAt?.toIso8601String(), // Converte para texto
       'roleUpdatedAt': roleUpdatedAt?.toIso8601String(), // Converte para texto
       'roleUpdatedBy': roleUpdatedBy,
       'lastUpdated': lastUpdated?.toIso8601String(), // Converte para texto
@@ -108,7 +106,7 @@ class UserModel extends HiveObject {
   }
 
   Map<String, dynamic> toFirebase() {
-    return {
+    final Map<String, dynamic> data = {
       'id': id,
       'name': name,
       'email': email,
@@ -120,21 +118,10 @@ class UserModel extends HiveObject {
       'lastUpdated': lastUpdated,
       'operationsCities': operationsCities,
     };
-  }
 
-  static DateTime _readDateTime(dynamic value, {required DateTime fallback}) {
-    if (value == null) return fallback;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value) ?? fallback;
-    return fallback;
-  }
+    // Remove os campos nulos 
+    data.removeWhere((key, value) => value == null);
 
-  static DateTime? _readNullableDateTime(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value);
-    return null;
+    return data;
   }
 }

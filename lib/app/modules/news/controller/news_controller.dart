@@ -208,7 +208,7 @@ class NewsController extends GetxController {
         collaborators: collaborators,
       );
 
-      await _repository.saveNewsToPackage(news, user.email);
+      await _repository.saveNewsToPackage(news, user.email!);
 
       await syncNews(null);
 

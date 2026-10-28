@@ -9,7 +9,7 @@ import 'package:redescomunicacionais/app/modules/user/data/repository/user_repos
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
-import 'package:redescomunicacionais/app/modules/mesh/utils/date_utils.dart';
+import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
 
 class OfflinePackageService {
   late final NewsRepository newsRepository = NewsRepository();
@@ -38,7 +38,7 @@ class OfflinePackageService {
         'id': news.id,
         'news': news.toJson(),
         'email': email,
-        'lastUpdated': toJsIso(lastUpdated),
+        'lastUpdated': DateParser.toJsIso(lastUpdated),
       };
 
       // Converte o mapa em uma string para ser assinada
@@ -92,7 +92,7 @@ class OfflinePackageService {
         'id': id,
         'news': news.toJson(),
         'email': currentUser.email,
-        'lastUpdated': toJsIso(lastUpdated),
+        'lastUpdated': DateParser.toJsIso(lastUpdated),
       };
 
       final String payload = jsonEncode(_sortMapKeys(mapToSign));
@@ -127,7 +127,7 @@ class OfflinePackageService {
         'news': package.news?.toJson(),
         'email': package.email,
         'lastUpdated': package.lastUpdated != null
-            ? toJsIso(package.lastUpdated!)
+            ? DateParser.toJsIso(package.lastUpdated!)
             : null,
       };
 
@@ -185,7 +185,7 @@ class OfflinePackageService {
       final Map<String, dynamic> mapToCheck = {
         'publicKeys': package.publicKeys,
         'sender': package.sender,
-        'timestamp': toJsIso(package.timestamp),
+        'timestamp': DateParser.toJsIso(package.timestamp),
       };
 
       final String payload = jsonEncode(_sortMapKeys(mapToCheck));

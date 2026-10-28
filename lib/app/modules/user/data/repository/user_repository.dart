@@ -11,7 +11,7 @@ class UserRepository {
     return _userProvider.createUserDoc(email, name, uid, urlImage);
   }
 
-  Future<void> updateRole(String userId, String role, String adminEmail, Map<String, String> operationsCities) {
+  Future<void> updateUserRole(String userId, String role, String adminEmail, Map<String, String> operationsCities) {
     return _userProvider.updateUserRole(userId, role, adminEmail, operationsCities);
   }
 
@@ -28,8 +28,8 @@ class UserRepository {
     return _userProvider.deleteCurrentUserFromHive();
   }
 
-  Future<void> deleteCurrentUserAccountFromFirebase() {
-    return _userProvider.deleteCurrentUserAccountFromFirebase();
+  Future<void> deleteCurrentUserDocFromFirebase() {
+    return _userProvider.deleteCurrentUserDocFromFirebase();
   }
 
   Future<void> updateUserNameToFirebase(String userId, String name) {
@@ -40,17 +40,8 @@ class UserRepository {
     return await _userProvider.getPrivateKeyInStorage();
   }
 
-  Future<void> createPublicKeyInFirebase(PublicKeyModel publicKeyModel) async {
-    return _userProvider.createPublicKeyInFirebase(publicKeyModel);
-  }
-
   Future<void> createPublicKey(PublicKeyModel publicKeyModel) async {
     return _userProvider.savePublicKey(publicKeyModel);
-  }
-
-  Future<bool> updatePublicKeyInFirebase(
-      String email, String newPublicKey) async {
-    return _userProvider.updatePublicKeyInFirebase(email, newPublicKey);
   }
 
    Future<void> saveLocalSelectedCity(String cityName) async {

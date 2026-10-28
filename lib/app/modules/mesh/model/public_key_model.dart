@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
 
 part 'public_key_model.g.dart';
 
@@ -50,8 +50,8 @@ class PublicKeyModel extends HiveObject {
           .toList(),
       cities:
           (json['cities'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-      createdAt: _parseTimestamp(json['createdAt']),
-      lastUpdated: _parseTimestamp(json['lastUpdated']),
+      createdAt: DateParser.parse(json['createdAt']),
+      lastUpdated: DateParser.parse(json['lastUpdated']),
       revocationInfo: json['revocationInfo'] != null 
           ? RevocationInfo.fromJson(Map<String, dynamic>.from(json['revocationInfo'])) 
           : null,
@@ -122,15 +122,6 @@ class PublicKeyModel extends HiveObject {
       revocationInfo: revocationInfo ?? this.revocationInfo,
     );
   }
-
-  // Interpretador Híbrido: Firestore, Dart e JSON/Mesh
-  static DateTime? _parseTimestamp(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value);
-    return null;
-  }
 }
 
 @HiveType(typeId: 12)
@@ -157,7 +148,7 @@ class RevocationInfo extends HiveObject {
   factory RevocationInfo.fromJson(Map<String, dynamic> json) {
     return RevocationInfo(
       isRevoked: json['isRevoked'] as bool? ?? false,
-      revokedAt: _parseTimestamp(json['revokedAt']),
+      revokedAt: DateParser.parse(json['revokedAt']),
       revokedBy: json['revokedBy'] as String?,
       revocationReason: json['revocationReason'] as String?,
     );
@@ -207,13 +198,5 @@ class RevocationInfo extends HiveObject {
       revokedBy: revokedBy ?? this.revokedBy,
       revocationReason: revocationReason ?? this.revocationReason,
     );
-  }
-
-  static DateTime? _parseTimestamp(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value; 
-    if (value is String) return DateTime.tryParse(value);
-    return null;
   }
 }

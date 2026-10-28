@@ -40,7 +40,7 @@ class UserController extends GetxController {
 
     try {
       await _repository.updateUserNameToFirebase(
-          currentUser.id, newName.trim());
+          currentUser.id!, newName.trim());
 
     } catch (e) {
       PopUps.snackbar(
@@ -55,7 +55,7 @@ class UserController extends GetxController {
   Future<void> deleteCurrentUserAccount() async {
     try {
       isDeletingAccount.value = true;
-      await _repository.deleteCurrentUserAccountFromFirebase();
+      await _repository.deleteCurrentUserDocFromFirebase();
       Get.offAllNamed(Routes.LOGIN);
       PopUps.snackbar(
         texto: 'Sua conta foi excluída com sucesso.',

@@ -797,9 +797,8 @@ class MenuPage extends GetView<HomeController> {
       return 'rcl_user'.tr;
     }
 
-    return controller.user.email.isNotEmpty
-        ? controller.user.email
-        : 'rcl_user'.tr;
+    return controller.user.email!;
+        
   }
 
   String get _profileEmail {
@@ -807,7 +806,7 @@ class MenuPage extends GetView<HomeController> {
       return 'Convidado';
     }
 
-    return controller.user.email;
+    return controller.user.email!;
   }
 
   String get _profileImageUrl {

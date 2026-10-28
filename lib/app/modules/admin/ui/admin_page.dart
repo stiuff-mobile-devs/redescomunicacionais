@@ -179,7 +179,7 @@ class AdminPage extends GetView<AdminController> {
                     
                     return matchesRole && matchesCity;
                   }).toList()
-                    ..sort((a, b) => a.email.compareTo(b.email));
+                    ..sort((a, b) => a.email!.compareTo(b.email!));
 
                   if (filteredUsers.isEmpty) {
                     return Center(
@@ -208,18 +208,18 @@ class AdminPage extends GetView<AdminController> {
   }
 
   Widget _buildUserCard(UserModel user) {
-    String email = user.email;
-    String userId = user.id;
-    String currentRole = user.role;
+    String selectedUserEmail = user.email!;
+    String selectedUserId = user.id!;
+    String selectedUserCurrentRole = user.role!;
 
     // Gera iniciais do email
-    String initials = email.isNotEmpty ? email[0].toUpperCase() : 'U';
+    String initials = selectedUserEmail.isNotEmpty ? selectedUserEmail[0].toUpperCase() : 'U';
 
     // Cor baseada na role
-    Color roleColor = _getRoleColor(currentRole);
+    Color roleColor = _getRoleColor(selectedUserCurrentRole);
     
     // Verifica se o usuário logado no app é admin para liberar funções restritas
-    bool isCurrentUserAdmin = controller.user.role.toLowerCase() == UserRoles.admin;
+    bool isCurrentUserAdmin = controller.user.role!.toLowerCase() == UserRoles.admin;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -254,7 +254,7 @@ class AdminPage extends GetView<AdminController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    email,
+                    selectedUserEmail,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -270,7 +270,7 @@ class AdminPage extends GetView<AdminController> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      _getRoleDisplayName(currentRole),
+                      _getRoleDisplayName(selectedUserCurrentRole),
                       style: TextStyle(
                         color: roleColor,
                         fontSize: 12,
@@ -294,7 +294,7 @@ class AdminPage extends GetView<AdminController> {
                     border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
                   child: DropdownButton<String>(
-                    value: currentRole,
+                    value: selectedUserCurrentRole,
                     underline: const SizedBox(),
                     dropdownColor: Colors.black87,
                     icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
@@ -305,15 +305,15 @@ class AdminPage extends GetView<AdminController> {
                       DropdownMenuItem(value: 'admin', child: Text('role_admin'.tr)),
                     ],
                     onChanged: (newRole) async {
-                      if (newRole != null && newRole != currentRole) {
-                        final result = await _showRoleChangeDialog(email, currentRole, newRole);
+                      if (newRole != null && newRole != selectedUserCurrentRole) {
+                        final result = await _showRoleChangeDialog(selectedUserEmail, selectedUserCurrentRole, newRole);
                         if (result != null && result['confirmed'] == true) {
                           Map<String, String> operationsCities = result['cities'] ?? <String, String>{};
 
-                          if (userId.isNotEmpty) {
+                          if (selectedUserId.isNotEmpty) {
                             try {
-                              await controller.userRepository.updateRole(
-                                  userId, newRole, controller.user.email, operationsCities);
+                              await controller.userRepository.updateUserRole(
+                                  selectedUserId, newRole, controller.user.email!, operationsCities);
                               PopUps.snackbar(
                                 texto: 'Cargo atualizado com sucesso'.tr,
                                 cor: Colors.green,
@@ -334,7 +334,7 @@ class AdminPage extends GetView<AdminController> {
                 
                 // Botão dedicado para alterar APENAS as cidades 
                 // visível somente para Admins olhando para editores ou admins
-                if (isCurrentUserAdmin && (currentRole == UserRoles.editor || currentRole == UserRoles.admin))
+                if (isCurrentUserAdmin && (selectedUserCurrentRole == UserRoles.editor || selectedUserCurrentRole == UserRoles.admin))
                   Padding(
                     padding: const EdgeInsets.only(left: 4.0),
                     child: IconButton(
@@ -343,11 +343,11 @@ class AdminPage extends GetView<AdminController> {
                       onPressed: () async {
                         final Map<String, String>? updatedCities = await _showEditCitiesDialog(user);
                         
-                        if (updatedCities != null && userId.isNotEmpty) {
+                        if (updatedCities != null && selectedUserId.isNotEmpty) {
                           try {
-                            // Reaproveita o updateRole passando o MESMO cargo, apenas atualizando as cidades
-                            await controller.userRepository.updateRole(
-                                userId, currentRole, controller.user.email, updatedCities);
+                            // Reaproveita o updateUserRole passando o MESMO cargo, apenas atualizando as cidades
+                            await controller.userRepository.updateUserRole(
+                                selectedUserId, selectedUserCurrentRole, controller.user.email!, updatedCities);
                             PopUps.snackbar(
                               texto: 'Cidades atualizadas com sucesso'.tr,
                               cor: Colors.green,

@@ -17,10 +17,12 @@ class UserProvider {
 
   // Armazena sempre na mesma chave para garantir apenas uma entrada
   final String hiveUserKey = 'current_user';
-  final String userCollection = 'users';
+  final String userCollection = 'users_v2';
 
   Future<void> createUserDoc(
       String email, String name, String uid, String urlImage) async {
+
+    // Inicializa o usuário como convidado
     UserModel userFirebase = UserModel.empty();
 
     UserModel newUser = UserModel(
@@ -40,6 +42,7 @@ class UserProvider {
       debugPrint("Usuário não encontrado no Firebase");
     }
 
+    // Se o usuário não existir no Firebase, cria o documento no Firebase e no Hive
     if (userFirebase.role == UserRoles.guest) {
       try {
         await _createUserDocInFirebase(newUser);
@@ -56,6 +59,7 @@ class UserProvider {
     }
   }
 
+  //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<void> _createUserDocInFirebase(UserModel user) async {
     try {
       await _firestore
@@ -102,6 +106,7 @@ class UserProvider {
     }
   }
 
+  //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<UserModel> _getCurrentUserFromFirebase(String uid) async {
     try {
       DocumentSnapshot doc =
@@ -119,6 +124,8 @@ class UserProvider {
     }
   }
 
+  //TODO: O numero de usuarios tende a crescer, então talvez seja interessante paginar a busca de usuarios no futuro
+  //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<List<UserModel>> getAllUsersFromFirebase() async {
     try {
       QuerySnapshot querySnapshot =
@@ -155,17 +162,9 @@ class UserProvider {
     }
   }
 
-  Future<void> deleteCurrentUserAccountFromFirebase() async {
+  //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
+  Future<void> deleteCurrentUserDocFromFirebase() async {
     final currentFirebaseUser = _auth.currentUser;
-    final currentUserFromHive = await getCurrentUserFromHive();
-
-    final String uid = currentFirebaseUser?.uid.isNotEmpty == true
-        ? currentFirebaseUser!.uid
-        : currentUserFromHive.id;
-
-    if (uid.isEmpty) {
-      throw Exception('Não foi possível identificar a conta para exclusão.');
-    }
 
     if (currentFirebaseUser == null) {
       throw Exception(
@@ -173,8 +172,11 @@ class UserProvider {
     }
 
     try {
-      await _firestore.collection('roles').doc(uid).delete();
-      await _firestore.collection(userCollection).doc(uid).delete();
+      // Apaga o documento do usuário, a conta no Auth e o Hive
+      await _firestore
+          .collection(userCollection)
+          .doc(currentFirebaseUser.uid)
+          .delete();
       await currentFirebaseUser.delete();
       await deleteCurrentUserFromHive();
       await _auth.signOut();
@@ -190,8 +192,6 @@ class UserProvider {
   Future<void> updateUserRole(String userId, String role, String adminEmail,
       Map<String, String> operationsCities) async {
     try {
-      final docRef = _firestore.collection(userCollection).doc(userId);
-
       final callable = _functions.httpsCallable('setUserRole');
       await callable.call({
         'targetUid': userId,
@@ -199,16 +199,21 @@ class UserProvider {
         'operationsCities': operationsCities,
       });
 
-      DocumentSnapshot updatedDoc = await docRef.get();
-      UserModel updatedUser =
-          UserModel.fromJson(updatedDoc.data() as Map<String, dynamic>);
-
-      await _updateUserRoleinRoles(
-          userId, role, adminEmail, operationsCities, updatedUser.email);
-
-      if (updatedUser.email == adminEmail) {
+      // Se o alvo é o próprio usuário logado, replica no Hive o que a Function gravou
+      if (userId == _auth.currentUser?.uid) {
         await _auth.currentUser?.getIdToken(true);
-        await _updateUserInHive(updatedUser);
+
+        UserModel user = await getCurrentUserFromHive();
+        if (user.id != userId) return;
+
+        final now = DateTime.now();
+        user.role = role;
+        user.operationsCities = operationsCities;
+        user.roleUpdatedBy = adminEmail;
+        user.roleUpdatedAt = now;
+        user.lastUpdated = now;
+
+        await createUserDocInHive(user);
       }
     } on FirebaseFunctionsException catch (e) {
       throw Exception("Erro no Firebase Functions (${e.code}): ${e.message}");
@@ -217,45 +222,7 @@ class UserProvider {
     }
   }
 
-  Future<void> _updateUserRoleinRoles(
-      String userId,
-      String role,
-      String adminEmail,
-      Map<String, String> operationsCities,
-      String userEmail) async {
-    try {
-      final docRef = _firestore.collection('roles').doc(userId);
-
-      await docRef.set({
-        'userId': userId,
-        'role': role,
-        'operationsCities': operationsCities,
-        'userEmail': userEmail,
-        'roleUpdatedAt': FieldValue.serverTimestamp(),
-        'roleUpdatedBy': adminEmail,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception("Erro ao atualizar e recuperar usuário: $e");
-    }
-  }
-
-  Future<void> _updateUserInHive(UserModel user) async {
-    try {
-       var box = Hive.isBoxOpen(userCollection)
-          ? Hive.box<UserModel>(userCollection)
-          : await Hive.openBox<UserModel>(userCollection);
-
-      await box.put(hiveUserKey, user);
-      await box.flush(); // Força a escrita no disco
-
-      return;
-    } catch (e) {
-      debugPrint("Erro ao atualizar usuário no Hive: $e");
-      throw Exception("Erro ao atualizar usuário no Hive: $e");
-    }
-  }
-
+  //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<void> updateUserNameToFirebase(String userId, String name) async {
     try {
       final docRef = _firestore.collection(userCollection).doc(userId);
@@ -268,42 +235,9 @@ class UserProvider {
       DocumentSnapshot updatedDoc = await docRef.get();
       UserModel updatedUser =
           UserModel.fromJson(updatedDoc.data() as Map<String, dynamic>);
-      await _updateUserInHive(updatedUser);
+      await createUserDocInHive(updatedUser);
     } catch (e) {
       throw Exception("Erro ao atualizar e recuperar usuário: $e");
-    }
-  }
-
-  Future<bool> updatePublicKeyInFirebase(
-      String email, String newPublicKey) async {
-    try {
-      DocumentReference docRef =
-          _firestore.collection('public_keys').doc(email);
-      DocumentSnapshot doc = await docRef.get();
-
-      if (!doc.exists) {
-        return false;
-      }
-
-      final data = doc.data() as Map<String, dynamic>?;
-      final String? currentPublicKey = data?['publicKey'];
-
-      Map<String, dynamic> updateData = {
-        'publicKey': newPublicKey,
-        'lastUpdated': DateTime.now(),
-      };
-
-      // Se existir uma chave pública atual, move para a lista de antigas
-      if (currentPublicKey != null && currentPublicKey.isNotEmpty) {
-        updateData['oldPublicKeys'] = FieldValue.arrayUnion([currentPublicKey]);
-      }
-
-      await docRef.update(updateData);
-
-      return true;
-    } catch (e) {
-      throw Exception(
-          "Erro ao verificar e atualizar chaves do usuário no Firebase: $e");
     }
   }
 
@@ -328,17 +262,6 @@ class UserProvider {
     }
     catch (e) {
       throw Exception("Error saving public Key");
-    }
-  }
-
-  Future<void> createPublicKeyInFirebase(PublicKeyModel publicKeyModel) async {
-    try {
-      await _firestore.collection('public_keys').doc(publicKeyModel.email).set(
-        publicKeyModel.toJson(),
-        SetOptions(merge: true),
-      );
-    } catch (e) {
-      throw Exception("Erro ao criar public Key");
     }
   }
 

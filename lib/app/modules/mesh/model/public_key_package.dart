@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
+import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
 
 part 'public_key_package.g.dart';
 
@@ -29,7 +29,7 @@ class PublicKeyPackage extends HiveObject {
     return PublicKeyPackage(
       publicKeys: _parsePublicKeys(json['publicKeys']),
       sender: json['sender'] as String? ?? '',
-      timestamp: _parseDate(json['timestamp']) ?? DateTime.now(),
+      timestamp: DateParser.parse(json['timestamp']) ?? DateTime.now(),
       signature: json['signature'] as String? ?? '',
     );
   }
@@ -80,14 +80,5 @@ class PublicKeyPackage extends HiveObject {
         keys is List ? keys.map((k) => k.toString()).toList() : <String>[],
       ),
     );
-  }
-
-  // Interpretador Híbrido: Firestore, Dart e JSON/Mesh
-  static DateTime? _parseDate(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value);
-    return null;
   }
 }

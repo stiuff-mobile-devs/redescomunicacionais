@@ -215,7 +215,7 @@ class _UserPageState extends State {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  controller.currentUser.email,
+                                  controller.currentUser.email ?? "",
                                   style:
                                   theme.textTheme.bodyMedium,
                                   overflow:

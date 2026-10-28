@@ -174,7 +174,7 @@ class NewsWidgets extends GetView<NewsController> {
                       if (controller.canDelete(news))
                         GestureDetector(
                           onTap: () {
-                            _hideNewsPopup(news.id, controller.user.email,
+                            _hideNewsPopup(news.id, controller.user.email!,
                                 news.createdBy, news.type);
                           },
                           child: Container(
@@ -605,7 +605,7 @@ class NewsWidgets extends GetView<NewsController> {
                 newsId: news.id,
                 isApproved: accepted,
                 reason: reason,
-                validator: controller.user.email,
+                validator: controller.user.email!,
                 creator: news.createdBy,
                 validatorName: controller.user.name ?? '',
                 newsType: news.type,

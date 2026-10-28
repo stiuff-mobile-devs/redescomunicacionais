@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:redescomunicacionais/app/modules/mesh/utils/date_utils.dart';
+import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hive/hive.dart';
 part 'news_model.g.dart';
@@ -202,20 +201,20 @@ class NewsModel {
       'type': type,
       'status': status,
       // Datas convertidas estritamente para String ISO-8601 (UTC em milissegundos, igual ao JS toISOString)
-      'lastUpdated': toJsIso(lastUpdated),
+      'lastUpdated': DateParser.toJsIso(lastUpdated),
       'author': author,
       'createdBy': createdBy,
-      'createdAt': toJsIso(createdAt),
+      'createdAt': DateParser.toJsIso(createdAt),
       'validatedBy': validatedBy,
       'validatedByName': validatedByName,
-      'validatedAt': validatedAt != null ? toJsIso(validatedAt!) : null,
+      'validatedAt': validatedAt != null ? DateParser.toJsIso(validatedAt!) : null,
       'validatedObservation': validatedObservation,
       'rejectedBy': rejectedBy,
-      'rejectedAt': rejectedAt != null ? toJsIso(rejectedAt!) : null,
+      'rejectedAt': rejectedAt != null ? DateParser.toJsIso(rejectedAt!) : null,
       'rejectedObservation': rejectedObservation,
-      'editedAt': editedAt != null ? toJsIso(editedAt!) : null,
+      'editedAt': editedAt != null ? DateParser.toJsIso(editedAt!) : null,
       'excludedBy': excludedBy,
-      'excludedAt': excludedAt != null ? toJsIso(excludedAt!) : null,
+      'excludedAt': excludedAt != null ? DateParser.toJsIso(excludedAt!) : null,
       'excludedObservation': excludedObservation,
       'publicationTerms': publicationTerms,
       'collaborators': collaborators,
@@ -239,20 +238,20 @@ class NewsModel {
       videoUrl: map['videoUrl'] as String?,
       type: map['type'] as String,
       status: map['status'] as String,
-      lastUpdated: _parseDate(map['lastUpdated']) ?? DateTime.now(),
+      lastUpdated: DateParser.parse(map['lastUpdated']) ?? DateTime.now(),
       author: map['author'] as String,
       createdBy: map['createdBy'] as String,
-      createdAt: _parseDate(map['createdAt']) ?? DateTime.now(),
+      createdAt: DateParser.parse(map['createdAt']) ?? DateTime.now(),
       validatedBy: map['validatedBy'] as String?,
       validatedByName: map['validatedByName'] as String?,
-      validatedAt: _parseDate(map['validatedAt']),
+      validatedAt: DateParser.parse(map['validatedAt']),
       validatedObservation: map['validatedObservation'] as String?,
       rejectedBy: map['rejectedBy'] as String?,
-      rejectedAt: _parseDate(map['rejectedAt']),
+      rejectedAt: DateParser.parse(map['rejectedAt']),
       rejectedObservation: map['rejectedObservation'] as String?,
-      editedAt: _parseDate(map['editedAt']),
+      editedAt: DateParser.parse(map['editedAt']),
       excludedBy: map['excludedBy'] as String?,
-      excludedAt: _parseDate(map['excludedAt']),
+      excludedAt: DateParser.parse(map['excludedAt']),
       excludedObservation: map['excludedObservation'] as String?,
       publicationTerms: map['publicationTerms'] != null
           ? Map<String, dynamic>.from(map['publicationTerms'])
@@ -261,13 +260,5 @@ class NewsModel {
           ? List<String>.from(map['collaborators'])
           : null,
     );
-  }
-
-  static DateTime? _parseDate(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is DateTime) return value;
-    if (value is String) return DateTime.tryParse(value);
-    return null;
   }
 }
