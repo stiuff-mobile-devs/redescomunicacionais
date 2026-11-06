@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class MarkdownEditor extends StatefulWidget {
   final QuillController? controller;

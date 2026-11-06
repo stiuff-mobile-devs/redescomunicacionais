@@ -2,11 +2,11 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:redescomunicacionais/app/utils/translations/languages/en_us_translation.dart';
-import 'package:redescomunicacionais/app/utils/translations/languages/es_es_translation.dart';
-import 'package:redescomunicacionais/app/utils/translations/languages/it_it_translation.dart';
-import 'package:redescomunicacionais/app/utils/translations/languages/pt_br_translation.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/languages/en_us_translation.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/languages/es_es_translation.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/languages/it_it_translation.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/languages/pt_br_translation.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class AppTranslation extends Translations {
   static const Locale fallback = Locale('pt', 'BR');

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class MenuPage extends GetView<HomeController> {
   final bool isHorizontal;
@@ -537,215 +538,84 @@ class MenuPage extends GetView<HomeController> {
     );
   }
 
-  void _showThemeSelector(BuildContext context) {
+  Future<void> _showThemeSelector(BuildContext context) async {
     final themeController = Get.find<ThemeController>();
 
-    Get.bottomSheet(
-      SafeArea(
-        child: Material(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-          child: Obx(
-                () => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 16),
-
-                Text(
-                  LocaleKeys.chooseTheme.tr,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-
-                const SizedBox(height: 16),
-
-                RadioListTile<bool>(
-                  value: false,
-                  groupValue: themeController.isLight,
-                  title: Text(LocaleKeys.themeClassic.tr),
-                  subtitle: Text(LocaleKeys.themeClassicDescription.tr),
-                  onChanged: (_) {
-                    themeController.setClassicTheme();
-                    Get.back();
-                  },
-                ),
-
-                RadioListTile<bool>(
-                  value: true,
-                  groupValue: themeController.isLight,
-                  title: Text(LocaleKeys.themeLight.tr),
-                  subtitle: Text(LocaleKeys.themeLightDescription.tr),
-                  onChanged: (_) {
-                    themeController.setWhiteTheme();
-                    Get.back();
-                  },
-                ),
-
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
+    final bool? isLight = await AppPopups.choose<bool>(
+      title: LocaleKeys.chooseTheme.tr,
+      icon: Icons.palette_outlined,
+      selected: themeController.isLight,
+      options: [
+        PopupOption(
+          value: false,
+          label: LocaleKeys.themeClassic.tr,
+          description: LocaleKeys.themeClassicDescription.tr,
+          icon: Icons.dark_mode_outlined,
         ),
-      ),
-      isScrollControlled: true,
-    );
-  }
-
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final theme = Theme.of(context);
-
-        return AlertDialog(
-          backgroundColor: theme.colorScheme.surface,
-          title: Text(
-            LocaleKeys.about.tr,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.info, color: Colors.blue),
-                title: Text(
-                  LocaleKeys.whoWeAre.tr,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.goAboutUs();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.book, color: Colors.blue),
-                title: Text(
-                  LocaleKeys.userGuide.tr,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.goUserGuide();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.help, color: Colors.blue),
-                title: Text(
-                  LocaleKeys.faq.tr,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.goFAQ();
-                },
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: Obx(
-                  () => Text(
-                    LocaleKeys.versionLabel
-                        .trParams({'version': controller.appVersion.value}),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showFilterDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final TextEditingController searchController = TextEditingController();
-        return AlertDialog(
-          title: Text(LocaleKeys.filterNews.tr),
-          content: TextField(
-            controller: searchController,
-            decoration: InputDecoration(
-              hintText: LocaleKeys.enterNewsName.tr,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: Text(LocaleKeys.cancel.tr),
-            ),
-            TextButton(
-              onPressed: () {
-                controller.filterNewsByName(searchController.text);
-                Get.back();
-              },
-              child: Text(LocaleKeys.filter.tr),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final theme = Theme.of(context);
-
-        return AlertDialog(
-          backgroundColor: theme.colorScheme.surface,
-          title: Text(
-            LocaleKeys.language.tr,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: AppTranslation.supportedLocales
-                .map((locale) =>
-                    _buildLanguageOption(_localeLabel(locale), locale))
-                .toList(),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLanguageOption(String label, Locale locale) {
-    final theme = Theme.of(Get.context!);
-
-    return InkWell(
-      onTap: () {
-        AppTranslation.changeLocale(locale);
-        Get.back();
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-          ),
+        PopupOption(
+          value: true,
+          label: LocaleKeys.themeLight.tr,
+          description: LocaleKeys.themeLightDescription.tr,
+          icon: Icons.light_mode_outlined,
         ),
-      ),
+      ],
     );
+
+    if (isLight == null) return;
+    isLight ? themeController.setWhiteTheme() : themeController.setClassicTheme();
+  }
+
+  Future<void> _showAboutDialog(BuildContext context) async {
+    final String? choice = await AppPopups.choose<String>(
+      title: LocaleKeys.about.tr,
+      message: LocaleKeys.versionLabel
+          .trParams({'version': controller.appVersion.value}),
+      icon: Icons.info_outline_rounded,
+      options: [
+        PopupOption(
+          value: 'about',
+          label: LocaleKeys.whoWeAre.tr,
+          icon: Icons.groups_outlined,
+        ),
+        PopupOption(
+          value: 'guide',
+          label: LocaleKeys.userGuide.tr,
+          icon: Icons.menu_book_outlined,
+        ),
+        PopupOption(
+          value: 'faq',
+          label: LocaleKeys.faq.tr,
+          icon: Icons.help_outline_rounded,
+        ),
+      ],
+    );
+
+    switch (choice) {
+      case 'about':
+        controller.goAboutUs();
+      case 'guide':
+        controller.goUserGuide();
+      case 'faq':
+        controller.goFAQ();
+    }
+  }
+
+  void _showFilterDialog(BuildContext context) => controller.openNewsFilter();
+
+  Future<void> _showLanguageDialog(BuildContext context) async {
+    final Locale? locale = await AppPopups.choose<Locale>(
+      title: LocaleKeys.language.tr,
+      icon: Icons.language_rounded,
+      selected: AppTranslation.currentLocale,
+      options: AppTranslation.supportedLocales
+          .map((locale) => PopupOption(
+                value: locale,
+                label: _localeLabel(locale),
+              ))
+          .toList(),
+    );
+
+    if (locale != null) AppTranslation.changeLocale(locale);
   }
 
   String get _profileName {

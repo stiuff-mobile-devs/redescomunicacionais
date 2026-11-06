@@ -9,14 +9,14 @@ import 'package:redescomunicacionais/app/modules/dashboard/controller/home_contr
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
@@ -229,10 +229,7 @@ class NewsController extends GetxController {
     required String creator,
   }) async {
     if (creator != userEmail) {
-      PopUps.snackbar(
-        texto: LocaleKeys.onlyAuthorCanDelete.tr,
-        cor: Colors.red,
-      );
+      AppPopups.warning(LocaleKeys.onlyAuthorCanDelete.tr);
       return;
     }
 
@@ -241,18 +238,12 @@ class NewsController extends GetxController {
     try {
       await _repository.hideNews(newsId, status, userEmail);
       await syncNews(null);
-      PopUps.snackbar(
-        texto: LocaleKeys.typeDeletedSuccess
-            .trParams({'type': NewsLabels.type(type)}),
-        cor: Colors.green,
-      );
+      AppPopups.success(LocaleKeys.typeDeletedSuccess
+          .trParams({'type': NewsLabels.type(type)}));
     } catch (e) {
       debugPrint("Erro no hideNews: $e");
-      PopUps.snackbar(
-        texto: LocaleKeys.typeDeleteError
-            .trParams({'type': NewsLabels.type(type).toLowerCase()}),
-        cor: Colors.red,
-      );
+      AppPopups.error(LocaleKeys.typeDeleteError
+          .trParams({'type': NewsLabels.type(type).toLowerCase()}));
     } finally {
       isLoading(false);
     }
@@ -269,10 +260,7 @@ class NewsController extends GetxController {
   }) async {
     // Impede auto-revisão
     if (validator == creator) {
-      PopUps.snackbar(
-        texto: LocaleKeys.cannotReviewOwnNews.tr,
-        cor: Colors.red,
-      );
+      AppPopups.warning(LocaleKeys.cannotReviewOwnNews.tr);
       return;
     }
 
@@ -288,18 +276,12 @@ class NewsController extends GetxController {
         newsType,
       );
       await syncNews(null);
-      PopUps.snackbar(
-        texto: isApproved
-            ? LocaleKeys.newsApprovedSuccess.tr
-            : LocaleKeys.newsRejectedSuccess.tr,
-        cor: Colors.green,
-      );
+      AppPopups.success(isApproved
+          ? LocaleKeys.newsApprovedSuccess.tr
+          : LocaleKeys.newsRejectedSuccess.tr);
     } catch (e) {
       debugPrint("Erro no Controller (reviewNews): $e");
-      PopUps.snackbar(
-        texto: LocaleKeys.newsReviewError.tr,
-        cor: Colors.red,
-      );
+      AppPopups.error(LocaleKeys.newsReviewError.tr);
     } finally {
       isLoading(false);
     }

@@ -3,17 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/categories.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/cities_codes.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_types.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/categories.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/cities_codes.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_types.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
-import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/markdown_editor.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 
 class EditNewsPage extends StatefulWidget {
   const EditNewsPage({super.key});
@@ -1371,10 +1371,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
     // ----------------------------------------------------------
 
     if (!isFormValid) {
-      PopUps.snackbar(
-        texto: LocaleKeys.fillRequiredFields.tr,
-        cor: Colors.red,
-      );
+      AppPopups.error(LocaleKeys.fillRequiredFields.tr);
 
       return;
     }
@@ -1446,14 +1443,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
       // --------------------------------------------------------
 
       if (result == 'success') {
-        PopUps.snackbar(
-          texto:
-          status == NewsStates.rascunho
-              ? LocaleKeys.draftSavedSuccess.tr
-              : LocaleKeys.newsUpdatedSuccess.tr,
-
-          cor: Colors.green,
-        );
+        AppPopups.success(status == NewsStates.rascunho
+            ? LocaleKeys.draftSavedSuccess.tr
+            : LocaleKeys.newsUpdatedSuccess.tr);
 
         if (mounted) {
           Navigator.of(context).pop();
@@ -1468,16 +1460,10 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
       // `result` traz o detalhe técnico do erro: vai só para o log
       debugPrint(result);
-      PopUps.snackbar(
-        texto: LocaleKeys.newsUpdateError.tr,
-        cor: Colors.red,
-      );
+      AppPopups.error(LocaleKeys.newsUpdateError.tr);
     } catch (e) {
       debugPrint('Erro inesperado ao atualizar a matéria: $e');
-      PopUps.snackbar(
-        texto: LocaleKeys.unexpectedError.tr,
-        cor: Colors.red,
-      );
+      AppPopups.error(LocaleKeys.unexpectedError.tr);
     }
   }
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/controller/admin_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/cities_codes.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/cities_codes.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
-import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
 
 class AdminPage extends GetView<AdminController> {
   const AdminPage({super.key});
@@ -312,24 +312,18 @@ class AdminPage extends GetView<AdminController> {
                     ],
                     onChanged: (newRole) async {
                       if (newRole != null && newRole != selectedUserCurrentRole) {
-                        final result = await _showRoleChangeDialog(selectedUserEmail, selectedUserCurrentRole, newRole);
-                        if (result != null && result['confirmed'] == true) {
-                          Map<String, String> operationsCities = result['cities'] ?? <String, String>{};
-
+                        // null = cancelou; senão, as cidades escolhidas
+                        final Map<String, String>? operationsCities =
+                            await _showRoleChangeDialog(selectedUserEmail, selectedUserCurrentRole, newRole);
+                        if (operationsCities != null) {
                           if (selectedUserId.isNotEmpty) {
                             try {
                               await controller.userRepository.updateUserRole(
                                   selectedUserId, newRole, controller.user.email!, operationsCities);
-                              PopUps.snackbar(
-                                texto: LocaleKeys.roleUpdatedSuccess.tr,
-                                cor: Colors.green,
-                              );
+                              AppPopups.success(LocaleKeys.roleUpdatedSuccess.tr);
                             } catch (e) {
                               debugPrint('Erro ao atualizar o cargo: $e');
-                              PopUps.snackbar(
-                                texto: LocaleKeys.roleUpdateError.tr,
-                                cor: Colors.red,
-                              );
+                              AppPopups.error(LocaleKeys.roleUpdateError.tr);
                             }
                           }
                           await controller.loadAllUsers();
@@ -355,17 +349,11 @@ class AdminPage extends GetView<AdminController> {
                             // Reaproveita o updateUserRole passando o MESMO cargo, apenas atualizando as cidades
                             await controller.userRepository.updateUserRole(
                                 selectedUserId, selectedUserCurrentRole, controller.user.email!, updatedCities);
-                            PopUps.snackbar(
-                              texto: LocaleKeys.citiesUpdatedSuccess.tr,
-                              cor: Colors.green,
-                            );
+                            AppPopups.success(LocaleKeys.citiesUpdatedSuccess.tr);
                             await controller.loadAllUsers();
                           } catch (e) {
                             debugPrint('Erro ao atualizar as cidades: $e');
-                            PopUps.snackbar(
-                              texto: LocaleKeys.citiesUpdateError.tr,
-                              cor: Colors.red,
-                            );
+                            AppPopups.error(LocaleKeys.citiesUpdateError.tr);
                           }
                         }
                       },
@@ -379,81 +367,15 @@ class AdminPage extends GetView<AdminController> {
     );
   }
 
-  // DIÁLOGO PARA EDITAR CIDADES DIRETAMENTE
+  // Folha para editar só as cidades de atuação. Retorna o novo mapa ou null.
   Future<Map<String, String>?> _showEditCitiesDialog(UserModel user) {
-    // Clona as cidades atuais do usuário
-    Map<String, String> selectedCities = Map<String, String>.from(user.operationsCities ?? {});
-    final citiesMap = CitiesCodes().cities;
-
-    return showDialog<Map<String, String>>(
-      context: Get.context!,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: Colors.black87,
-              title: Text(
-                LocaleKeys.operationCities.tr,
-                style: const TextStyle(color: Colors.white),
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      LocaleKeys.selectCitiesFor
-                          .trParams({'email': user.email ?? ''}),
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                    const SizedBox(height: 16),
-                    ...citiesMap.entries.map((entry) {
-                      return Theme(
-                        data: ThemeData(unselectedWidgetColor: Colors.white70),
-                        child: CheckboxListTile(
-                          title: Text(
-                            entry.value,
-                            style: const TextStyle(color: Colors.white70, fontSize: 14),
-                          ),
-                          value: selectedCities.containsKey(entry.key),
-                          activeColor: Colors.blue,
-                          checkColor: Colors.white,
-                          dense: true,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
-                          onChanged: (bool? checked) {
-                            setState(() {
-                              if (checked == true) {
-                                selectedCities[entry.key] = entry.value;
-                              } else {
-                                selectedCities.remove(entry.key);
-                              }
-                            });
-                          },
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(null),
-                  child: Text(LocaleKeys.cancel.tr, style: const TextStyle(color: Colors.white70)),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Ao invés do map de confirmação, retorna direto o novo Map das cidades selecionadas
-                    Navigator.of(context).pop(selectedCities);
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                  child: Text(LocaleKeys.confirm.tr, style: const TextStyle(color: Colors.black)),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    return AppPopups.custom<Map<String, String>>(
+      _CitiesSheet(
+        title: LocaleKeys.operationCities.tr,
+        message: LocaleKeys.selectCitiesFor.trParams({'email': user.email ?? ''}),
+        icon: Icons.edit_location_alt_outlined,
+        initialCities: user.operationsCities ?? {},
+      ),
     );
   }
 
@@ -497,109 +419,119 @@ class AdminPage extends GetView<AdminController> {
   String _getRoleDisplayName(String role) =>
       UserRoles.label(role.toLowerCase());
 
-  Future<Map<String, dynamic>?> _showRoleChangeDialog(
+  // Confirma a troca de papel. Para editor, pede também as cidades.
+  // Retorna as cidades escolhidas (vazio se não for editor) ou null se cancelar.
+  Future<Map<String, String>?> _showRoleChangeDialog(
       String email, String currentRole, String newRole) {
-    
-    Map<String, String> selectedCities = {};
-    final citiesMap = CitiesCodes().cities;
+    final bool isEditor = newRole == UserRoles.editor;
 
-    return showDialog<Map<String, dynamic>>(
-      context: Get.context!,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: Colors.black87,
-              title: Text(
-                LocaleKeys.confirmChange.tr,
-                style: const TextStyle(color: Colors.white),
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      LocaleKeys.changeRoleMessage.trParams({
-                        'email': email,
-                        'from': _getRoleDisplayName(currentRole),
-                        'to': _getRoleDisplayName(newRole),
-                      }),
-                      style: const TextStyle(color: Colors.white70),
+    return AppPopups.custom<Map<String, String>>(
+      _CitiesSheet(
+        title: LocaleKeys.confirmChange.tr,
+        message: LocaleKeys.changeRoleMessage.trParams({
+          'email': email,
+          'from': _getRoleDisplayName(currentRole),
+          'to': _getRoleDisplayName(newRole),
+        }),
+        icon: Icons.manage_accounts_outlined,
+        initialCities: const {},
+        showCities: isEditor,
+        requireCity: isEditor,
+      ),
+    );
+  }
+}
+
+// Folha com a lista de cidades de atuação para marcar.
+// Retorna o mapa escolhido ao confirmar ou null ao cancelar.
+class _CitiesSheet extends StatefulWidget {
+  final String title;
+  final String message;
+  final IconData icon;
+  final Map<String, String> initialCities;
+  final bool showCities;
+  final bool requireCity;
+
+  const _CitiesSheet({
+    required this.title,
+    required this.message,
+    required this.icon,
+    required this.initialCities,
+    this.showCities = true,
+    this.requireCity = false,
+  });
+
+  @override
+  State<_CitiesSheet> createState() => _CitiesSheetState();
+}
+
+class _CitiesSheetState extends State<_CitiesSheet> {
+  late final Map<String, String> _selected =
+      Map<String, String>.from(widget.initialCities);
+  final Map<String, String> _cities = CitiesCodes().cities;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bool canConfirm = !widget.requireCity || _selected.isNotEmpty;
+
+    return AppSheet(
+      title: widget.title,
+      message: widget.message,
+      icon: widget.icon,
+      iconColor: scheme.primary,
+      actions: [
+        AppSheetButton.primary(
+          label: LocaleKeys.confirm.tr,
+          onPressed:
+              canConfirm ? () => Navigator.of(context).pop(_selected) : null,
+        ),
+        AppSheetButton.secondary(
+          label: LocaleKeys.cancel.tr,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+      child: !widget.showCities
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  LocaleKeys.operationCitiesLabel.tr,
+                  style: TextStyle(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (widget.requireCity && _selected.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      LocaleKeys.selectAtLeastOneCityForEditor.tr,
+                      style: TextStyle(color: scheme.error, fontSize: 12),
                     ),
-                    if (newRole == 'editor') ...[
-                      const SizedBox(height: 20),
-                      Text(
-                        LocaleKeys.operationCitiesLabel.tr,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      ...citiesMap.entries.map((entry) {
-                        return Theme(
-                          data: ThemeData(
-                              unselectedWidgetColor: Colors.white70),
-                          child: CheckboxListTile(
-                            title: Text(
-                              entry.value,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 14),
-                            ),
-                            value: selectedCities.containsKey(entry.key),
-                            activeColor: Colors.white,
-                            checkColor: Colors.black,
-                            dense: true,
-                            controlAffinity:
-                                ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.zero,
-                            onChanged: (bool? checked) {
-                              setState(() {
-                                if (checked == true) {
-                                  selectedCities[entry.key] = entry.value;
-                                } else {
-                                  selectedCities.remove(entry.key);
-                                }
-                              });
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(null),
-                  child: Text(LocaleKeys.cancel.tr,
-                      style: const TextStyle(color: Colors.white70)),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (newRole == 'editor' && selectedCities.isEmpty) {
-                      PopUps.snackbar(
-                        texto: LocaleKeys.selectAtLeastOneCityForEditor.tr,
-                        cor: Colors.orange,
-                      );
-                      return;
-                    }
-                    Navigator.of(context).pop({
-                      'confirmed': true,
-                      'cities': selectedCities,
-                    });
-                  },
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                  child: Text(LocaleKeys.confirm.tr,
-                      style: const TextStyle(color: Colors.black)),
-                ),
+                  ),
+                const SizedBox(height: 8),
+                ..._cities.entries.map((entry) {
+                  return CheckboxListTile(
+                    title: Text(entry.value),
+                    value: _selected.containsKey(entry.key),
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: (bool? checked) {
+                      setState(() {
+                        if (checked == true) {
+                          _selected[entry.key] = entry.value;
+                        } else {
+                          _selected.remove(entry.key);
+                        }
+                      });
+                    },
+                  );
+                }),
               ],
-            );
-          },
-        );
-      },
+            ),
     );
   }
 }

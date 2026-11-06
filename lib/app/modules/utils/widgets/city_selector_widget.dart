@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/controller/admin_controller.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 
 class CitySelectorWidget extends StatelessWidget {
   final Function(String cityName) onCitySelected;

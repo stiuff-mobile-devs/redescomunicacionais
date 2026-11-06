@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
-import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -32,103 +33,61 @@ class _UserPageState extends State {
   }
 
   Future _confirmDeleteAccount(BuildContext context) async {
-    final bool? confirm = await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(LocaleKeys.confirmDeletion.tr),
-          content: Text(
-            LocaleKeys.confirmDeleteAccountMessage.tr,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(LocaleKeys.cancel.tr),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(
-                LocaleKeys.deleteAccount.tr,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
+    final bool confirm = await AppPopups.confirm(
+      title: LocaleKeys.confirmDeletion.tr,
+      message: LocaleKeys.confirmDeleteAccountMessage.tr,
+      icon: Icons.person_remove_outlined,
+      confirmText: LocaleKeys.deleteAccount.tr,
+      destructive: true,
     );
 
-    if (confirm != true) return;
+    if (!confirm) return;
 
     await controller.deleteCurrentUserAccount();
   }
 
-  // Painel para escolher a cidade favorita
-  void _showCitySelector(BuildContext context) {
-    final theme = Theme.of(context);
+  // Folha para escolher a cidade favorita (a lista de cidades precisa de
+  // altura fixa, por isso usa AppPopups.custom)
+  Future<void> _showCitySelector(BuildContext context) async {
+    final String? cityName = await AppPopups.custom<String>(
+      Builder(
+        builder: (sheetContext) {
+          final theme = Theme.of(sheetContext);
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) {
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.75,
-          minChildSize: 0.4,
-          maxChildSize: 0.95,
-          builder: (_, __) {
-            return SafeArea(
+          return SizedBox(
+            height: MediaQuery.of(sheetContext).size.height * 0.75,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  const SizedBox(height: 12),
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
+                  Text(
+                    LocaleKeys.favoriteCity.tr,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      LocaleKeys.favoriteCity.tr,
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _selectCity(sheetContext, _allCitiesValue),
-                        icon: const Icon(Icons.public),
-                        label: Text(LocaleKeys.allCities.tr),
-                      ),
-                    ),
+                  const SizedBox(height: 16),
+                  AppSheetButton.primary(
+                    label: LocaleKeys.allCities.tr,
+                    onPressed: () =>
+                        Navigator.of(sheetContext).pop(_allCitiesValue),
                   ),
                   const SizedBox(height: 8),
                   Expanded(
                     child: CitySelectorWidget(
-                      onCitySelected: (cityName) =>
-                          _selectCity(sheetContext, cityName),
+                      onCitySelected: (city) =>
+                          Navigator.of(sheetContext).pop(city),
                     ),
                   ),
                 ],
               ),
-            );
-          },
-        );
-      },
+            ),
+          );
+        },
+      ),
     );
-  }
 
-  Future<void> _selectCity(BuildContext sheetContext, String cityName) async {
-    Navigator.pop(sheetContext);
-    await controller.updateFavoriteCity(cityName);
+    if (cityName != null) await controller.updateFavoriteCity(cityName);
   }
 
   String _favoriteCityLabel(UserModel user) {

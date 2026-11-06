@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/splash/controller/splash_controller.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
 
 class SplashPage extends GetView<SplashController> {
   const SplashPage({super.key});

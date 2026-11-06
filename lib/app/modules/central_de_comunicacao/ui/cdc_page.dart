@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/controller/cdc_controller.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 
 class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
   const CentralDeComunicacaoPage({super.key});
@@ -112,10 +112,7 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                             mode: LaunchMode.externalApplication,
                           );
                         } else {
-                          PopUps.snackbar(
-                            texto: LocaleKeys.couldNotOpenChat.tr,
-                            cor: Colors.red,
-                          );
+                          AppPopups.error(LocaleKeys.couldNotOpenChat.tr);
                         }
                       },
 

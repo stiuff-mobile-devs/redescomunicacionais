@@ -4,11 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
-import 'package:redescomunicacionais/app/utils/components/friendly_exception.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class UserProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

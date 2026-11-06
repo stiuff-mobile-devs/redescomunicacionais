@@ -3,13 +3,13 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginController extends GetxController {
@@ -43,10 +43,7 @@ class LoginController extends GetxController {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          PopUps.snackbar(
-            texto: LocaleKeys.loginGoogleError.tr,
-            cor: Colors.red,
-          );
+          AppPopups.error(LocaleKeys.loginGoogleError.tr);
         }
       });
     }
@@ -63,10 +60,7 @@ class LoginController extends GetxController {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          PopUps.snackbar(
-            texto: LocaleKeys.loginMicrosoftError.tr,
-            cor: Colors.red,
-          );
+          AppPopups.error(LocaleKeys.loginMicrosoftError.tr);
         }
       });
     }
@@ -120,10 +114,7 @@ class LoginController extends GetxController {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          PopUps.snackbar(
-            texto: LocaleKeys.loginAppleError.tr,
-            cor: Colors.red,
-          );
+          AppPopups.error(LocaleKeys.loginAppleError.tr);
         }
       });
     }

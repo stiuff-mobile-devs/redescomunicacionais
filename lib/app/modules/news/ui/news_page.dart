@@ -5,13 +5,14 @@ import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
 import 'package:redescomunicacionais/app/services/youtube_service.dart';
-import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
+import 'package:redescomunicacionais/app/modules/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class NewsPage extends GetView<NewsController> {
   const NewsPage({super.key});
@@ -1239,17 +1240,11 @@ class NewsPage extends GetView<NewsController> {
     List<String>? collaborators,
     bool isTablet,
   ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return ResponsiveUtils.createResponsiveDialog(
-          context: context,
-          title: LocaleKeys.collaborators.tr,
-          content: collaborators?.join(', ') ?? '',
-          onConfirm: () => Navigator.of(context).pop(),
-          confirmText: LocaleKeys.close.tr,
-        );
-      },
+    AppPopups.alert(
+      title: LocaleKeys.collaborators.tr,
+      message: collaborators?.join(', ') ?? '',
+      icon: Icons.people_alt_outlined,
+      confirmText: LocaleKeys.close.tr,
     );
   }
   // ============================================================
@@ -1261,17 +1256,11 @@ class NewsPage extends GetView<NewsController> {
     List<String> categorias,
     bool isTablet,
   ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return ResponsiveUtils.createResponsiveDialog(
-          context: context,
-          title: LocaleKeys.allCategories.tr,
-          content: categorias.map(NewsLabels.category).join(', '),
-          onConfirm: () => Navigator.of(context).pop(),
-          confirmText: LocaleKeys.close.tr,
-        );
-      },
+    AppPopups.alert(
+      title: LocaleKeys.allCategories.tr,
+      message: categorias.map(NewsLabels.category).join(', '),
+      icon: Icons.label_outline,
+      confirmText: LocaleKeys.close.tr,
     );
   }
 }

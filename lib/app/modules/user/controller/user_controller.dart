@@ -4,9 +4,9 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/utils/components/friendly_exception.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class UserController extends GetxController {
   final UserRepository _repository = UserRepository();
@@ -35,10 +35,7 @@ class UserController extends GetxController {
 
   Future<void> saveCurrentUserName(String newName) async {
     if (newName.trim().isEmpty) {
-      PopUps.snackbar(
-        texto: LocaleKeys.invalidName.tr,
-        cor: Colors.orange,
-      );
+      AppPopups.warning(LocaleKeys.invalidName.tr);
       return;
     }
 
@@ -50,16 +47,10 @@ class UserController extends GetxController {
       await _reloadCurrentUser();
       _refreshMenuUser();
 
-      PopUps.snackbar(
-        texto: LocaleKeys.nameUpdatedSuccess.tr,
-        cor: Colors.green,
-      );
+      AppPopups.success(LocaleKeys.nameUpdatedSuccess.tr);
     } catch (e) {
       debugPrint('Erro ao atualizar o nome: $e');
-      PopUps.snackbar(
-        texto: _errorMessage(e, LocaleKeys.nameUpdateError),
-        cor: Colors.red,
-      );
+      AppPopups.error(_errorMessage(e, LocaleKeys.nameUpdateError));
     } finally {
       isSavingData.value = false;
     }
@@ -89,16 +80,10 @@ class UserController extends GetxController {
       isDeletingAccount.value = true;
       await _repository.deleteCurrentUserDocFromFirebase();
       Get.offAllNamed(Routes.LOGIN);
-      PopUps.snackbar(
-        texto: LocaleKeys.accountDeletedSuccess.tr,
-        cor: Colors.green,
-      );
+      AppPopups.success(LocaleKeys.accountDeletedSuccess.tr);
     } catch (e) {
       debugPrint('Erro ao excluir a conta: $e');
-      PopUps.snackbar(
-        texto: _errorMessage(e, LocaleKeys.accountDeleteError),
-        cor: Colors.red,
-      );
+      AppPopups.error(_errorMessage(e, LocaleKeys.accountDeleteError));
     } finally {
       isDeletingAccount.value = false;
     }

@@ -26,7 +26,6 @@ dependencies:
   flutter_svg: ^2.0.16
   vertical_card_pager: ^1.6.2
   webview_flutter: ^4.10.0
-  awesome_dialog: ^3.2.1
   url_launcher: ^6.3.1
   flutter_markdown: ^0.7.6
   flutter_quill: ^11.5.1

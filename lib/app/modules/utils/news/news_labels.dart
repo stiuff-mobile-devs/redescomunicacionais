@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/categories.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_types.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/categories.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_types.dart';
 
 // Traduz para exibição os valores gravados nas matérias (categorias e tipos).
 // Os dados continuam em português; só o texto mostrado na tela muda.

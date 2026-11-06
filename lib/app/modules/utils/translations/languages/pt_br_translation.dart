@@ -1,4 +1,4 @@
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 // Português (Brasil) - idioma padrão e de fallback.
 // A chave já é a frase em português; o valor pode ser ajustado aqui sem
@@ -27,8 +27,6 @@ final Map<String, String> ptBrTranslation = {
   LocaleKeys.tapToSelect: 'Toque para selecionar...',
   LocaleKeys.versionLabel: 'Versão: @version',
   LocaleKeys.unexpectedError: 'Erro inesperado. Tente novamente.',
-  LocaleKeys.error: 'Erro',
-
   // ===== Idioma e tema =====
   LocaleKeys.language: 'Idioma',
   LocaleKeys.languagePortugueseBrazil: 'Português (Brasil)',

@@ -7,7 +7,8 @@ import 'package:redescomunicacionais/app/modules/login/controller/login_controll
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/services/release_notes_service.dart';
 import 'package:redescomunicacionais/app/services/update_version_service.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class SplashController extends GetxController {
   late final LoginController _loginController;
@@ -84,40 +85,32 @@ class SplashController extends GetxController {
 
       debugPrint('Exibindo novidades da versão $version.');
 
-      await Get.dialog<void>(
-        AlertDialog(
-          title: Text(
-            notesData['title'] as String? ??
-                LocaleKeys.releaseNotesTitle.tr,
+      await AppPopups.alert(
+        title: notesData['title'] as String? ??
+            LocaleKeys.releaseNotesTitle.tr,
+        icon: Icons.auto_awesome_outlined,
+        confirmText: LocaleKeys.gotIt.tr,
+        dismissible: false,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: notes.map((note) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('•  '),
+                    Expanded(
+                      child: Text(note),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: notes.map((note) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('•  '),
-                      Expanded(
-                        child: Text(note),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back<void>(),
-              child: Text(LocaleKeys.gotIt.tr),
-            ),
-          ],
         ),
-        barrierDismissible: false,
       );
 
       await _storage.write(storageKey, true);

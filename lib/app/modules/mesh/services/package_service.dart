@@ -9,7 +9,7 @@ import 'package:redescomunicacionais/app/modules/user/data/repository/user_repos
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
-import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/date_parser.dart';
 
 class OfflinePackageService {
   late final NewsRepository newsRepository = NewsRepository();

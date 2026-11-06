@@ -1,15 +1,18 @@
 import 'dart:convert';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 
 class NewsWidgets extends GetView<NewsController> {
   final String? selectedCity; // Recebe a cidade selecionada na Home
@@ -125,209 +128,71 @@ class NewsWidgets extends GetView<NewsController> {
         NewsModel news = entry.value;
 
         return Obx(() {
-          bool isSelected = controller.isSelected(index);
+          final bool isSelected = controller.isSelected(index);
+          final List<_CardAction> actions = _newsActions(news);
 
-          return Column(
-            children: [
-              if (isSelected)
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12.0, vertical: 8.0),
-                  decoration: BoxDecoration(
+          return GestureDetector(
+            // Com o pop-up aberto, tocar no card só fecha o pop-up
+            onTap: () => isSelected
+                ? controller.selectedCardIndex.value = null
+                : controller.openNews(news),
+            // Toque longo abre as ações sobre o banner (se houver alguma)
+            onLongPress: actions.isEmpty
+                ? null
+                : () {
+                    HapticFeedback.mediumImpact();
+                    controller.toggleSelected(index);
+                  },
+            child: AnimatedScale(
+              scale: isSelected ? 0.98 : 1.0,
+              duration: const Duration(milliseconds: 150),
+              child: Card(
                     color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12.0),
-                      topRight: Radius.circular(12.0),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
                     ),
-                  ),
-                  child: Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 8.0,
-                    runSpacing: 4.0,
-                    children: [
-                      if (controller.canEdit(news))
-                        GestureDetector(
-                          onTap: () {
-                            controller.openEditNews(news);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.edit,
-                                  color: theme.colorScheme.onSurface,
-                                  size: 30,
-                                ),
-                                const SizedBox(width: 8.0),
-                                Text(
-                                  LocaleKeys.edit.tr,
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (controller.canDelete(news))
-                        GestureDetector(
-                          onTap: () {
-                            _hideNewsPopup(news.id, controller.user.email!,
-                                news.createdBy, news.type);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                  size: 30,
-                                ),
-                                const SizedBox(width: 8.0),
-                                Text(
-                                  LocaleKeys.delete.tr,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (controller.canReReview(news))
-                        GestureDetector(
-                          onTap: () => _showReviewDialog(news),
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.rate_review,
-                                  color: Colors.yellowAccent,
-                                  size: 30,
-                                ),
-                                const SizedBox(width: 8.0),
-                                Text(
-                                  LocaleKeys.review.tr,
-                                  style: const TextStyle(
-                                    color: Colors.yellowAccent,
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (controller.homeController.isRejectedMode.value)
-                        GestureDetector(
-                          onTap: () => _showObservationDialog(
-                            news.rejectedObservation,
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.sticky_note_2_outlined,
-                                  color: Colors.orangeAccent,
-                                  size: 30,
-                                ),
-                                const SizedBox(width: 8.0),
-                                Text(
-                                  LocaleKeys.observations.tr,
-                                  style: const TextStyle(
-                                    color: Colors.orangeAccent,
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-              GestureDetector(
-                onTap: () => controller.openNews(news),
-                onLongPress: () => controller.toggleSelected(index),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: isSelected
-                          ? Radius.zero
-                          : const Radius.circular(12.0),
-                      topRight: isSelected
-                          ? Radius.zero
-                          : const Radius.circular(12.0),
-                      bottomLeft: const Radius.circular(12.0),
-
-                    ),
-                    border: isSelected
-                        ? Border.all(
-                      color: theme.colorScheme.primary,
-                      width: 2.0,
-                    )
-                        : null,
-                  ),
-                  margin: EdgeInsets.only(
-                    left: 16.0,
-                    right: 16.0,
-                    bottom: 8.0,
-                    top: isSelected ? 0.0 : 8.0,
-                  ),
-                  child: Card(
-                    color: theme.colorScheme.surface,
-                    margin: EdgeInsets.zero,
                     elevation: isSelected ? 8.0 : 4.0,
+                    clipBehavior: Clip.antiAlias,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: isSelected
-                            ? Radius.zero
-                            : const Radius.circular(12.0),
-                        topRight: isSelected
-                            ? Radius.zero
-                            : const Radius.circular(12.0),
-                        bottomLeft: const Radius.circular(12.0),
-                        bottomRight: const Radius.circular(12.0),
-                      ),
+                      borderRadius: BorderRadius.circular(16.0),
+                      side: isSelected
+                          ? BorderSide(
+                              color: theme.colorScheme.primary,
+                              width: 2.0,
+                            )
+                          : BorderSide.none,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: isSelected
-                                ? Radius.zero
-                                : const Radius.circular(12.0),
-                            topRight: isSelected
-                                ? Radius.zero
-                                : const Radius.circular(12.0),
+                        SizedBox(
+                          height: 200.0,
+                          width: double.infinity,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              news.urlImages.isNotEmpty &&
+                                      news.urlImages[0].isNotEmpty
+                                  ? _buildSafeImage(news.urlImages[0], 200.0)
+                                  : Image.asset(
+                                      controller.getCityImageAsset(
+                                          news.cities.isNotEmpty
+                                              ? news.cities[0]
+                                              : 'default'),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: 200.0,
+                                    ),
+                              // Pop-up de ações sobre o banner
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: isSelected
+                                    ? _buildBannerActions(actions)
+                                    : const SizedBox.shrink(),
+                              ),
+                            ],
                           ),
-                          child: news.urlImages.isNotEmpty &&
-                                  news.urlImages[0].isNotEmpty
-                              ? _buildSafeImage(news.urlImages[0], 200.0)
-                              : Image.asset(
-                                  controller.getCityImageAsset(
-                                      news.cities.isNotEmpty
-                                          ? news.cities[0]
-                                          : 'default'),
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: 200.0,
-                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -364,9 +229,7 @@ class NewsWidgets extends GetView<NewsController> {
                       ],
                     ),
                   ),
-                ),
-              ),
-            ],
+            ),
           );
         });
       },
@@ -402,230 +265,200 @@ class NewsWidgets extends GetView<NewsController> {
     );
   }
 
+  // Ações disponíveis para a matéria (definem o pop-up do toque longo)
+  List<_CardAction> _newsActions(NewsModel news) {
+    return [
+      if (controller.canEdit(news))
+        _CardAction(
+          icon: Icons.edit_outlined,
+          label: LocaleKeys.edit.tr,
+          color: Colors.blue.shade600,
+          onTap: () => controller.openEditNews(news),
+        ),
+      if (controller.canDelete(news))
+        _CardAction(
+          icon: Icons.delete_outline_rounded,
+          label: LocaleKeys.delete.tr,
+          color: Colors.red.shade600,
+          onTap: () => _hideNewsPopup(
+              news.id, controller.user.email!, news.createdBy, news.type),
+        ),
+      if (controller.canReReview(news))
+        _CardAction(
+          icon: Icons.rate_review_outlined,
+          label: LocaleKeys.review.tr,
+          color: Colors.amber.shade700,
+          onTap: () => _showReviewDialog(news),
+        ),
+      if (controller.homeController.isRejectedMode.value)
+        _CardAction(
+          icon: Icons.sticky_note_2_outlined,
+          label: LocaleKeys.observations.tr,
+          color: Colors.orange.shade700,
+          onTap: () => _showObservationDialog(news.rejectedObservation),
+        ),
+    ];
+  }
+
+  // Camada desfocada sobre o banner com os botões de ação
+  Widget _buildBannerActions(List<_CardAction> actions) {
+    void close() => controller.selectedCardIndex.value = null;
+
+    return GestureDetector(
+      key: const ValueKey('banner-actions'),
+      behavior: HitTestBehavior.opaque,
+      onTap: close,
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            color: Colors.black.withValues(alpha: 0.55),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
+                    onPressed: close,
+                  ),
+                ),
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 20,
+                    runSpacing: 12,
+                    children: actions.map((action) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Material(
+                            color: action.color,
+                            shape: const CircleBorder(),
+                            elevation: 4,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () {
+                                close();
+                                action.onTap();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Icon(
+                                  action.icon,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            action.label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _hideNewsPopup(
       String newsId, String userEmail, String authorEmail, String type) async {
-    final theme = Theme.of(Get.context!);
+    final bool confirmed = await AppPopups.confirm(
+      title: LocaleKeys.deleteType.trParams({'type': NewsLabels.type(type)}),
+      message: LocaleKeys.confirmDeleteType
+          .trParams({'type': NewsLabels.type(type).toLowerCase()}),
+      icon: Icons.delete_outline_rounded,
+      confirmText: LocaleKeys.delete.tr,
+      destructive: true,
+    );
 
-    await Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(
-          LocaleKeys.deleteType.trParams({'type': NewsLabels.type(type)}),
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        content: Text(
-          LocaleKeys.confirmDeleteType
-              .trParams({'type': NewsLabels.type(type).toLowerCase()}),
-          style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              LocaleKeys.cancel.tr,
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              await controller.hideNews(
-                newsId: newsId,
-                status: NewsStates.deletado,
-                userEmail: userEmail,
-                type: type,
-                creator: authorEmail,
-              );
-            },
-            child: Text(
-              LocaleKeys.delete.tr,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
+    if (!confirmed) return;
+
+    await controller.hideNews(
+      newsId: newsId,
+      status: NewsStates.deletado,
+      userEmail: userEmail,
+      type: type,
+      creator: authorEmail,
     );
   }
 
   Future<void> _showReviewDialog(NewsModel news) async {
-    final theme = Theme.of(Get.context!);
-
-    await Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(
-          LocaleKeys.newsReview.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
+    final bool? accepted = await AppPopups.choose<bool>(
+      title: LocaleKeys.newsReview.tr,
+      message: LocaleKeys.chooseActionForNews.tr,
+      icon: Icons.rate_review_outlined,
+      options: [
+        if (news.status != NewsStates.publicado)
+          PopupOption(
+            value: true,
+            label: LocaleKeys.accept.tr,
+            icon: Icons.check_circle_outline_rounded,
+            color: Colors.green.shade600,
           ),
+        PopupOption(
+          value: false,
+          label: LocaleKeys.reject.tr,
+          icon: Icons.cancel_outlined,
+          color: Theme.of(Get.context!).colorScheme.error,
         ),
-        content: Text(
-          LocaleKeys.chooseActionForNews.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              LocaleKeys.cancel.tr,
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          if (news.status != NewsStates.publicado)
-            TextButton(
-              onPressed: () async {
-                Get.back();
-                await _showReasonDialog(news, true);
-              },
-              child: Text(
-                LocaleKeys.accept.tr,
-                style: const TextStyle(color: Colors.green),
-              ),
-            ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              await _showReasonDialog(news, false);
-            },
-            child: Text(
-              LocaleKeys.reject.tr,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
+      ],
     );
+
+    if (accepted == null) return;
+    await _showReasonDialog(news, accepted);
   }
 
   Future<void> _showObservationDialog(String? observation) async {
     final text = (observation ?? '').trim();
-    final theme = Theme.of(Get.context!);
 
-    await Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(
-          LocaleKeys.observations.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        content: Text(
-          text.isEmpty ? LocaleKeys.noObservationAvailable.tr : text,
-          style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              LocaleKeys.close.tr,
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
+    await AppPopups.alert(
+      title: LocaleKeys.observations.tr,
+      message: text.isEmpty ? LocaleKeys.noObservationAvailable.tr : text,
+      icon: Icons.sticky_note_2_outlined,
+      type: PopupType.warning,
+      confirmText: LocaleKeys.close.tr,
     );
   }
 
   Future<void> _showReasonDialog(NewsModel news, bool accepted) async {
-    final TextEditingController reasonController = TextEditingController();
-    final theme = Theme.of(Get.context!);
+    final String? reason = await AppPopups.input(
+      title: accepted
+          ? LocaleKeys.reasonToAccept.tr
+          : LocaleKeys.reasonToReject.tr,
+      message: LocaleKeys.writeReason.tr,
+      hint: LocaleKeys.writeReasonHere.tr,
+      icon: accepted
+          ? Icons.check_circle_outline_rounded
+          : Icons.cancel_outlined,
+      type: accepted ? PopupType.success : PopupType.error,
+      confirmText: LocaleKeys.send.tr,
+      maxLines: 4,
+    );
 
-    await Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(
-          accepted
-              ? LocaleKeys.reasonToAccept.tr
-              : LocaleKeys.reasonToReject.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              LocaleKeys.writeReason.tr,
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8.0),
-            TextField(
-              controller: reasonController,
-              maxLines: 4,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-              ),
-              decoration: InputDecoration(
-                hintText: LocaleKeys.writeReasonHere.tr,
-                hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              LocaleKeys.cancel.tr,
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final reason = reasonController.text.trim();
+    if (reason == null) return;
 
-              Get.back();
-
-              await controller.reviewNews(
-                newsId: news.id,
-                isApproved: accepted,
-                reason: reason,
-                validator: controller.user.email!,
-                creator: news.createdBy,
-                validatorName: controller.user.name ?? '',
-                newsType: news.type,
-              );
-            },
-            child: Text(
-              LocaleKeys.send.tr,
-              style: TextStyle(
-                color: accepted ? Colors.green : Colors.red,
-              ),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
+    await controller.reviewNews(
+      newsId: news.id,
+      isApproved: accepted,
+      reason: reason,
+      validator: controller.user.email!,
+      creator: news.createdBy,
+      validatorName: controller.user.name ?? '',
+      newsType: news.type,
     );
   }
 
@@ -683,4 +516,19 @@ class NewsWidgets extends GetView<NewsController> {
       );
     }
   }
+}
+
+// Uma ação do pop-up do banner da matéria
+class _CardAction {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _CardAction({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 }

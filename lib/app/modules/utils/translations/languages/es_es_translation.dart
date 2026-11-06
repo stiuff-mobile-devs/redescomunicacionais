@@ -1,4 +1,4 @@
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 // Espanhol (Espanha)
 final Map<String, String> esEsTranslation = {
@@ -25,8 +25,6 @@ final Map<String, String> esEsTranslation = {
   LocaleKeys.tapToSelect: 'Toca para seleccionar...',
   LocaleKeys.versionLabel: 'Versión: @version',
   LocaleKeys.unexpectedError: 'Error inesperado. Inténtalo de nuevo.',
-  LocaleKeys.error: 'Error',
-
   // ===== Idioma e tema =====
   LocaleKeys.language: 'Idioma',
   LocaleKeys.languagePortugueseBrazil: 'Portugués (Brasil)',

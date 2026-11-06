@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
-import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/date_parser.dart';
 part 'user_model.g.dart';
 
 // ÍNDICES OBSOLETOS - NÃO REUTILIZAR:

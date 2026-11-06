@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/create_news_form_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
-import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/markdown_editor.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class CreateNewsPage extends GetView<CreateNewsFormController> {
   const CreateNewsPage({super.key});
@@ -167,78 +168,75 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  void _showCollaboratorsDialog(BuildContext context, CreateNewsFormController controller) {
+  Future<void> _showCollaboratorsDialog(BuildContext context, CreateNewsFormController controller) async {
     final manualInputController = TextEditingController();
     final theme = Theme.of(context);
 
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(LocaleKeys.addCollaborators.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+    await AppPopups.sheet<void>(
+      title: LocaleKeys.addCollaborators.tr,
+      icon: Icons.people_alt_outlined,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: manualInputController,
-                      decoration: InputDecoration(
-                        hintText: LocaleKeys.typeNameManually.tr,
-                        isDense: true,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
+              Expanded(
+                child: TextField(
+                  controller: manualInputController,
+                  decoration: InputDecoration(
+                    hintText: LocaleKeys.typeNameManually.tr,
+                    isDense: true,
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    style: IconButton.styleFrom(backgroundColor: theme.colorScheme.primary),
-                    icon: Icon(Icons.add, color: theme.colorScheme.onPrimary),
-                    onPressed: () {
-                      if (manualInputController.text.isNotEmpty) {
-                        controller.addManualCollaborator(manualInputController.text);
-                        manualInputController.clear();
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.0),
-                child: Divider(),
-              ),
-              Text(LocaleKeys.projectEditors.tr, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
-              const SizedBox(height: 8),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Obx(() => Column(
-                    children: controller.availableEditors.map((editor) {
-                      final isSelected = controller.selectedCollaborators.contains(editor);
-                      return CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(editor ?? LocaleKeys.nameNotProvided.tr, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
-                        value: isSelected,
-                        activeColor: theme.colorScheme.primary,
-                        onChanged: (_) => controller.toggleCollaborator(editor ?? LocaleKeys.nameNotProvided.tr),
-                      );
-                    }).toList(),
-                  )),
                 ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  if (manualInputController.text.isNotEmpty) {
+                    controller.addManualCollaborator(manualInputController.text);
+                    manualInputController.clear();
+                  }
+                },
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(LocaleKeys.done.tr, style: TextStyle(color: theme.colorScheme.primary)),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.0),
+            child: Divider(),
           ),
+          Text(LocaleKeys.projectEditors.tr, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+          const SizedBox(height: 8),
+          Obx(() => Column(
+            children: controller.availableEditors.map((editor) {
+              final isSelected = controller.selectedCollaborators.contains(editor);
+              return CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(editor ?? LocaleKeys.nameNotProvided.tr, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                value: isSelected,
+                activeColor: theme.colorScheme.primary,
+                onChanged: (_) => controller.toggleCollaborator(editor ?? LocaleKeys.nameNotProvided.tr),
+              );
+            }).toList(),
+          )),
         ],
       ),
+      actions: (ctx) => [
+        AppSheetButton.primary(
+          label: LocaleKeys.done.tr,
+          onPressed: () => Navigator.of(ctx).pop(),
+        ),
+      ],
     );
+
+    manualInputController.dispose();
   }
 
   // ============================================================
@@ -317,35 +315,28 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   void _showCategoryDialog(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
 
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(LocaleKeys.selectCategories.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Obx(() => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: controller.categories.map((category) {
-                final isSelected = controller.selectedCategories.contains(category);
-                return CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(NewsLabels.category(category), style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
-                  value: isSelected,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => controller.toggleCategory(category),
-                );
-              }).toList(),
-            )),
-          ),
+    AppPopups.sheet<void>(
+      title: LocaleKeys.selectCategories.tr,
+      icon: Icons.category_outlined,
+      child: Obx(() => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: controller.categories.map((category) {
+          final isSelected = controller.selectedCategories.contains(category);
+          return CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(NewsLabels.category(category), style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+            value: isSelected,
+            activeColor: theme.colorScheme.primary,
+            onChanged: (_) => controller.toggleCategory(category),
+          );
+        }).toList(),
+      )),
+      actions: (ctx) => [
+        AppSheetButton.primary(
+          label: LocaleKeys.done.tr,
+          onPressed: () => Navigator.of(ctx).pop(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(LocaleKeys.done.tr, style: TextStyle(color: theme.colorScheme.primary)),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -425,35 +416,28 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   void _showCityDialog(BuildContext context, CreateNewsFormController controller) {
     final theme = Theme.of(context);
 
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(LocaleKeys.selectCity.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Obx(() => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: controller.cities.map((city) {
-                final isSelected = controller.selectedCities.contains(city);
-                return CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(city, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
-                  value: isSelected,
-                  activeColor: theme.colorScheme.primary,
-                  onChanged: (_) => controller.toggleCity(city),
-                );
-              }).toList(),
-            )),
-          ),
+    AppPopups.sheet<void>(
+      title: LocaleKeys.selectCity.tr,
+      icon: Icons.location_city_outlined,
+      child: Obx(() => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: controller.cities.map((city) {
+          final isSelected = controller.selectedCities.contains(city);
+          return CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(city, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+            value: isSelected,
+            activeColor: theme.colorScheme.primary,
+            onChanged: (_) => controller.toggleCity(city),
+          );
+        }).toList(),
+      )),
+      actions: (ctx) => [
+        AppSheetButton.primary(
+          label: LocaleKeys.done.tr,
+          onPressed: () => Navigator.of(ctx).pop(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(LocaleKeys.done.tr, style: TextStyle(color: theme.colorScheme.primary)),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -522,43 +506,18 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  void _showTypeDialog(BuildContext context, CreateNewsFormController controller) {
-    final theme = Theme.of(context);
-
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(LocaleKeys.selectType.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Obx(() => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: controller.types.map((selectedType) {
-                final isSelected = controller.type == selectedType;
-                return CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(NewsLabels.type(selectedType), style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
-                  value: isSelected,
-                  activeColor: theme.colorScheme.primary,
-                  // Tipo normalmente é seleção única, então sobrescrevemos e fechamos o modal (ou permite fechar no botão concluir)
-                  onChanged: (_) {
-                    controller.toggleType(selectedType);
-                    Get.back();
-                  },
-                );
-              }).toList(),
-            )),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(LocaleKeys.cancel.tr, style: TextStyle(color: theme.colorScheme.primary)),
-          ),
-        ],
-      ),
+  // Tipo é seleção única: escolher fecha a folha
+  Future<void> _showTypeDialog(BuildContext context, CreateNewsFormController controller) async {
+    final String? selectedType = await AppPopups.choose<String>(
+      title: LocaleKeys.selectType.tr,
+      icon: Icons.label_outline,
+      selected: controller.type,
+      options: controller.types
+          .map((type) => PopupOption(value: type, label: NewsLabels.type(type)))
+          .toList(),
     );
+
+    if (selectedType != null) controller.toggleType(selectedType);
   }
 
   // ============================================================

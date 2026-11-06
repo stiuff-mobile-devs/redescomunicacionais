@@ -1,4 +1,4 @@
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 // Categorias das matérias.
 // O valor gravado na matéria (Hive, Firebase, mesh e assinatura) é sempre o

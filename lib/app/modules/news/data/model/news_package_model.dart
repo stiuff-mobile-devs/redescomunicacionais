@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
-import 'package:redescomunicacionais/app/utils/components/date_parser.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/date_parser.dart';
 
 part 'news_package_model.g.dart';
 

@@ -4,12 +4,12 @@ import 'package:redescomunicacionais/app/modules/dashboard/controller/home_contr
 import 'package:redescomunicacionais/app/modules/mesh/console_page.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_widgets.dart';
-import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/modules/dashboard/utils/menu_drawer.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
-import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
+import 'package:redescomunicacionais/app/modules/utils/responsive_utils.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/dashboard/menu_drawer.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -111,36 +111,7 @@ class HomePage extends GetView<HomeController> {
                 IconButton(
                   iconSize: iconSize,
                   icon: const Icon(Icons.search),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        TextEditingController searchController = TextEditingController();
-                        return AlertDialog(
-                          title: Text(LocaleKeys.filterNews.tr),
-                          content: TextField(
-                            controller: searchController,
-                            decoration: InputDecoration(
-                              hintText: LocaleKeys.enterNewsName.tr,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text(LocaleKeys.cancel.tr),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                controller.filterNewsByName(searchController.text);
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(LocaleKeys.filter.tr),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: controller.openNewsFilter,
                 ),
                 IconButton(
                   iconSize: iconSize,

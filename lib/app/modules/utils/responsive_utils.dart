@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 /// Classe utilitária para cálculos de responsividade
 /// Centraliza todas as funções de responsividade para manter o código limpo
@@ -194,80 +192,6 @@ class ResponsiveUtils {
   }
 
   // ===== WIDGETS HELPER =====
-
-  /// Cria um diálogo responsivo com tema padrão
-  static AlertDialog createResponsiveDialog({
-    required BuildContext context,
-    required String title,
-    required String content,
-    required VoidCallback onConfirm,
-    String? confirmText,
-    String? cancelText,
-    VoidCallback? onCancel,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = ResponsiveUtils.isTablet(screenWidth);
-
-    return AlertDialog(
-      backgroundColor: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(calculateResponsiveBorderRadius(isTablet)),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: isTablet ? 22.0 : 18.0,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: Text(
-        content,
-        style: TextStyle(
-          color: Colors.white70,
-          fontSize: isTablet ? 16.0 : 14.0,
-        ),
-      ),
-      actions: [
-        if (cancelText != null)
-          TextButton(
-            onPressed: onCancel ?? () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: isTablet ? 24.0 : 16.0,
-                vertical: isTablet ? 12.0 : 8.0,
-              ),
-            ),
-            child: Text(
-              cancelText,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: isTablet ? 16.0 : 14.0,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        TextButton(
-          onPressed: onConfirm,
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 24.0 : 16.0,
-              vertical: isTablet ? 12.0 : 8.0,
-            ),
-          ),
-          child: Text(
-            confirmText ?? LocaleKeys.ok.tr,
-            style: TextStyle(
-              color: Colors.blue,
-              fontSize: isTablet ? 16.0 : 14.0,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   /// Cria um texto responsivo com estilo padrão
   static Widget createResponsiveText(

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class UserRoles {
   static const String admin = 'admin';

@@ -36,7 +36,6 @@ abstract class LocaleKeys {
   static const tapToSelect = 'Toque para selecionar...';
   static const versionLabel = 'Versão: @version';
   static const unexpectedError = 'Erro inesperado. Tente novamente.';
-  static const error = 'Erro';
 
   // ===========================================================================
   // IDIOMA E TEMA

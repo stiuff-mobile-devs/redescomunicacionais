@@ -8,9 +8,9 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:redescomunicacionais/app/routes/app_pages.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/services/hive_service.dart';
-import 'package:redescomunicacionais/app/utils/theme/app_theme.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
-import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/app_theme.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
 import 'package:redescomunicacionais/firebase_options.dart';
 
 Future<void> main() async {

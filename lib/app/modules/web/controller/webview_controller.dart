@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/utils/components/custom_alert_dialog.dart';
-import 'package:redescomunicacionais/app/utils/components/uri_launcher_helper.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/uri_launcher_helper.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart'; // Adicionado para kIsWeb
 import 'package:url_launcher/url_launcher.dart'; // Adicionado para abrir links na web
@@ -12,7 +12,7 @@ class WebViewPageController extends GetxController {
       'url': '',
       'title': LocaleKeys.services.tr,
     });*/
-    customAlertDialog(Get.context!, title: LocaleKeys.pageUnderDevelopment.tr).show();
+    AppPopups.info(LocaleKeys.pageUnderDevelopment.tr);
   }
 
   // final _obj = ''.obs;
@@ -43,11 +43,11 @@ class WebViewPageController extends GetxController {
       );
       print('Resultado do launchUrl: $launched'); // Debug
       if (!launched) {
-        customAlertDialog(Get.context!, title: LocaleKeys.couldNotOpenLink.tr).show();
+        AppPopups.error(LocaleKeys.couldNotOpenLink.tr);
       }
     } else {
       print('canLaunchUrl retornou false'); // Debug
-      customAlertDialog(Get.context!, title: LocaleKeys.couldNotOpenLink.tr).show();
+      AppPopups.error(LocaleKeys.couldNotOpenLink.tr);
     }
   }
 

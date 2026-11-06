@@ -4,17 +4,17 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'dart:convert';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/categories.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/cities_codes.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_types.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/categories.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/cities_codes.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_types.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
-import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/publication_terms_dialog.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/publication_opinion_terms_dialog.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class CreateNewsFormController extends GetxController {
 
@@ -154,11 +154,11 @@ class CreateNewsFormController extends GetxController {
       final Map<String, dynamic>? terms;
 
       if (_type.value == NewsTypes.opinion) {
-        terms = await Get.dialog<Map<String, dynamic>>(
+        terms = await AppPopups.custom<Map<String, dynamic>>(
           const PublicationOpinionTermsDialog(),
         );
       } else {
-        terms = await Get.dialog<Map<String, dynamic>>(
+        terms = await AppPopups.custom<Map<String, dynamic>>(
           const PublicationTermsDialog(),
         );
       }
@@ -169,10 +169,7 @@ class CreateNewsFormController extends GetxController {
         );
       }
     } else {
-      PopUps.snackbar(
-        texto: LocaleKeys.fillRequiredFields.tr,
-        cor: Colors.red,
-      );
+      AppPopups.error(LocaleKeys.fillRequiredFields.tr);
     }
   }
 
@@ -205,30 +202,14 @@ class CreateNewsFormController extends GetxController {
         collaborators,
       );
 
-      if (draft) {
-        PopUps.snackbar(
-          texto: LocaleKeys.draftSavedSuccess.tr,
-          cor: Colors.green,
-        );
-      } else {
-        PopUps.snackbar(
-          texto: LocaleKeys.newsSentForReview.tr,
-          cor: Colors.green,
-        );
-      }
+      AppPopups.success(draft
+          ? LocaleKeys.draftSavedSuccess.tr
+          : LocaleKeys.newsSentForReview.tr);
     } catch (e) {
       debugPrint('Erro ao salvar/publicar matéria: $e');
-      if (draft) {
-        PopUps.snackbar(
-          texto: LocaleKeys.saveDraftError.tr,
-          cor: Colors.red,
-        );
-      } else {
-        PopUps.snackbar(
-          texto: LocaleKeys.publishNewsError.tr,
-          cor: Colors.red,
-        );
-      }
+      AppPopups.error(draft
+          ? LocaleKeys.saveDraftError.tr
+          : LocaleKeys.publishNewsError.tr);
       return;
     }
 

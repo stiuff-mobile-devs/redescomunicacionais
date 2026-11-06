@@ -1,4 +1,4 @@
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 // Italiano (Itália)
 final Map<String, String> itItTranslation = {
@@ -25,8 +25,6 @@ final Map<String, String> itItTranslation = {
   LocaleKeys.tapToSelect: 'Tocca per selezionare...',
   LocaleKeys.versionLabel: 'Versione: @version',
   LocaleKeys.unexpectedError: 'Errore imprevisto. Riprova.',
-  LocaleKeys.error: 'Errore',
-
   // ===== Idioma e tema =====
   LocaleKeys.language: 'Lingua',
   LocaleKeys.languagePortugueseBrazil: 'Portoghese (Brasile)',

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 
 class ConsolePage extends GetView<HomeController> {
   const ConsolePage({super.key});

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class PublicationTermsDialog extends StatefulWidget {
   const PublicationTermsDialog({super.key});
@@ -61,14 +62,27 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(
-        LocaleKeys.publicationGuideTitle.tr,
-      ),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
+    // Aberto como bottom sheet por AppPopups.custom
+    return AppSheet(
+      title: LocaleKeys.publicationGuideTitle.tr,
+      icon: Icons.fact_check_outlined,
+      iconColor: Theme.of(context).colorScheme.primary,
+      actions: [
+        AppSheetButton.primary(
+          label: LocaleKeys.confirmPublication.tr,
+          onPressed: allAccepted
+              ? () => Navigator.of(context).pop({
+                    "acceptedAll": true,
+                    "checklist": checklist,
+                  })
+              : null,
+        ),
+        AppSheetButton.secondary(
+          label: LocaleKeys.cancel.tr,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -195,34 +209,6 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
               ),
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Get.back();
-          },
-          child: Text(
-            LocaleKeys.cancel.tr,
-          ),
-        ),
-
-        ElevatedButton(
-          onPressed: allAccepted
-              ? () {
-            Get.back(
-              result: {
-                "acceptedAll": true,
-                "checklist": checklist,
-              },
-            );
-          }
-              : null,
-          child: Text(
-            LocaleKeys.confirmPublication.tr,
-          ),
-        ),
-      ],
     );
   }
 }

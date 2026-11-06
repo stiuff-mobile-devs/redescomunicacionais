@@ -35,8 +35,15 @@ data/        bindings compartilhados
 routes/      app_routes.dart (nomes) + app_pages.dart (GetPage + bindings)
 services/    serviços globais (Hive, localização, atualização, release notes...)
 modules/     uma pasta por funcionalidade
-utils/       tema, traduções, componentes e widgets reutilizáveis
+modules/utils/   módulo de utilitários compartilhados (não é uma tela)
 ```
+
+`modules/utils/` reúne tudo o que é reutilizável (não crie mais pastas `utils` dentro dos outros módulos):
+
+- `popups/` — `AppPopups` (snackbars, diálogos, bottom sheets, carregamento)
+- `translations/` — `LocaleKeys`, dicionários e `AppTranslation`
+- `theme/`, `components/`, `widgets/`, `responsive_utils.dart`
+- `news/` (categorias, tipos, status, cidades, `NewsLabels`), `user/` (`UserRoles`), `dashboard/` (`menu_drawer`)
 
 Cada módulo em `modules/<nome>/` segue o padrão:
 
@@ -49,7 +56,7 @@ Ao criar uma tela nova: adicionar a constante em `Routes`, registrar o `GetPage`
 
 ## Regras de negócio das matérias
 
-**Papéis** (`role`): `admin`, `editor`, `user` (+ `guest` no app). Hoje são lidos da **coleção `roles` do Firestore** (não de custom claims); veja "Usuários e papéis no Firestore". Constantes em `modules/user/utils/userRoles.dart`; validação no backend em `functions/src/service/auth.service.ts`. Editor/admin criam, submetem, aprovam, rejeitam e excluem matérias.
+**Papéis** (`role`): `admin`, `editor`, `user` (+ `guest` no app). Hoje são lidos da **coleção `roles` do Firestore** (não de custom claims); veja "Usuários e papéis no Firestore". Constantes em `modules/utils/user/userRoles.dart`; validação no backend em `functions/src/service/auth.service.ts`. Editor/admin criam, submetem, aprovam, rejeitam e excluem matérias.
 
 **Ciclo de vida** (confira os nomes exatos dos status no `NewsModel`):
 
@@ -172,14 +179,20 @@ Ao mudar um modelo Hive, não reaproveite `@HiveField` removidos e rode o `build
 
 1. **Rode `flutter analyze`** após alterar código Dart e corrija os problemas introduzidos.
 2. **Não faça commit nem push** sem pedido explícito. Nunca trabalhe direto em `main` ou `develop`.
-3. **Textos visíveis ao usuário** nunca ficam fixos no código: use o GetX com as chaves tipadas de `utils/translations/locale_keys.dart`.
+3. **Textos visíveis ao usuário** nunca ficam fixos no código: use o GetX com as chaves tipadas de `modules/utils/translations/locale_keys.dart`.
    - Cada chave é uma constante com nome em inglês e **valor = a frase em português** (ex.: `static const newsApprovedSuccess = 'Matéria aprovada com sucesso!';`). Os valores precisam ser únicos.
    - Uso: `LocaleKeys.cancel.tr`. Nunca use `'texto'.tr` com string solta.
    - Frases com variáveis usam `@nome` + `trParams` (ex.: `LocaleKeys.cityLabel.trParams({'city': c})`), **nunca concatenação** (a ordem das palavras muda entre idiomas).
-   - Ao criar uma chave, adicione-a em `LocaleKeys` e nos **4** dicionários de `utils/translations/languages/` (`pt_br`, `en_us`, `es_es`, `it_it`), no mesmo bloco. O `test/translations_test.dart` confere chaves, valores vazios e `@parâmetros`: rode `flutter test test/translations_test.dart`.
-   - **Categorias e tipos** são gravados nas matérias em português (dados da mesh e da assinatura): não altere esses valores em `LocaleKeys`. Para exibir, use `NewsLabels.category()`/`NewsLabels.type()` (`modules/news/utils/news_labels.dart`); papéis usam `UserRoles.label()`.
+   - Ao criar uma chave, adicione-a em `LocaleKeys` e nos **4** dicionários de `modules/utils/translations/languages/` (`pt_br`, `en_us`, `es_es`, `it_it`), no mesmo bloco. O `test/translations_test.dart` confere chaves, valores vazios e `@parâmetros`: rode `flutter test test/translations_test.dart`.
+   - **Categorias e tipos** são gravados nas matérias em português (dados da mesh e da assinatura): não altere esses valores em `LocaleKeys`. Para exibir, use `NewsLabels.category()`/`NewsLabels.type()` (`modules/utils/news/news_labels.dart`); papéis usam `UserRoles.label()`.
    - Datas visíveis usam `AppTranslation.formatDate()`. O idioma escolhido é salvo no GetStorage por `AppTranslation.changeLocale()`. O padrão/fallback é `pt_BR`.
-   - Erros mostrados ao usuário usam mensagens traduzidas; o detalhe técnico (`$e`) vai só para o `debugPrint`. Para uma mensagem específica, lance `FriendlyException(LocaleKeys.x)` (`utils/components/friendly_exception.dart`).
+   - Erros mostrados ao usuário usam mensagens traduzidas; o detalhe técnico (`$e`) vai só para o `debugPrint`. Para uma mensagem específica, lance `FriendlyException(LocaleKeys.x)` (`modules/utils/components/friendly_exception.dart`).
    - Fora da tradução: o Console Mesh (tela de desenvolvedor), nomes de cidades e dos grupos de chat.
-4. **Não quebre a segurança**: nunca exponha a chave privada, nunca desative a verificação de assinatura nem aceite pacotes de chaves sem validar com a chave pública da API.
-5. **Não quebre a compatibilidade da mesh**: mudanças em `NewsPackageModel`, `PublicKeyPackage` ou no handshake devem continuar legíveis por versões antigas do app e pelas Functions.
+4. **Pop-ups só pelo `AppPopups`** (`modules/utils/popups/app_popups.dart`). Nunca use `showDialog`, `Get.dialog`, `Get.snackbar`, `Get.bottomSheet`, `showModalBottomSheet` ou `ScaffoldMessenger` direto nas telas.
+   - Mensagem rápida: `AppPopups.success/error/warning/info(texto)` (snackbar flutuante embaixo, com ícone).
+   - Confirmação: `await AppPopups.confirm(...)` → `bool` (`destructive: true` para excluir).
+   - Texto: `AppPopups.input(...)`; lista de opções: `AppPopups.choose<T>(...)`; conteúdo livre: `AppPopups.sheet(...)` ou `AppPopups.custom(widget)` usando `AppSheet`/`AppSheetButton` por dentro.
+   - Aviso simples centralizado: `AppPopups.alert(...)`; carregamento bloqueante: `AppPopups.showLoading()`/`hideLoading()`.
+   - Dentro das folhas, feche com `Navigator.of(context).pop(valor)`.
+5. **Não quebre a segurança**: nunca exponha a chave privada, nunca desative a verificação de assinatura nem aceite pacotes de chaves sem validar com a chave pública da API.
+6. **Não quebre a compatibilidade da mesh**: mudanças em `NewsPackageModel`, `PublicKeyPackage` ou no handshake devem continuar legíveis por versões antigas do app e pelas Functions.

@@ -7,10 +7,11 @@ import 'package:redescomunicacionais/app/modules/news/controller/news_controller
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
-import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
-import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class HomeController extends GetxController {
   NewsController? _newsController;
@@ -71,6 +72,17 @@ class HomeController extends GetxController {
         .toList();
   }
 
+  // Pede o nome e filtra as notícias (usado pela AppBar e pelo menu lateral)
+  Future<void> openNewsFilter() async {
+    final name = await AppPopups.input(
+      title: LocaleKeys.filterNews.tr,
+      hint: LocaleKeys.enterNewsName.tr,
+      icon: Icons.search_rounded,
+      confirmText: LocaleKeys.filter.tr,
+    );
+    if (name != null) filterNewsByName(name);
+  }
+
   Future<void> refreshDashboardData() async {
     try {
       await _newsRepository.syncNewsHiveAndFirebase(user);
@@ -79,12 +91,7 @@ class HomeController extends GetxController {
       forceRecreate();
     } catch (e) {
       debugPrint('Erro ao atualizar os dados da Home: $e');
-      Get.snackbar(
-        LocaleKeys.error.tr,
-        LocaleKeys.refreshDataError.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      AppPopups.error(LocaleKeys.refreshDataError.tr);
     }
   }
 

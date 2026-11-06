@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
 
 // Garante que os 4 idiomas estão completos e coerentes com o LocaleKeys.
 void main() {
@@ -11,7 +11,7 @@ void main() {
   // Lê os valores declarados em LocaleKeys direto do código-fonte
   // (o Dart não tem reflexão para listar as constantes).
   List<String> readLocaleKeys() {
-    final source = File('lib/app/utils/translations/locale_keys.dart')
+    final source = File('lib/app/modules/utils/translations/locale_keys.dart')
         .readAsStringSync();
     final regex = RegExp(
       r"static const \w+\s*=\s*'((?:[^'\\]|\\.)*)';",
