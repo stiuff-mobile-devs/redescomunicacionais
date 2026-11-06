@@ -46,8 +46,8 @@ class NewsModel {
   @HiveField(26)
   DateTime lastUpdated;
 
-  @HiveField(31)
-  Map<String, dynamic>? publicationTerms;
+  // @HiveField(31) obsoleto (antigo publicationTerms, existe só no Firebase).
+  // Não reutilizar esse índice.
 
   // ==========================================
   // 3. CRIAÇÃO E AUTORIA
@@ -136,7 +136,6 @@ class NewsModel {
     this.excludedBy,
     this.excludedAt,
     this.excludedObservation,
-    this.publicationTerms,
     this.collaborators,
   }) : id = id ?? const Uuid().v4();
 
@@ -168,7 +167,6 @@ class NewsModel {
       'excludedBy': excludedBy,
       'excludedAt': excludedAt,
       'excludedObservation': excludedObservation,
-      'publicationTerms': publicationTerms,
       'collaborators': collaborators,
     };
 
@@ -216,7 +214,6 @@ class NewsModel {
       'excludedBy': excludedBy,
       'excludedAt': excludedAt != null ? DateParser.toJsIso(excludedAt!) : null,
       'excludedObservation': excludedObservation,
-      'publicationTerms': publicationTerms,
       'collaborators': collaborators,
     };
 
@@ -253,9 +250,8 @@ class NewsModel {
       excludedBy: map['excludedBy'] as String?,
       excludedAt: DateParser.parse(map['excludedAt']),
       excludedObservation: map['excludedObservation'] as String?,
-      publicationTerms: map['publicationTerms'] != null
-          ? Map<String, dynamic>.from(map['publicationTerms'])
-          : null,
+      // publicationTerms é ignorado: existe só no Firebase e pode trazer
+      // Timestamp, que o Hive não sabe gravar
       collaborators: map['collaborators'] != null
           ? List<String>.from(map['collaborators'])
           : null,
