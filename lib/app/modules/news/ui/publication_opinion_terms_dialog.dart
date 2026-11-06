@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class PublicationOpinionTermsDialog extends StatefulWidget {
   const PublicationOpinionTermsDialog({super.key});
@@ -25,9 +26,10 @@ class _PublicationOpinionTermsDialogState
   bool get allAccepted =>
       checklist.values.every((item) => item == true);
 
+  // `textKey` é uma chave de LocaleKeys
   Widget buildCheckItem(
       String key,
-      String text,
+      String textKey,
       ) {
     return CheckboxListTile(
       value: checklist[key],
@@ -37,7 +39,7 @@ class _PublicationOpinionTermsDialogState
         });
       },
       title: Text(
-        text,
+        textKey.tr,
         style: const TextStyle(
           fontSize: 14,
         ),
@@ -49,8 +51,8 @@ class _PublicationOpinionTermsDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        "Guia Rápido de Publicação – RCL",
+      title: Text(
+        LocaleKeys.publicationGuideTitle.tr,
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -58,51 +60,51 @@ class _PublicationOpinionTermsDialogState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "1. Clareza do artigo",
-                style: TextStyle(
+              Text(
+                LocaleKeys.termsArticleClarity.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
               buildCheckItem(
                 "titulo_curto_direto",
-                "O título está curto e direto",
+                LocaleKeys.termShortTitle,
               ),
 
               buildCheckItem(
                 "texto_simples",
-                "O texto está simples, sem palavras difíceis",
+                LocaleKeys.termSimpleText,
               ),
 
               buildCheckItem(
                 "estrutura_texto",
-                "O texto tem princípio, meio e fim, ou seja, desenvolve um argumento completo",
+                LocaleKeys.termOpinionStructure,
               ),
 
               buildCheckItem(
                 "pessoas_respeitosamente",
-                "Se me refiro a pessoas, faço isso de forma respeitosa",
+                LocaleKeys.termRespectPeople,
               ),
 
               buildCheckItem(
                 "fatos_dados_conferidos",
-                "Se uso fatos e dados para embasar meu artigo, declaro que conferi todos eles e que não contém erros nem são fake news",
+                LocaleKeys.termOpinionFactsChecked,
               ),
 
               buildCheckItem(
                 "opiniao_com_fundamento",
-                "Minha opinião no texto tem fundamento",
+                LocaleKeys.termOpinionGrounded,
               ),
 
               buildCheckItem(
                 "assumo_opiniao_posicionamento",
-                "Assumo a opinião e o posicionamento que estou publicando",
+                LocaleKeys.termOwnOpinion,
               ),
 
               buildCheckItem(
                 "revisao_gramatical",
-                "Fiz a revisão gramatical do texto",
+                LocaleKeys.termGrammarReview,
               ),
             ],
           ),
@@ -113,8 +115,8 @@ class _PublicationOpinionTermsDialogState
           onPressed: () {
             Get.back();
           },
-          child: const Text(
-            "Cancelar",
+          child: Text(
+            LocaleKeys.cancel.tr,
           ),
         ),
         ElevatedButton(
@@ -128,8 +130,8 @@ class _PublicationOpinionTermsDialogState
             );
           }
               : null,
-          child: const Text(
-            "Confirmar publicação",
+          child: Text(
+            LocaleKeys.confirmPublication.tr,
           ),
         ),
       ],

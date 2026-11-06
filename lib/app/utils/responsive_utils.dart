@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 /// Classe utilitária para cálculos de responsividade
 /// Centraliza todas as funções de responsividade para manter o código limpo
@@ -199,7 +201,7 @@ class ResponsiveUtils {
     required String title,
     required String content,
     required VoidCallback onConfirm,
-    String confirmText = "OK",
+    String? confirmText,
     String? cancelText,
     VoidCallback? onCancel,
   }) {
@@ -255,7 +257,7 @@ class ResponsiveUtils {
             ),
           ),
           child: Text(
-            confirmText,
+            confirmText ?? LocaleKeys.ok.tr,
             style: TextStyle(
               color: Colors.blue,
               fontSize: isTablet ? 16.0 : 14.0,

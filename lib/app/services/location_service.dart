@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
 class LocationService extends GetxService {
@@ -35,17 +36,17 @@ class LocationService extends GetxService {
       if (Platform.isAndroid) {
         await Get.dialog(
           AlertDialog(
-            title: Text('location_request_title'.tr),
-            content: Text('location_permission_description_android'.tr),
+            title: Text(LocaleKeys.locationRequestTitle.tr),
+            content: Text(LocaleKeys.locationPermissionDescriptionAndroid.tr),
             actions: [
               TextButton(
                 onPressed: () {
-                  city.value = 'location_not_provided'.tr;
+                  city.value = LocaleKeys.locationNotProvided.tr;
                   if (Get.isDialogOpen ?? false) {
                     _closeDialogIfOpen();
                   }
                 },
-                child: Text('continue_without_location'.tr),
+                child: Text(LocaleKeys.continueWithoutLocation.tr),
               ),
               TextButton(
                 onPressed: () async {
@@ -58,7 +59,7 @@ class LocationService extends GetxService {
                     _closeDialogIfOpen();
                   }
                 },
-                child: Text('confirm'.tr),
+                child: Text(LocaleKeys.confirm.tr),
               ),
             ],
           ),
@@ -66,8 +67,8 @@ class LocationService extends GetxService {
       } else {
         await Get.dialog(
           AlertDialog(
-            title: Text('allow_location'.tr),
-            content: Text('location_permission_description_ios'.tr),
+            title: Text(LocaleKeys.allowLocation.tr),
+            content: Text(LocaleKeys.locationPermissionDescriptionIos.tr),
             actions: [
               TextButton(
                 onPressed: () async {
@@ -80,7 +81,7 @@ class LocationService extends GetxService {
                     _closeDialogIfOpen();
                   }
                 },
-                child: Text('continue'.tr),
+                child: Text(LocaleKeys.continueLabel.tr),
               ),
             ],
           ),
@@ -100,7 +101,7 @@ class LocationService extends GetxService {
 
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        city.value = 'location_not_provided'.tr;
+        city.value = LocaleKeys.locationNotProvided.tr;
         return;
       }
 
@@ -117,12 +118,12 @@ class LocationService extends GetxService {
 
       if (placemarks.isNotEmpty) {
         city.value =
-            placemarks.first.subAdministrativeArea ?? 'city_not_found'.tr;
+            placemarks.first.subAdministrativeArea ?? LocaleKeys.cityNotFound.tr;
       }
     } on TimeoutException {
-      city.value = 'error_updating_location'.tr;
+      city.value = LocaleKeys.errorUpdatingLocation.tr;
     } catch (e) {
-      city.value = 'error_updating_location'.tr;
+      city.value = LocaleKeys.errorUpdatingLocation.tr;
     }
   }
 
@@ -138,7 +139,7 @@ class LocationService extends GetxService {
             ),
             const SizedBox(height: 20),
             Text(
-              'checking_location_message'.tr,
+              LocaleKeys.checkingLocationMessage.tr,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),

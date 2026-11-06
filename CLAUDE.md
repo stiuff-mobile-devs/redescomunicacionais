@@ -172,6 +172,14 @@ Ao mudar um modelo Hive, não reaproveite `@HiveField` removidos e rode o `build
 
 1. **Rode `flutter analyze`** após alterar código Dart e corrija os problemas introduzidos.
 2. **Não faça commit nem push** sem pedido explícito. Nunca trabalhe direto em `main` ou `develop`.
-3. **Textos visíveis ao usuário** devem usar o sistema de traduções do GetX (`'chave'.tr`). Adicione a chave em **todos** os idiomas em `utils/translations/languages/` (`pt_br`, `en_us`, `es_es`, `it_it`). O idioma padrão/fallback é `pt_BR`.
+3. **Textos visíveis ao usuário** nunca ficam fixos no código: use o GetX com as chaves tipadas de `utils/translations/locale_keys.dart`.
+   - Cada chave é uma constante com nome em inglês e **valor = a frase em português** (ex.: `static const newsApprovedSuccess = 'Matéria aprovada com sucesso!';`). Os valores precisam ser únicos.
+   - Uso: `LocaleKeys.cancel.tr`. Nunca use `'texto'.tr` com string solta.
+   - Frases com variáveis usam `@nome` + `trParams` (ex.: `LocaleKeys.cityLabel.trParams({'city': c})`), **nunca concatenação** (a ordem das palavras muda entre idiomas).
+   - Ao criar uma chave, adicione-a em `LocaleKeys` e nos **4** dicionários de `utils/translations/languages/` (`pt_br`, `en_us`, `es_es`, `it_it`), no mesmo bloco. O `test/translations_test.dart` confere chaves, valores vazios e `@parâmetros`: rode `flutter test test/translations_test.dart`.
+   - **Categorias e tipos** são gravados nas matérias em português (dados da mesh e da assinatura): não altere esses valores em `LocaleKeys`. Para exibir, use `NewsLabels.category()`/`NewsLabels.type()` (`modules/news/utils/news_labels.dart`); papéis usam `UserRoles.label()`.
+   - Datas visíveis usam `AppTranslation.formatDate()`. O idioma escolhido é salvo no GetStorage por `AppTranslation.changeLocale()`. O padrão/fallback é `pt_BR`.
+   - Erros mostrados ao usuário usam mensagens traduzidas; o detalhe técnico (`$e`) vai só para o `debugPrint`. Para uma mensagem específica, lance `FriendlyException(LocaleKeys.x)` (`utils/components/friendly_exception.dart`).
+   - Fora da tradução: o Console Mesh (tela de desenvolvedor), nomes de cidades e dos grupos de chat.
 4. **Não quebre a segurança**: nunca exponha a chave privada, nunca desative a verificação de assinatura nem aceite pacotes de chaves sem validar com a chave pública da API.
 5. **Não quebre a compatibilidade da mesh**: mudanças em `NewsPackageModel`, `PublicKeyPackage` ou no handshake devem continuar legíveis por versões antigas do app e pelas Functions.

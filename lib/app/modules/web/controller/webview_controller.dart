@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/utils/components/custom_alert_dialog.dart';
 import 'package:redescomunicacionais/app/utils/components/uri_launcher_helper.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart'; // Adicionado para kIsWeb
 import 'package:url_launcher/url_launcher.dart'; // Adicionado para abrir links na web
@@ -9,9 +10,9 @@ class WebViewPageController extends GetxController {
   void goDocPage() {
     /* Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url': '',
-      'title': 'services'.tr,
+      'title': LocaleKeys.services.tr,
     });*/
-    customAlertDialog(Get.context!, title: 'page_under_development'.tr).show();
+    customAlertDialog(Get.context!, title: LocaleKeys.pageUnderDevelopment.tr).show();
   }
 
   // final _obj = ''.obs;
@@ -42,11 +43,11 @@ class WebViewPageController extends GetxController {
       );
       print('Resultado do launchUrl: $launched'); // Debug
       if (!launched) {
-        customAlertDialog(Get.context!, title: 'could_not_open_link'.tr).show();
+        customAlertDialog(Get.context!, title: LocaleKeys.couldNotOpenLink.tr).show();
       }
     } else {
       print('canLaunchUrl retornou false'); // Debug
-      customAlertDialog(Get.context!, title: 'could_not_open_link'.tr).show();
+      customAlertDialog(Get.context!, title: LocaleKeys.couldNotOpenLink.tr).show();
     }
   }
 

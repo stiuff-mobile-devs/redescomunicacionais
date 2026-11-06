@@ -6,6 +6,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class ImageBase64Service extends GetxController {
   final RxnString _base64String = RxnString();
@@ -21,12 +22,12 @@ class ImageBase64Service extends GetxController {
         await picker.pickImage(source: ImageSource.gallery);
 
     if (imageFile == null) {
-      _message.value = 'no_image_selected'.tr;
+      _message.value = LocaleKeys.noImageSelected.tr;
       return;
     }
 
     _base64String.value = null;
-    _message.value = 'processing_image_message'.tr;
+    _message.value = LocaleKeys.processingImage.tr;
 
     // Redimensionamento da imagem
     final CroppedFile? croppedFile = await ImageCropper().cropImage(
@@ -37,7 +38,7 @@ class ImageBase64Service extends GetxController {
       maxHeight: 1080,
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'crop_image_title'.tr,
+          toolbarTitle: LocaleKeys.cropImageTitle.tr,
           toolbarColor: Colors.black,
           toolbarWidgetColor: Colors.white,
           initAspectRatio: CropAspectRatioPreset.original,
@@ -45,7 +46,7 @@ class ImageBase64Service extends GetxController {
           hideBottomControls: false,
         ),
         IOSUiSettings(
-          title: 'crop_image_title'.tr,
+          title: LocaleKeys.cropImageTitle.tr,
           aspectRatioLockEnabled: false,
           resetAspectRatioEnabled: true,
         ),
@@ -53,7 +54,7 @@ class ImageBase64Service extends GetxController {
     );
 
     if (croppedFile == null) {
-      _message.value = 'no_image_selected'.tr;
+      _message.value = LocaleKeys.noImageSelected.tr;
       return;
     }
 
@@ -65,7 +66,7 @@ class ImageBase64Service extends GetxController {
     );
 
     if (webpBytes == null) {
-      _message.value = 'error_processing_image'.tr;
+      _message.value = LocaleKeys.errorProcessingImage.tr;
       return;
     }
 
@@ -84,7 +85,7 @@ class ImageBase64Service extends GetxController {
 
 // Verificação final após o loop
     if (webpBytes.lengthInBytes > maxSizeBytes) {
-      _message.value = 'image_too_large'.tr;
+      _message.value = LocaleKeys.imageTooLarge.tr;
     } else {
       _base64String.value = base64Encode(webpBytes);
       var tamanho = (_base64String.value!.length) / 1024;
@@ -94,7 +95,7 @@ class ImageBase64Service extends GetxController {
           'Tamanho após crop: ${File(croppedFile.path).lengthSync() / 1024} KB');
       debugPrint('Tamanho em WebP: ${webpBytes.lengthInBytes / 1024} KB');
       debugPrint('Tamanho em base 64: $tamanho KB');
-      _message.value = 'image_selected_success'.tr;
+      _message.value = LocaleKeys.imageSelectedSuccess.tr;
     }
   }
 }

@@ -9,12 +9,13 @@ import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_servi
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginController extends GetxController {
   final LoginRepository _repository = LoginRepository();
   final UserRepository _userRepository = UserRepository();
-  final RxString appVersion = 'Carregando...'.obs;
+  final RxString appVersion = LocaleKeys.loading.tr.obs;
 
   @override
   void onInit() {
@@ -43,9 +44,7 @@ class LoginController extends GetxController {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
           PopUps.snackbar(
-            texto:
-                'Ocorreu um erro ao tentar fazer login com o Google. Por favor, tente novamente.'
-                    .tr,
+            texto: LocaleKeys.loginGoogleError.tr,
             cor: Colors.red,
           );
         }
@@ -65,9 +64,7 @@ class LoginController extends GetxController {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
           PopUps.snackbar(
-            texto:
-                "Ocorreu um erro ao tentar fazer login com o Microsoft. Por favor, tente novamente."
-                    .tr,
+            texto: LocaleKeys.loginMicrosoftError.tr,
             cor: Colors.red,
           );
         }
@@ -124,9 +121,7 @@ class LoginController extends GetxController {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
           PopUps.snackbar(
-            texto:
-                'Ocorreu um erro ao tentar fazer login com o Apple. Por favor, tente novamente.'
-                    .tr,
+            texto: LocaleKeys.loginAppleError.tr,
             cor: Colors.red,
           );
         }

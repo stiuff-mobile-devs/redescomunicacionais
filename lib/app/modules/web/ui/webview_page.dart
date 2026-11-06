@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/web/controller/webview_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart'; // Adicionado para kIsWeb
@@ -69,7 +70,7 @@ class WebViewPage extends StatelessWidget {
                         const Icon(Icons.open_in_new,
                             size: 48, color: Colors.black54),
                         const SizedBox(height: 16),
-                        Text('opening_link_new_tab'.tr,
+                        Text(LocaleKeys.openingLinkNewTab.tr,
                             style: TextStyle(color: Colors.black54)),
                       ],
                     ),

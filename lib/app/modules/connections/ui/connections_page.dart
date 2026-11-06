@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class ConnectionsPage extends GetView<ConnectionsController> {
   const ConnectionsPage({super.key});
@@ -20,9 +21,9 @@ class ConnectionsPage extends GetView<ConnectionsController> {
         surfaceTintColor: Colors.white,
         foregroundColor: Colors.black87,
 
-        title: const Text(
-          'Conexões',
-          style: TextStyle(
+        title: Text(
+          LocaleKeys.connections.tr,
+          style: const TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
           ),
@@ -98,9 +99,9 @@ class ConnectionsPage extends GetView<ConnectionsController> {
           ),
         ],
       ),
-      child: const Text(
-        'Gerencie e acompanhe o status das suas conexões externas.',
-        style: TextStyle(
+      child: Text(
+        LocaleKeys.connectionsDescription.tr,
+        style: const TextStyle(
           color: Colors.black87,
           fontSize: 14,
           height: 1.35,
@@ -114,9 +115,8 @@ class ConnectionsPage extends GetView<ConnectionsController> {
     return Obx(
           () => _buildConnectionCard(
         context: context,
-        title: 'Internet',
-        description:
-        'Conectividade geral para os módulos do aplicativo.',
+        title: LocaleKeys.internet.tr,
+        description: LocaleKeys.internetDescription.tr,
         icon: Icons.wifi_rounded,
         accentColor: Colors.cyan.shade700,
         isConnected: controller.isInternetConnected.value,
@@ -221,7 +221,9 @@ class ConnectionsPage extends GetView<ConnectionsController> {
     final Color badgeColor =
     isConnected ? Colors.green.shade600 : Colors.red.shade600;
 
-    final String label = isConnected ? 'Ativo' : 'Falha';
+    final String label = isConnected
+        ? LocaleKeys.statusActive.tr
+        : LocaleKeys.statusFailed.tr;
 
     return Container(
       padding: const EdgeInsets.symmetric(

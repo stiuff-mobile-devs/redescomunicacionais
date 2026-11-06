@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class MarkdownEditor extends StatefulWidget {
   final QuillController? controller;
@@ -189,7 +190,7 @@ class _MarkdownEditorState extends State<MarkdownEditor> {
                   padding: const EdgeInsets.all(12),
 
                   placeholder:
-                  'Digite o corpo da matéria...'.tr,
+                  LocaleKeys.newsBodyHint.tr,
 
                   autoFocus: false,
                   expands: false,

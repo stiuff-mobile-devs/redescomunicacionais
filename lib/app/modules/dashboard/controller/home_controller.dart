@@ -10,6 +10,7 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class HomeController extends GetxController {
   NewsController? _newsController;
@@ -23,7 +24,7 @@ class HomeController extends GetxController {
 
   UserModel user = UserModel.empty();
 
-  final RxString appVersion = 'Carregando...'.obs;
+  final RxString appVersion = LocaleKeys.loading.tr.obs;
   final RxString connectionTypeLabel = 'Sem conexão'.obs;
   final RxnString selectedCity = RxnString(null);
 
@@ -77,9 +78,10 @@ class HomeController extends GetxController {
       await newsController.getOuthersNewsFromHive();
       forceRecreate();
     } catch (e) {
+      debugPrint('Erro ao atualizar os dados da Home: $e');
       Get.snackbar(
-        'Erro',
-        'Não foi possível atualizar os dados. Verifique sua conexão.',
+        LocaleKeys.error.tr,
+        LocaleKeys.refreshDataError.tr,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -89,7 +91,7 @@ class HomeController extends GetxController {
   void goUserGuide() {
     Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url': 'https://redescomunicacionaislocais.uff.br/guia-do-usuario/',
-      'title': 'Guia do Usuário'
+      'title': LocaleKeys.userGuide.tr,
     });
   }
 
@@ -97,14 +99,14 @@ class HomeController extends GetxController {
     Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url':
           'https://github.com/Redes-Comunicacionais-Locais/redescomunicacionais/wiki/Perguntas-Frequentes',
-      'title': 'Perguntas Frequentes'
+      'title': LocaleKeys.faq.tr,
     });
   }
 
   void goAboutUs() {
     Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url': 'https://redescomunicacionaislocais.uff.br/',
-      'title': 'Sobre Nós',
+      'title': LocaleKeys.aboutUs.tr,
     });
   }
 

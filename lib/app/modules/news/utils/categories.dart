@@ -1,19 +1,26 @@
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
+
+// Categorias das matérias.
+// O valor gravado na matéria (Hive, Firebase, mesh e assinatura) é sempre o
+// texto em português; para exibir, use NewsLabels.category().
 class Categories {
-  List<String> categories = [
-    'Política',
-    'Segurança',
-    'Educação',
-    'Saúde',
-    'Transporte público e trânsito',
-    'Economia',
-    'Emprego e oportunidades',
-    'Cultura',
-    'Turismo e lazer',
-    'Esportes',
-    'Meio Ambiente',
-    'Infraestrutura da cidade',
-    'Habitação',
-    'Tecnologia',
-    'Ação comunitária'
+  static const List<String> all = [
+    LocaleKeys.categoryPolitics,
+    LocaleKeys.categorySecurity,
+    LocaleKeys.categoryEducation,
+    LocaleKeys.categoryHealth,
+    LocaleKeys.categoryTransport,
+    LocaleKeys.categoryEconomy,
+    LocaleKeys.categoryJobs,
+    LocaleKeys.categoryCulture,
+    LocaleKeys.categoryTourism,
+    LocaleKeys.categorySports,
+    LocaleKeys.categoryEnvironment,
+    LocaleKeys.categoryInfrastructure,
+    LocaleKeys.categoryHousing,
+    LocaleKeys.categoryTechnology,
+    LocaleKeys.categoryCommunity,
   ];
+
+  List<String> categories = all;
 }

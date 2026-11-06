@@ -3,8 +3,11 @@ import 'dart:io';
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum UpdateStatus {
@@ -159,12 +162,12 @@ class UpdateVersionService {
   void _showAndroidCompleteSnackbar(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          'Atualização baixada com sucesso!',
+        content: Text(
+          LocaleKeys.updateDownloaded.tr,
         ),
         duration: const Duration(days: 1),
         action: SnackBarAction(
-          label: 'REINICIAR',
+          label: LocaleKeys.restart.tr.toUpperCase(),
           onPressed: () async {
             try {
               await InAppUpdate.completeFlexibleUpdate();
@@ -190,13 +193,11 @@ class UpdateVersionService {
         return PopScope(
           canPop: !isForceUpdate,
           child: AlertDialog(
-            title: const Text('Nova Versão Disponível'),
+            title: Text(LocaleKeys.newVersionAvailable.tr),
             content: Text(
               isForceUpdate
-                  ? 'Uma atualização obrigatória é necessária '
-                  'para continuar utilizando o aplicativo.'
-                  : 'Uma nova versão está disponível! '
-                  'Gostaria de atualizar agora?',
+                  ? LocaleKeys.mandatoryUpdateMessage.tr
+                  : LocaleKeys.optionalUpdateMessage.tr,
             ),
             actions: [
               if (!isForceUpdate)
@@ -204,7 +205,7 @@ class UpdateVersionService {
                   onPressed: () {
                     Navigator.pop(dialogContext);
                   },
-                  child: const Text('Depois'),
+                  child: Text(LocaleKeys.later.tr),
                 ),
               TextButton(
                 onPressed: () async {
@@ -215,7 +216,7 @@ class UpdateVersionService {
                         'id6759577931'
                         : 'https://play.google.com/store/apps/'
                         'details?id=br.uff.redescomunicacionais'
-                        '&hl=pt_BR',
+                        '&hl=${AppTranslation.currentLocale}',
                   );
 
                   try {
@@ -235,7 +236,7 @@ class UpdateVersionService {
                     );
                   }
                 },
-                child: const Text('Atualizar'),
+                child: Text(LocaleKeys.update.tr),
               ),
             ],
           ),

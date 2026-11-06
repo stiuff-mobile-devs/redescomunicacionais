@@ -6,6 +6,7 @@ import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
 
@@ -16,7 +17,7 @@ class AdminPage extends GetView<AdminController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('manage_users'.tr),
+        title: Text(LocaleKeys.manageUsers.tr),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: AppColors.appBarBottomGradient(),
@@ -45,7 +46,7 @@ class AdminPage extends GetView<AdminController> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Escolha a Cidade para Gerenciar os Editores e Administradores'.tr,
+                    LocaleKeys.chooseCityToManageEditors.tr,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -64,9 +65,9 @@ class AdminPage extends GetView<AdminController> {
                       onPressed: () {
                         controller.selectedCity.value = 'Todas'; // Bypassa o filtro
                       },
-                      label: const Text(
-                        'Visualizar todas as cidades',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      label: Text(
+                        LocaleKeys.viewAllCities.tr,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent.withOpacity(0.8),
@@ -111,7 +112,7 @@ class AdminPage extends GetView<AdminController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'registered_users'.tr,
+                            LocaleKeys.registeredUsers.tr,
                             style: const TextStyle(
                               fontSize: 24,
                               color: Colors.white,
@@ -119,7 +120,12 @@ class AdminPage extends GetView<AdminController> {
                             ),
                           ),
                           Text(
-                            'Cidade: ${controller.selectedCity.value}',
+                            LocaleKeys.cityLabel.trParams({
+                              // 'Todas' é o valor interno de "sem filtro"
+                              'city': controller.selectedCity.value == 'Todas'
+                                  ? LocaleKeys.allCities.tr
+                                  : controller.selectedCity.value ?? '',
+                            }),
                             style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white70,
@@ -139,13 +145,13 @@ class AdminPage extends GetView<AdminController> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip('filter_all'.tr, 'todos'),
+                      _buildFilterChip(LocaleKeys.filterAll.tr, 'todos'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('filter_users'.tr, 'user'),
+                      _buildFilterChip(LocaleKeys.filterUsers.tr, 'user'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('filter_editors'.tr, 'editor'),
+                      _buildFilterChip(LocaleKeys.filterEditors.tr, 'editor'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('filter_admins'.tr, 'admin'),
+                      _buildFilterChip(LocaleKeys.filterAdmins.tr, 'admin'),
                     ],
                   ),
                 ),
@@ -184,7 +190,7 @@ class AdminPage extends GetView<AdminController> {
                   if (filteredUsers.isEmpty) {
                     return Center(
                       child: Text(
-                        'no_user_found'.tr,
+                        LocaleKeys.noUserFound.tr,
                         style: const TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     );
@@ -300,9 +306,9 @@ class AdminPage extends GetView<AdminController> {
                     icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
                     style: const TextStyle(color: Colors.white),
                     items: [
-                      DropdownMenuItem(value: 'user', child: Text('role_user'.tr)),
-                      DropdownMenuItem(value: 'editor', child: Text('role_editor'.tr)),
-                      DropdownMenuItem(value: 'admin', child: Text('role_admin'.tr)),
+                      DropdownMenuItem(value: 'user', child: Text(UserRoles.label(UserRoles.user))),
+                      DropdownMenuItem(value: 'editor', child: Text(UserRoles.label(UserRoles.editor))),
+                      DropdownMenuItem(value: 'admin', child: Text(UserRoles.label(UserRoles.admin))),
                     ],
                     onChanged: (newRole) async {
                       if (newRole != null && newRole != selectedUserCurrentRole) {
@@ -315,12 +321,13 @@ class AdminPage extends GetView<AdminController> {
                               await controller.userRepository.updateUserRole(
                                   selectedUserId, newRole, controller.user.email!, operationsCities);
                               PopUps.snackbar(
-                                texto: 'Cargo atualizado com sucesso'.tr,
+                                texto: LocaleKeys.roleUpdatedSuccess.tr,
                                 cor: Colors.green,
                               );
                             } catch (e) {
+                              debugPrint('Erro ao atualizar o cargo: $e');
                               PopUps.snackbar(
-                                texto: 'Ocorreu um erro ao atualizar o cargo'.tr,
+                                texto: LocaleKeys.roleUpdateError.tr,
                                 cor: Colors.red,
                               );
                             }
@@ -339,7 +346,7 @@ class AdminPage extends GetView<AdminController> {
                     padding: const EdgeInsets.only(left: 4.0),
                     child: IconButton(
                       icon: const Icon(Icons.edit_location_alt, color: Colors.blueAccent),
-                      tooltip: 'Alterar cidades de atuação',
+                      tooltip: LocaleKeys.changeOperationCities.tr,
                       onPressed: () async {
                         final Map<String, String>? updatedCities = await _showEditCitiesDialog(user);
                         
@@ -349,13 +356,14 @@ class AdminPage extends GetView<AdminController> {
                             await controller.userRepository.updateUserRole(
                                 selectedUserId, selectedUserCurrentRole, controller.user.email!, updatedCities);
                             PopUps.snackbar(
-                              texto: 'Cidades atualizadas com sucesso'.tr,
+                              texto: LocaleKeys.citiesUpdatedSuccess.tr,
                               cor: Colors.green,
                             );
                             await controller.loadAllUsers();
                           } catch (e) {
+                            debugPrint('Erro ao atualizar as cidades: $e');
                             PopUps.snackbar(
-                              texto: 'Ocorreu um erro ao atualizar as cidades'.tr,
+                              texto: LocaleKeys.citiesUpdateError.tr,
                               cor: Colors.red,
                             );
                           }
@@ -385,7 +393,7 @@ class AdminPage extends GetView<AdminController> {
             return AlertDialog(
               backgroundColor: Colors.black87,
               title: Text(
-                'Cidades de Atuação',
+                LocaleKeys.operationCities.tr,
                 style: const TextStyle(color: Colors.white),
               ),
               content: SingleChildScrollView(
@@ -394,7 +402,8 @@ class AdminPage extends GetView<AdminController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Selecione as cidades para:\n${user.email}',
+                      LocaleKeys.selectCitiesFor
+                          .trParams({'email': user.email ?? ''}),
                       style: const TextStyle(color: Colors.white70),
                     ),
                     const SizedBox(height: 16),
@@ -430,7 +439,7 @@ class AdminPage extends GetView<AdminController> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(null),
-                  child: Text('cancel'.tr, style: const TextStyle(color: Colors.white70)),
+                  child: Text(LocaleKeys.cancel.tr, style: const TextStyle(color: Colors.white70)),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -438,7 +447,7 @@ class AdminPage extends GetView<AdminController> {
                     Navigator.of(context).pop(selectedCities);
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                  child: Text('confirm'.tr, style: const TextStyle(color: Colors.black)),
+                  child: Text(LocaleKeys.confirm.tr, style: const TextStyle(color: Colors.black)),
                 ),
               ],
             );
@@ -485,16 +494,8 @@ class AdminPage extends GetView<AdminController> {
     });
   }
 
-  String _getRoleDisplayName(String role) {
-    switch (role.toLowerCase()) {
-      case UserRoles.admin:
-        return 'role_admin'.tr;
-      case UserRoles.editor:
-        return 'role_editor'.tr;
-      default:
-        return 'role_user'.tr;
-    }
-  }
+  String _getRoleDisplayName(String role) =>
+      UserRoles.label(role.toLowerCase());
 
   Future<Map<String, dynamic>?> _showRoleChangeDialog(
       String email, String currentRole, String newRole) {
@@ -510,7 +511,7 @@ class AdminPage extends GetView<AdminController> {
             return AlertDialog(
               backgroundColor: Colors.black87,
               title: Text(
-                'confirm_change'.tr,
+                LocaleKeys.confirmChange.tr,
                 style: const TextStyle(color: Colors.white),
               ),
               content: SingleChildScrollView(
@@ -519,14 +520,18 @@ class AdminPage extends GetView<AdminController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${'change_role_of'.tr} $email\n${'from_label'.tr}: ${_getRoleDisplayName(currentRole)}\n${'to_label'.tr}: ${_getRoleDisplayName(newRole)}',
+                      LocaleKeys.changeRoleMessage.trParams({
+                        'email': email,
+                        'from': _getRoleDisplayName(currentRole),
+                        'to': _getRoleDisplayName(newRole),
+                      }),
                       style: const TextStyle(color: Colors.white70),
                     ),
                     if (newRole == 'editor') ...[
                       const SizedBox(height: 20),
-                      const Text(
-                        'Cidades de atuação:',
-                        style: TextStyle(
+                      Text(
+                        LocaleKeys.operationCitiesLabel.tr,
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold),
@@ -568,14 +573,14 @@ class AdminPage extends GetView<AdminController> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(null),
-                  child: Text('cancel'.tr,
+                  child: Text(LocaleKeys.cancel.tr,
                       style: const TextStyle(color: Colors.white70)),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     if (newRole == 'editor' && selectedCities.isEmpty) {
                       PopUps.snackbar(
-                        texto: 'Selecione pelo menos uma cidade para o editor.',
+                        texto: LocaleKeys.selectAtLeastOneCityForEditor.tr,
                         cor: Colors.orange,
                       );
                       return;
@@ -587,7 +592,7 @@ class AdminPage extends GetView<AdminController> {
                   },
                   style:
                       ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                  child: Text('confirm'.tr,
+                  child: Text(LocaleKeys.confirm.tr,
                       style: const TextStyle(color: Colors.black)),
                 ),
               ],

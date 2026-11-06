@@ -8,8 +8,10 @@ import 'package:redescomunicacionais/app/modules/news/utils/cities_codes.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_types.dart';
 import 'package:redescomunicacionais/app/services/image_base64_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/update_news_controller.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 
@@ -84,23 +86,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
   // LISTAS
   // ============================================================
 
-  final List<String> categories = [
-    'Política',
-    'Segurança',
-    'Educação',
-    'Saúde',
-    'Transporte público e trânsito',
-    'Economia',
-    'Emprego e oportunidades',
-    'Cultura',
-    'Turismo e lazer',
-    'Esportes',
-    'Meio Ambiente',
-    'Infraestrutura da cidade',
-    'Habitação',
-    'Tecnologia',
-    'Ação comunitária'
-  ];
+  final List<String> categories = Categories.all;
 
   final List<String> cities = CitiesCodes().cities.values.toList();
 
@@ -253,7 +239,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
         centerTitle: true,
         elevation: theme.appBarTheme.elevation,
         title: Text(
-          'edit_news'.tr,
+          LocaleKeys.editNews.tr,
           style: theme.appBarTheme.titleTextStyle,
         ),
       ),
@@ -342,7 +328,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       ),
 
       decoration: InputDecoration(
-        labelText: 'title'.tr,
+        labelText: LocaleKeys.title.tr,
 
         labelStyle: TextStyle(
           color: colors.onSurfaceVariant,
@@ -366,7 +352,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'title_required'.tr;
+          return LocaleKeys.titleRequired.tr;
         }
 
         return null;
@@ -389,7 +375,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
       ),
 
       decoration: InputDecoration(
-        labelText: 'subtitle_optional'.tr,
+        labelText: LocaleKeys.subtitleOptional.tr,
 
         labelStyle: TextStyle(
           color: colors.onSurfaceVariant,
@@ -510,7 +496,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              'select_categories'.tr,
+                              LocaleKeys.selectCategories.tr,
 
                               style: const TextStyle(
                                 color: _brandBlue,
@@ -589,7 +575,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
                                     Expanded(
                                       child: Text(
-                                        category,
+                                        NewsLabels.category(category),
 
                                         style: TextStyle(
                                           color:
@@ -619,7 +605,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
 
               child: Text(
-                'select_at_least_one_category'.tr,
+                LocaleKeys.selectAtLeastOneCategory.tr,
 
                 style: const TextStyle(
                   color: Colors.red,
@@ -675,7 +661,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              'select_city'.tr,
+                              LocaleKeys.selectCity.tr,
 
                               style: const TextStyle(
                                 color: _brandBlue,
@@ -788,7 +774,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
 
               child: Text(
-                'select_at_least_one_city'.tr,
+                LocaleKeys.selectAtLeastOneCity.tr,
 
                 style: const TextStyle(
                   color: Colors.red,
@@ -844,7 +830,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              'select_type'.tr,
+                              LocaleKeys.selectType.tr,
 
                               style: const TextStyle(
                                 color: _brandBlue,
@@ -921,7 +907,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
                                     Expanded(
                                       child: Text(
-                                        type,
+                                        NewsLabels.type(type),
 
                                         style: TextStyle(
                                           color:
@@ -951,7 +937,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
               ),
 
               child: Text(
-                'select_at_least_one_type'.tr,
+                LocaleKeys.selectAtLeastOneType.tr,
 
                 style: const TextStyle(
                   color: Colors.red,
@@ -1036,7 +1022,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
         ),
 
         label: Text(
-          'change_image'.tr,
+          LocaleKeys.changeImage.tr,
 
           style: TextStyle(
             color: colors.onPrimary,
@@ -1054,7 +1040,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
     final colors = Theme.of(context).colorScheme;
 
     return Text(
-      'image_requirements'.tr,
+      LocaleKeys.imageRequirements.tr,
 
       style: TextStyle(
         fontSize: 16,
@@ -1172,7 +1158,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                 ),
 
                 label: Text(
-                  'save_draft_news'.tr,
+                  LocaleKeys.saveDraft.tr,
 
                   style: TextStyle(
                     color: colors.onSurface,
@@ -1266,7 +1252,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
                   ),
 
                   label: Text(
-                    'update_news'.tr,
+                    LocaleKeys.updateNews.tr,
 
                     style: TextStyle(
                       color:
@@ -1386,7 +1372,7 @@ class _EditNewsPageState extends State<EditNewsPage> {
 
     if (!isFormValid) {
       PopUps.snackbar(
-        texto: 'fill_required_fields'.tr,
+        texto: LocaleKeys.fillRequiredFields.tr,
         cor: Colors.red,
       );
 
@@ -1463,8 +1449,8 @@ class _EditNewsPageState extends State<EditNewsPage> {
         PopUps.snackbar(
           texto:
           status == NewsStates.rascunho
-              ? 'save_draft_news'.tr
-              : 'news_updated_success'.tr,
+              ? LocaleKeys.draftSavedSuccess.tr
+              : LocaleKeys.newsUpdatedSuccess.tr,
 
           cor: Colors.green,
         );
@@ -1480,14 +1466,16 @@ class _EditNewsPageState extends State<EditNewsPage> {
       // ERRO
       // --------------------------------------------------------
 
+      // `result` traz o detalhe técnico do erro: vai só para o log
+      debugPrint(result);
       PopUps.snackbar(
-        texto: result,
+        texto: LocaleKeys.newsUpdateError.tr,
         cor: Colors.red,
       );
     } catch (e) {
+      debugPrint('Erro inesperado ao atualizar a matéria: $e');
       PopUps.snackbar(
-        texto:
-        '${'unexpected_error'.tr}: $e',
+        texto: LocaleKeys.unexpectedError.tr,
         cor: Colors.red,
       );
     }

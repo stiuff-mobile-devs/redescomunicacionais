@@ -7,6 +7,8 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/utils/components/friendly_exception.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class UserProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -167,8 +169,8 @@ class UserProvider {
     final currentFirebaseUser = _auth.currentUser;
 
     if (currentFirebaseUser == null) {
-      throw Exception(
-          'Usuário não autenticado no Firebase. Faça login novamente.');
+      throw const FriendlyException(LocaleKeys.loginAgain,
+          details: 'Usuário não autenticado no Firebase.');
     }
 
     try {
@@ -182,8 +184,8 @@ class UserProvider {
       await _auth.signOut();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
-        throw Exception(
-            'Por segurança, faça login novamente antes de excluir sua conta.');
+        throw FriendlyException(LocaleKeys.loginAgainBeforeDelete,
+            details: e.code);
       }
       throw Exception('Erro ao excluir conta: ${e.message ?? e.code}');
     }

@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:redescomunicacionais/app/routes/app_pages.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/services/hive_service.dart';
@@ -22,6 +23,9 @@ Future<void> main() async {
 
   // Inicializa o armazenamento local do GetStorage
   await GetStorage.init();
+
+  // Carrega os formatos de data de todos os idiomas (DateFormat com locale)
+  await initializeDateFormatting();
 
   // Inicializa o Hive
   await HiveInitializer.initialize();
@@ -65,9 +69,9 @@ class MyApp extends StatelessWidget {
 
         translations: AppTranslation(),
         supportedLocales: AppTranslation.supportedLocales,
-        locale: AppTranslation.normalizeLocale(
-          Get.deviceLocale,
-        ),
+        // Idioma salvo pelo usuário (ou o do aparelho). Lido do GetStorage
+        // para não voltar ao idioma do aparelho quando o tema muda
+        locale: AppTranslation.initialLocale(),
         fallbackLocale: AppTranslation.fallback,
       ),
     );

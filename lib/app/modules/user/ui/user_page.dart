@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
 
@@ -35,19 +36,19 @@ class _UserPageState extends State {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('confirm_deletion'.tr),
+          title: Text(LocaleKeys.confirmDeletion.tr),
           content: Text(
-            'confirm_delete_account_message'.tr,
+            LocaleKeys.confirmDeleteAccountMessage.tr,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('cancel'.tr),
+              child: Text(LocaleKeys.cancel.tr),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
               child: Text(
-                'delete_account'.tr,
+                LocaleKeys.deleteAccount.tr,
                 style: const TextStyle(color: Colors.red),
               ),
             ),
@@ -94,7 +95,7 @@ class _UserPageState extends State {
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'favorite_city'.tr,
+                      LocaleKeys.favoriteCity.tr,
                       style: theme.textTheme.titleLarge,
                     ),
                   ),
@@ -105,7 +106,7 @@ class _UserPageState extends State {
                       child: OutlinedButton.icon(
                         onPressed: () => _selectCity(sheetContext, _allCitiesValue),
                         icon: const Icon(Icons.public),
-                        label: Text('all_cities'.tr),
+                        label: Text(LocaleKeys.allCities.tr),
                       ),
                     ),
                   ),
@@ -132,8 +133,8 @@ class _UserPageState extends State {
 
   String _favoriteCityLabel(UserModel user) {
     final city = user.selectedAppCity;
-    if (city == null || city.isEmpty) return 'no_city_selected'.tr;
-    if (city == _allCitiesValue) return 'all_cities'.tr;
+    if (city == null || city.isEmpty) return LocaleKeys.noCitySelected.tr;
+    if (city == _allCitiesValue) return LocaleKeys.allCities.tr;
     return city;
   }
 
@@ -221,7 +222,7 @@ class _UserPageState extends State {
             size: 18,
             color: theme.colorScheme.onSecondaryContainer,
           ),
-          label: Text('role_$role'.tr),
+          label: Text(UserRoles.label(role)),
           backgroundColor: theme.colorScheme.secondaryContainer,
           labelStyle: TextStyle(
             color: theme.colorScheme.onSecondaryContainer,
@@ -241,10 +242,10 @@ class _UserPageState extends State {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSectionTitle(context, Icons.badge_outlined, 'your_data'.tr),
+          _buildSectionTitle(context, Icons.badge_outlined, LocaleKeys.yourData.tr),
           const SizedBox(height: 4),
           Text(
-            'update_display_name'.tr,
+            LocaleKeys.updateDisplayName.tr,
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 16),
@@ -252,8 +253,8 @@ class _UserPageState extends State {
             controller: _nameController,
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
-              labelText: 'name'.tr,
-              hintText: 'enter_your_name'.tr,
+              labelText: LocaleKeys.name.tr,
+              hintText: LocaleKeys.enterYourName.tr,
               prefixIcon: const Icon(Icons.person_outline),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -278,7 +279,7 @@ class _UserPageState extends State {
                     ),
                   )
                 : const Icon(Icons.save_outlined),
-            label: Text('save_changes'.tr),
+            label: Text(LocaleKeys.saveChanges.tr),
           ),
           if (user.createdAt != null) ...[
             const SizedBox(height: 12),
@@ -291,7 +292,9 @@ class _UserPageState extends State {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '${'member_since'.tr} ${DateFormat('dd/MM/yyyy').format(user.createdAt!.toLocal())}',
+                  LocaleKeys.memberSince.trParams({
+                    'date': AppTranslation.formatDate(user.createdAt!.toLocal()),
+                  }),
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -311,10 +314,10 @@ class _UserPageState extends State {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildSectionTitle(
-              context, Icons.location_city_outlined, 'favorite_city'.tr),
+              context, Icons.location_city_outlined, LocaleKeys.favoriteCity.tr),
           const SizedBox(height: 4),
           Text(
-            'favorite_city_info'.tr,
+            LocaleKeys.favoriteCityInfo.tr,
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 12),
@@ -331,7 +334,7 @@ class _UserPageState extends State {
               TextButton.icon(
                 onPressed: () => _showCitySelector(context),
                 icon: const Icon(Icons.edit_location_alt_outlined),
-                label: Text('change_city'.tr),
+                label: Text(LocaleKeys.change.tr),
               ),
             ],
           ),
@@ -350,16 +353,16 @@ class _UserPageState extends State {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildSectionTitle(
-              context, Icons.map_outlined, 'operation_cities'.tr),
+              context, Icons.map_outlined, LocaleKeys.operationCities.tr),
           const SizedBox(height: 4),
           Text(
-            'operation_cities_info'.tr,
+            LocaleKeys.operationCitiesInfo.tr,
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 12),
           if (cities.isEmpty)
             Text(
-              'no_operation_cities'.tr,
+              LocaleKeys.noOperationCities.tr,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontStyle: FontStyle.italic,
               ),
@@ -389,14 +392,14 @@ class _UserPageState extends State {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'danger_zone'.tr,
+            LocaleKeys.dangerZone.tr,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            'delete_account_warning'.tr,
+            LocaleKeys.deleteAccountWarning.tr,
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 14),
@@ -418,7 +421,7 @@ class _UserPageState extends State {
               foregroundColor: theme.colorScheme.error,
               side: BorderSide(color: theme.colorScheme.error),
             ),
-            label: Text('delete_account'.tr),
+            label: Text(LocaleKeys.deleteAccount.tr),
           ),
         ],
       ),
@@ -431,7 +434,7 @@ class _UserPageState extends State {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('profile'.tr),
+        title: Text(LocaleKeys.profile.tr),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: AppColors.appBarBottomGradient(),

@@ -8,6 +8,7 @@ import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/utils/menu_drawer.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/city_selector_widget.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -41,14 +42,14 @@ class HomePage extends GetView<HomeController> {
               titleSpacing: isTablet ? 16.0 : 12.0,
               title: Obx(() {
                 final titleText = controller.isRevisionMode.value
-                    ? 'news_review'.tr
+                    ? LocaleKeys.newsReview.tr
                     : controller.isDraftMode.value
-                        ? 'Meus Rascunhos'.tr
+                        ? LocaleKeys.myDrafts.tr
                         : controller.isRejectedMode.value
-                            ? 'Matérias rejeitadas'.tr
+                            ? LocaleKeys.rejectedNews.tr
                             : controller.isDeletedMode.value
-                                ? 'Matérias excluídas'.tr
-                                : 'app_short_name'.tr;
+                                ? LocaleKeys.deletedNews.tr
+                                : LocaleKeys.appShortName.tr;
                 return Text(
                   titleText,
                   maxLines: 1,
@@ -116,24 +117,24 @@ class HomePage extends GetView<HomeController> {
                       builder: (BuildContext context) {
                         TextEditingController searchController = TextEditingController();
                         return AlertDialog(
-                          title: Text('filter_news'.tr),
+                          title: Text(LocaleKeys.filterNews.tr),
                           content: TextField(
                             controller: searchController,
                             decoration: InputDecoration(
-                              hintText: 'enter_news_name'.tr,
+                              hintText: LocaleKeys.enterNewsName.tr,
                             ),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
-                              child: Text('cancel'.tr),
+                              child: Text(LocaleKeys.cancel.tr),
                             ),
                             TextButton(
                               onPressed: () {
                                 controller.filterNewsByName(searchController.text);
                                 Navigator.of(context).pop();
                               },
-                              child: Text('filter'.tr),
+                              child: Text(LocaleKeys.filter.tr),
                             ),
                           ],
                         );
@@ -180,7 +181,7 @@ class HomePage extends GetView<HomeController> {
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'Escolha a Cidade para Visualizar as Matérias'.tr,
+                      LocaleKeys.chooseCityToViewNews.tr,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
@@ -198,9 +199,9 @@ class HomePage extends GetView<HomeController> {
                           controller.updateSelectedCity('Todas');
                         },
                         icon: const Icon(Icons.public, color: Colors.white),
-                        label: const Text(
-                          'Visualizar todas as cidades',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        label: Text(
+                          LocaleKeys.viewAllCities.tr,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueAccent.withOpacity(0.8),
@@ -299,7 +300,7 @@ class HomePage extends GetView<HomeController> {
                             size: 16
                           ),
                           label: Text(
-                            'Trocar Cidade',
+                            LocaleKeys.changeCity.tr,
                             style: TextStyle(
                               fontSize: isTablet ? 12.0 : 10.0,
                               color: Get.find<ThemeController>().isLight ? Colors.black87 : Colors.white.withOpacity(0.8),
@@ -369,7 +370,12 @@ class HomePage extends GetView<HomeController> {
               const Icon(Icons.location_on, color: Colors.blueAccent, size: 18),
               const SizedBox(width: 6),
               Text(
-                'Cidade: ${controller.selectedCity.value}',
+                LocaleKeys.cityLabel.trParams({
+                  // 'Todas' é o valor interno de "sem filtro"
+                  'city': controller.selectedCity.value == 'Todas'
+                      ? LocaleKeys.allCities.tr
+                      : controller.selectedCity.value ?? '',
+                }),
                 style: TextStyle(
                   color: isLight ? Colors.black87 : Colors.white,
                   fontWeight: FontWeight.bold,
@@ -388,7 +394,7 @@ class HomePage extends GetView<HomeController> {
               size: 16
             ),
             label: Text(
-              'Alterar',
+              LocaleKeys.change.tr,
               style: TextStyle(
                 color: isLight ? Colors.black54 : Colors.white70, 
                 fontSize: 13

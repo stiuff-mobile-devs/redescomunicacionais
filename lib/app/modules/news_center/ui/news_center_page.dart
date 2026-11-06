@@ -5,6 +5,7 @@ import 'package:redescomunicacionais/app/modules/news_center/controller/news_cen
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class NewsCenterPage extends GetView<NewsCenterController> {
   const NewsCenterPage({super.key});
@@ -38,7 +39,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
         ),
 
         title: Text(
-          'central_da_materia'.tr,
+          LocaleKeys.newsCenter.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -81,45 +82,40 @@ class NewsCenterPage extends GetView<NewsCenterController> {
                         childAspectRatio: 1,
                         children: [
                           _ActionCard(
-                            title: 'Criar nova matéria'.tr,
-                            subtitle: 'Comece a criar uma nova matéria'.tr,
+                            title: LocaleKeys.createNewNews.tr,
+                            subtitle: LocaleKeys.createNewNewsSubtitle.tr,
                             icon: Icons.create_rounded,
                             accentColor: Colors.green,
                             onTap: () =>
                                 Get.toNamed(Routes.CREATE_NEWS),
                           ),
                           _ActionCard(
-                            title: 'Revisar Matérias'.tr,
-                            subtitle:
-                            'Fila de avaliação e aprovação editorial'.tr,
+                            title: LocaleKeys.reviewNews.tr,
+                            subtitle: LocaleKeys.reviewNewsSubtitle.tr,
                             icon: Icons.fact_check_rounded,
                             accentColor: Colors.lightBlue,
                             onTap: () =>
                                 controller.openNewsMode('revision'),
                           ),
                           _ActionCard(
-                            title: 'Ver seus rascunhos'.tr,
-                            subtitle:
-                            'Acesse suas matérias salvas como rascunhos'
-                                .tr,
+                            title: LocaleKeys.viewDrafts.tr,
+                            subtitle: LocaleKeys.viewDraftsSubtitle.tr,
                             icon: Icons.drafts_outlined,
                             accentColor: Colors.amber.shade700,
                             onTap: () =>
                                 controller.openNewsMode('drafts'),
                           ),
                           _ActionCard(
-                            title: 'Ver suas matérias rejeitadas'.tr,
-                            subtitle:
-                            'Acompanhe o que voltou para ajustes'.tr,
+                            title: LocaleKeys.viewRejected.tr,
+                            subtitle: LocaleKeys.viewRejectedSubtitle.tr,
                             icon: Icons.report_outlined,
                             accentColor: Colors.redAccent,
                             onTap: () =>
                                 controller.openNewsMode('rejected'),
                           ),
                           _ActionCard(
-                            title: 'Ver suas matérias excluídas'.tr,
-                            subtitle:
-                            'Confira o histórico de exclusões'.tr,
+                            title: LocaleKeys.viewDeleted.tr,
+                            subtitle: LocaleKeys.viewDeletedSubtitle.tr,
                             icon: Icons.delete_outline_rounded,
                             accentColor: Colors.deepOrange,
                             onTap: () =>
@@ -182,7 +178,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Painel editorial'.tr,
+                  LocaleKeys.editorialPanel.tr,
                   style: TextStyle(
                     color: theme.colorScheme.onSurface,
                     fontSize: 28,
@@ -191,7 +187,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Crie e organize as matérias em um único lugar.'.tr,
+                  LocaleKeys.editorialPanelSubtitle.tr,
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 15,

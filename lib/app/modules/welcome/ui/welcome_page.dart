@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -71,18 +72,17 @@ class _WelcomePageState extends State<WelcomePage>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Boas-vindas!',
+                    Text(
+                      LocaleKeys.welcomeTitle.tr,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Preparamos a sua dose diária de informação '
-                          'com fatos reais e zero fake news.',
+                      LocaleKeys.welcomeMessage.tr,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
@@ -96,9 +96,9 @@ class _WelcomePageState extends State<WelcomePage>
                     const SizedBox(height: 60),
                     TextButton(
                       onPressed: _continue,
-                      child: const Text(
-                        'Toque para continuar',
-                        style: TextStyle(
+                      child: Text(
+                        LocaleKeys.tapToContinue.tr,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),

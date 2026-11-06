@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:intl/intl.dart';
 
 import 'package:redescomunicacionais/app/services/youtube_service.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class NewsPage extends GetView<NewsController> {
   const NewsPage({super.key});
@@ -79,7 +81,7 @@ class NewsPage extends GetView<NewsController> {
                     ),
                   ),
             title: Text(
-              '${'full_type'.tr} ${controller.selectedNews.type}',
+              NewsLabels.type(controller.selectedNews.type),
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
                 fontSize: ResponsiveUtils.calculateAppBarTitleSize(
@@ -223,7 +225,8 @@ class NewsPage extends GetView<NewsController> {
                           ),
                           SizedBox(width: isTablet ? 8 : 6),
                           Text(
-                            '${'info_of'.tr} ${controller.selectedNews.type}',
+                            LocaleKeys.infoOf.trParams(
+                        {'type': NewsLabels.type(controller.selectedNews.type)}),
                             style: TextStyle(
                               color: theme.colorScheme.onSurfaceVariant,
                               fontSize: isTablet ? 16 : 14,
@@ -286,7 +289,8 @@ class NewsPage extends GetView<NewsController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${'content_of'.tr} ${controller.selectedNews.type}',
+                    LocaleKeys.contentOf.trParams(
+                        {'type': NewsLabels.type(controller.selectedNews.type)}),
                     style: TextStyle(
                       color: theme.colorScheme.onSurface,
                       fontSize: isTablet ? 24 : 20,
@@ -307,7 +311,7 @@ class NewsPage extends GetView<NewsController> {
                         autoPlay: false,
                         mute: false,
                         enableCaption: true,
-                        captionLanguage: 'pt',
+                        captionLanguage: AppTranslation.currentLocale.languageCode,
                       ),
                     ),
                   _buildQuillContent(
@@ -425,7 +429,8 @@ class NewsPage extends GetView<NewsController> {
                   ),
                   SizedBox(width: isTablet ? 8 : 6),
                   Text(
-                    '${'info_of'.tr} ${controller.selectedNews.type}',
+                    LocaleKeys.infoOf.trParams(
+                        {'type': NewsLabels.type(controller.selectedNews.type)}),
                     style: TextStyle(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontSize: isTablet ? 16 : 14,
@@ -476,7 +481,7 @@ class NewsPage extends GetView<NewsController> {
               autoPlay: false,
               mute: false,
               enableCaption: true,
-              captionLanguage: 'pt',
+              captionLanguage: AppTranslation.currentLocale.languageCode,
             ),
           ),
 
@@ -725,7 +730,7 @@ class NewsPage extends GetView<NewsController> {
       children: [
         _buildInfoItem(
           icon: Icons.person_outline,
-          label: 'author'.tr,
+          label: LocaleKeys.author.tr,
           value: controller.selectedNews.author,
           isTablet: isTablet,
           theme: Theme.of(context),
@@ -733,8 +738,8 @@ class NewsPage extends GetView<NewsController> {
         SizedBox(height: isTablet ? 12 : 10),
         _buildInfoItem(
           icon: Icons.schedule,
-          label: 'date'.tr,
-          value: DateFormat('dd/MM/yyyy').format(
+          label: LocaleKeys.date.tr,
+          value: AppTranslation.formatDate(
             controller.selectedNews.createdAt,
           ),
           isTablet: isTablet,
@@ -743,7 +748,7 @@ class NewsPage extends GetView<NewsController> {
         SizedBox(height: isTablet ? 12 : 10),
         _buildInfoItem(
           icon: Icons.location_city,
-          label: 'city'.tr,
+          label: LocaleKeys.city.tr,
           value: controller.selectedNews.cities.isNotEmpty
               ? controller.selectedNews.cities.first
               : '',
@@ -753,8 +758,8 @@ class NewsPage extends GetView<NewsController> {
         SizedBox(height: isTablet ? 12 : 10),
         _buildInfoItem(
           icon: Icons.category,
-          label: 'type'.tr,
-          value: controller.selectedNews.type,
+          label: LocaleKeys.type.tr,
+          value: NewsLabels.type(controller.selectedNews.type),
           isTablet: isTablet,
           theme: Theme.of(context),
         ),
@@ -803,7 +808,7 @@ class NewsPage extends GetView<NewsController> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.person_outline,
-                label: 'author'.tr,
+                label: LocaleKeys.author.tr,
                 value: controller.selectedNews.author,
                 isTablet: isTablet,
                 theme: theme,
@@ -813,8 +818,8 @@ class NewsPage extends GetView<NewsController> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.schedule,
-                label: 'date'.tr,
-                value: DateFormat('dd/MM/yyyy').format(
+                label: LocaleKeys.date.tr,
+                value: AppTranslation.formatDate(
                   controller.selectedNews.createdAt,
                 ),
                 isTablet: isTablet,
@@ -832,7 +837,7 @@ class NewsPage extends GetView<NewsController> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.location_city,
-                label: 'city'.tr,
+                label: LocaleKeys.city.tr,
                 value: controller.selectedNews.cities.isNotEmpty
                     ? controller.selectedNews.cities.first
                     : '',
@@ -844,8 +849,8 @@ class NewsPage extends GetView<NewsController> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.category,
-                label: 'type'.tr,
-                value: controller.selectedNews.type,
+                label: LocaleKeys.type.tr,
+                value: NewsLabels.type(controller.selectedNews.type),
                 isTablet: isTablet,
                 theme: theme,
               ),
@@ -885,7 +890,7 @@ class NewsPage extends GetView<NewsController> {
             Expanded(
               child: _buildInfoItem(
                 icon: Icons.supervisor_account,
-                label: 'reviewer'.tr,
+                label: LocaleKeys.reviewer.tr,
                 value: controller.selectedNews.validatedByName ?? '',
                 isTablet: isTablet,
                 theme: theme,
@@ -998,7 +1003,9 @@ class NewsPage extends GetView<NewsController> {
               ),
               SizedBox(width: isTablet ? 6 : 4),
               Text(
-                categorias.length > 1 ? 'categories'.tr : 'category'.tr,
+                categorias.length > 1
+                    ? LocaleKeys.categories.tr
+                    : LocaleKeys.category.tr,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontSize: isTablet ? 12 : 10,
@@ -1032,7 +1039,7 @@ class NewsPage extends GetView<NewsController> {
                     ),
                   ),
                   child: Text(
-                    cat,
+                    NewsLabels.category(cat),
                     style: TextStyle(
                       color: theme.colorScheme.onSurface,
                       fontSize: isTablet ? 13 : 11,
@@ -1130,7 +1137,7 @@ class NewsPage extends GetView<NewsController> {
               ),
               SizedBox(width: isTablet ? 6 : 4),
               Text(
-                'Colaboradores',
+                LocaleKeys.collaborators.tr,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontSize: isTablet ? 12 : 10,
@@ -1237,10 +1244,10 @@ class NewsPage extends GetView<NewsController> {
       builder: (context) {
         return ResponsiveUtils.createResponsiveDialog(
           context: context,
-          title: 'all_categories'.tr,
+          title: LocaleKeys.collaborators.tr,
           content: collaborators?.join(', ') ?? '',
           onConfirm: () => Navigator.of(context).pop(),
-          confirmText: 'close'.tr,
+          confirmText: LocaleKeys.close.tr,
         );
       },
     );
@@ -1259,10 +1266,10 @@ class NewsPage extends GetView<NewsController> {
       builder: (context) {
         return ResponsiveUtils.createResponsiveDialog(
           context: context,
-          title: 'all_categories'.tr,
-          content: categorias.join(', '),
+          title: LocaleKeys.allCategories.tr,
+          content: categorias.map(NewsLabels.category).join(', '),
           onConfirm: () => Navigator.of(context).pop(),
-          confirmText: 'close'.tr,
+          confirmText: LocaleKeys.close.tr,
         );
       },
     );

@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
-import 'package:intl/intl.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
 
@@ -101,7 +103,7 @@ class NewsWidgets extends GetView<NewsController> {
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
           child: Center(
             child: Text(
-              'no_news_available'.tr,
+              LocaleKeys.noNewsAvailable.tr,
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
               ),
@@ -161,7 +163,7 @@ class NewsWidgets extends GetView<NewsController> {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  'edit'.tr,
+                                  LocaleKeys.edit.tr,
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     fontSize: 25.0,
                                     fontWeight: FontWeight.w600,
@@ -189,7 +191,7 @@ class NewsWidgets extends GetView<NewsController> {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  'delete'.tr,
+                                  LocaleKeys.delete.tr,
                                   style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 25.0,
@@ -215,7 +217,7 @@ class NewsWidgets extends GetView<NewsController> {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  'review'.tr,
+                                  LocaleKeys.review.tr,
                                   style: const TextStyle(
                                     color: Colors.yellowAccent,
                                     fontSize: 25.0,
@@ -243,7 +245,7 @@ class NewsWidgets extends GetView<NewsController> {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  'observations'.tr,
+                                  LocaleKeys.observations.tr,
                                   style: const TextStyle(
                                     color: Colors.orangeAccent,
                                     fontSize: 25.0,
@@ -391,7 +393,7 @@ class NewsWidgets extends GetView<NewsController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Carregar mais Matérias'.tr,
+              LocaleKeys.loadMoreNews.tr,
               style: theme.textTheme.bodyLarge,
             )
           ],
@@ -408,13 +410,14 @@ class NewsWidgets extends GetView<NewsController> {
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
         title: Text(
-          '${'delete'.tr} $type',
+          LocaleKeys.deleteType.trParams({'type': NewsLabels.type(type)}),
           style: TextStyle(
             color: theme.colorScheme.onSurface,
           ),
         ),
         content: Text(
-          '${'confirm_delete_this'.tr} $type?',
+          LocaleKeys.confirmDeleteType
+              .trParams({'type': NewsLabels.type(type).toLowerCase()}),
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -423,7 +426,7 @@ class NewsWidgets extends GetView<NewsController> {
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
-              'cancel'.tr,
+              LocaleKeys.cancel.tr,
               style: TextStyle(
                 color: theme.colorScheme.primary,
               ),
@@ -440,9 +443,9 @@ class NewsWidgets extends GetView<NewsController> {
                 creator: authorEmail,
               );
             },
-            child: const Text(
-              'delete',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              LocaleKeys.delete.tr,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -458,13 +461,13 @@ class NewsWidgets extends GetView<NewsController> {
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
         title: Text(
-          'news_review'.tr,
+          LocaleKeys.newsReview.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
           ),
         ),
         content: Text(
-          'choose_action_for_news'.tr,
+          LocaleKeys.chooseActionForNews.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -473,7 +476,7 @@ class NewsWidgets extends GetView<NewsController> {
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
-              'cancel'.tr,
+              LocaleKeys.cancel.tr,
               style: TextStyle(
                 color: theme.colorScheme.primary,
               ),
@@ -485,9 +488,9 @@ class NewsWidgets extends GetView<NewsController> {
                 Get.back();
                 await _showReasonDialog(news, true);
               },
-              child: const Text(
-                'accept',
-                style: TextStyle(color: Colors.green),
+              child: Text(
+                LocaleKeys.accept.tr,
+                style: const TextStyle(color: Colors.green),
               ),
             ),
           TextButton(
@@ -495,9 +498,9 @@ class NewsWidgets extends GetView<NewsController> {
               Get.back();
               await _showReasonDialog(news, false);
             },
-            child: const Text(
-              'reject',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              LocaleKeys.reject.tr,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -514,13 +517,13 @@ class NewsWidgets extends GetView<NewsController> {
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
         title: Text(
-          'observations'.tr,
+          LocaleKeys.observations.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
           ),
         ),
         content: Text(
-          text.isEmpty ? 'no_observation_available'.tr : text,
+          text.isEmpty ? LocaleKeys.noObservationAvailable.tr : text,
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -529,7 +532,7 @@ class NewsWidgets extends GetView<NewsController> {
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
-              'close'.tr,
+              LocaleKeys.close.tr,
               style: TextStyle(
                 color: theme.colorScheme.primary,
               ),
@@ -549,7 +552,9 @@ class NewsWidgets extends GetView<NewsController> {
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
         title: Text(
-          accepted ? 'reason_to_accept'.tr : 'reason_to_reject'.tr,
+          accepted
+              ? LocaleKeys.reasonToAccept.tr
+              : LocaleKeys.reasonToReject.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
           ),
@@ -558,7 +563,7 @@ class NewsWidgets extends GetView<NewsController> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'write_reason'.tr,
+              LocaleKeys.writeReason.tr,
               style: TextStyle(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -571,7 +576,7 @@ class NewsWidgets extends GetView<NewsController> {
                 color: theme.colorScheme.onSurface,
               ),
               decoration: InputDecoration(
-                hintText: 'write_reason_here'.tr,
+                hintText: LocaleKeys.writeReasonHere.tr,
                 hintStyle: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -589,7 +594,7 @@ class NewsWidgets extends GetView<NewsController> {
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
-              'cancel'.tr,
+              LocaleKeys.cancel.tr,
               style: TextStyle(
                 color: theme.colorScheme.primary,
               ),
@@ -612,7 +617,7 @@ class NewsWidgets extends GetView<NewsController> {
               );
             },
             child: Text(
-              'send'.tr,
+              LocaleKeys.send.tr,
               style: TextStyle(
                 color: accepted ? Colors.green : Colors.red,
               ),
@@ -631,13 +636,16 @@ class NewsWidgets extends GetView<NewsController> {
       final difference = now.difference(creationDate);
 
       if (difference.inSeconds < 60) {
-        return '${difference.inSeconds} ${'seconds_ago'.tr}';
+        return LocaleKeys.secondsAgo
+            .trParams({'count': '${difference.inSeconds}'});
       } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes} ${'minutes_ago'.tr}';
+        return LocaleKeys.minutesAgo
+            .trParams({'count': '${difference.inMinutes}'});
       } else if (difference.inHours < 24) {
-        return '${difference.inHours} ${'hours_ago'.tr}';
+        return LocaleKeys.hoursAgo
+            .trParams({'count': '${difference.inHours}'});
       } else {
-        return DateFormat('dd/MM/yyyy').format(creationDate);
+        return AppTranslation.formatDate(creationDate);
       }
     } catch (e) {
       return dataCriacao;

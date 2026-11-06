@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/controller/cdc_controller.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
@@ -28,7 +29,7 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
         foregroundColor: theme.colorScheme.onSurface,
 
         title: Text(
-          'communication_center'.tr,
+          LocaleKeys.communicationCenter.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -77,7 +78,7 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                   vertical: 16.0,
                 ),
                 child: Text(
-                  'chats'.tr,
+                  LocaleKeys.chats.tr,
                   style: TextStyle(
                     color: theme.colorScheme.onSurface,
                     fontSize: 28,
@@ -112,7 +113,7 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
                           );
                         } else {
                           PopUps.snackbar(
-                            texto: 'could_not_open_chat'.tr,
+                            texto: LocaleKeys.couldNotOpenChat.tr,
                             cor: Colors.red,
                           );
                         }

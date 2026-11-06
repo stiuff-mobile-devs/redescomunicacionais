@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class PublicationTermsDialog extends StatefulWidget {
   const PublicationTermsDialog({super.key});
@@ -36,9 +37,10 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
   bool get allAccepted =>
       checklist.values.every((item) => item == true);
 
+  // `textKey` é uma chave de LocaleKeys
   Widget buildCheckItem(
       String key,
-      String text,
+      String textKey,
       ) {
     return CheckboxListTile(
       value: checklist[key],
@@ -48,7 +50,7 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
         });
       },
       title: Text(
-        text,
+        textKey.tr,
         style: const TextStyle(
           fontSize: 14,
         ),
@@ -60,8 +62,8 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        "Guia Rápido de Publicação – RCL",
+      title: Text(
+        LocaleKeys.publicationGuideTitle.tr,
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -69,127 +71,127 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "1. Clareza da notícia",
-                style: TextStyle(
+              Text(
+                LocaleKeys.termsNewsClarity.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
               buildCheckItem(
                 "titulo_curto_direto",
-                "O título está curto e direto",
+                LocaleKeys.termShortTitle,
               ),
 
               buildCheckItem(
                 "texto_simples",
-                "O texto está simples, sem palavras difíceis",
+                LocaleKeys.termSimpleText,
               ),
 
               buildCheckItem(
                 "estrutura_texto",
-                "O texto tem princípio (o fato), desenvolvimento (explicação do fato) e fim (desfecho e indicação autorizada de telefones e emails úteis, se for o caso)",
+                LocaleKeys.termNewsStructure,
               ),
 
               const Divider(),
 
-              const Text(
-                "2. Qualidade da informação",
-                style: TextStyle(
+              Text(
+                LocaleKeys.termsInfoQuality.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
               buildCheckItem(
                 "fatos_conferidos",
-                "Conferi os fatos e minhas fontes são confiáveis",
+                LocaleKeys.termFactsChecked,
               ),
 
               buildCheckItem(
                 "origem_informacoes_imagens",
-                "Indiquei claramente a origem das informações e imagens",
+                LocaleKeys.termSourcesIndicated,
               ),
 
               buildCheckItem(
                 "sem_boatos_redes_sociais",
-                "Não publiquei nada baseado apenas em boatos ou redes sociais",
+                LocaleKeys.termNoRumors,
               ),
 
               const Divider(),
 
-              const Text(
-                "3. Ética e respeito",
-                style: TextStyle(
+              Text(
+                LocaleKeys.termsEthics.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
               buildCheckItem(
                 "sem_preconceito_violencia_ofensa",
-                "O texto da matéria não contém preconceito, violência nem ofensa",
+                LocaleKeys.termNoPrejudice,
               ),
 
               buildCheckItem(
                 "privacidade_criancas_vitimas",
-                "Protegi a privacidade de crianças e vítimas",
+                LocaleKeys.termPrivacy,
               ),
 
               buildCheckItem(
                 "midias_nao_manipuladas",
-                "Não alterei imagens, áudios ou vídeos de forma enganosa",
+                LocaleKeys.termNoManipulation,
               ),
 
               buildCheckItem(
                 "sem_ia",
-                "Não gerei imagens nem vídeos por inteligência artificial",
+                LocaleKeys.termNoAi,
               ),
 
               buildCheckItem(
                 "sem_copia",
-                "Não copiei esta notícia nem partes dela de outra fonte",
+                LocaleKeys.termNoCopy,
               ),
 
               const Divider(),
 
-              const Text(
-                "4. Imagens e vídeos",
-                style: TextStyle(
+              Text(
+                LocaleKeys.termsImages.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
               buildCheckItem(
                 "direito_uso_fotos_videos",
-                "Fiz a fotos e vídeos ou tenho autorização para usar fotos e vídeos feitos por outras pessoas",
+                LocaleKeys.termMediaRights,
               ),
 
               buildCheckItem(
                 "imagem_nao_sensacionalista",
-                "A imagem não é sensacionalista nem constrangedora (estas não devem nunca ser publicadas)",
+                LocaleKeys.termNoSensationalism,
               ),
 
               buildCheckItem(
                 "local_data_fonte_imagens",
-                "Ao final da matéria, identifiquei local, data e fonte das imagens",
+                LocaleKeys.termImageCredits,
               ),
 
               const Divider(),
 
-              const Text(
-                "5. Transparência",
-                style: TextStyle(
+              Text(
+                LocaleKeys.termsTransparency.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
               buildCheckItem(
                 "materia_assinada",
-                "Assinei a matéria com meu nome ou perfil",
+                LocaleKeys.termSigned,
               ),
 
               buildCheckItem(
                 "revisao_gramatical",
-                "Fiz a revisão gramatical do texto",
+                LocaleKeys.termGrammarReview,
               ),
             ],
           ),
@@ -200,8 +202,8 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
           onPressed: () {
             Get.back();
           },
-          child: const Text(
-            "Cancelar",
+          child: Text(
+            LocaleKeys.cancel.tr,
           ),
         ),
 
@@ -216,8 +218,8 @@ class _PublicationTermsDialogState extends State<PublicationTermsDialog> {
             );
           }
               : null,
-          child: const Text(
-            "Confirmar publicação",
+          child: Text(
+            LocaleKeys.confirmPublication.tr,
           ),
         ),
       ],

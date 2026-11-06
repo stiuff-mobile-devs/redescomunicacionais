@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
 import 'package:redescomunicacionais/app/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class LoginPage extends GetView<LoginController> {
   const LoginPage({super.key});
@@ -112,7 +113,7 @@ class LoginPage extends GetView<LoginController> {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      'app_name_multiline'.tr,
+                      LocaleKeys.appNameMultiline.tr,
                       style: TextStyle(
                         fontSize: titleFontSize,
                         color: Colors.white,
@@ -145,7 +146,8 @@ class LoginPage extends GetView<LoginController> {
                 // Versão
                 Obx(
                   () => Text(
-                    '${'version_label'.tr}: ${controller.appVersion.value}',
+                    LocaleKeys.versionLabel
+                        .trParams({'version': controller.appVersion.value}),
                     style: TextStyle(
                       fontSize: versionFontSize,
                       color: Colors.white.withOpacity(0.8),
@@ -211,7 +213,7 @@ class LoginPage extends GetView<LoginController> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'app_name_full'.tr,
+                  LocaleKeys.appNameFull.tr,
                   style: TextStyle(
                     fontSize: titleFontSize,
                     color: Colors.white,
@@ -275,7 +277,8 @@ class LoginPage extends GetView<LoginController> {
               ),
               child: Obx(
                 () => Text(
-                  '${'version_label'.tr}: ${controller.appVersion.value}',
+                  LocaleKeys.versionLabel
+                        .trParams({'version': controller.appVersion.value}),
                   style: TextStyle(
                     fontSize: versionFontSize,
                     color: Colors.white.withOpacity(0.8),
@@ -311,7 +314,7 @@ class LoginPage extends GetView<LoginController> {
         alignment: WrapAlignment.center,
         children: [
           _buildLoginCardButton(
-            label: 'login_with_google'.tr,
+            label: LocaleKeys.loginWithGoogle.tr,
             iconData: FontAwesomeIcons.google,
             badgeColor: Colors.white,
             iconColor: const Color(0xFFEA4335),
@@ -320,7 +323,7 @@ class LoginPage extends GetView<LoginController> {
             height: gridButtonHeight,
           ),
           _buildLoginCardButton(
-            label: 'login_with_microsoft'.tr,
+            label: LocaleKeys.loginWithMicrosoft.tr,
             iconData: FontAwesomeIcons.microsoft,
             badgeColor: Colors.white,
             iconColor: const Color(0xFF00A4EF),
@@ -329,7 +332,7 @@ class LoginPage extends GetView<LoginController> {
             height: gridButtonHeight,
           ),
           _buildLoginCardButton(
-            label: 'login_with_apple'.tr,
+            label: LocaleKeys.loginWithApple.tr,
             badgeColor: Colors.white,
             iconData: FontAwesomeIcons.apple,
             iconColor: Colors.black,
@@ -338,7 +341,7 @@ class LoginPage extends GetView<LoginController> {
             height: gridButtonHeight,
           ),
           _buildLoginCardButton(
-            label: 'login_anonymously'.tr,
+            label: LocaleKeys.loginAnonymously.tr,
             badgeColor: Colors.white,
             iconData: FontAwesomeIcons.userSecret,
             iconColor: Colors.black,

@@ -9,12 +9,14 @@ import 'package:redescomunicacionais/app/modules/dashboard/controller/home_contr
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/utils/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class NewsController extends GetxController {
   final NewsRepository _repository = NewsRepository();
@@ -228,7 +230,7 @@ class NewsController extends GetxController {
   }) async {
     if (creator != userEmail) {
       PopUps.snackbar(
-        texto: 'Você não pode revisar sua própria matéria.',
+        texto: LocaleKeys.onlyAuthorCanDelete.tr,
         cor: Colors.red,
       );
       return;
@@ -240,13 +242,15 @@ class NewsController extends GetxController {
       await _repository.hideNews(newsId, status, userEmail);
       await syncNews(null);
       PopUps.snackbar(
-        texto: '$type excluída com sucesso!',
+        texto: LocaleKeys.typeDeletedSuccess
+            .trParams({'type': NewsLabels.type(type)}),
         cor: Colors.green,
       );
     } catch (e) {
       debugPrint("Erro no hideNews: $e");
       PopUps.snackbar(
-        texto: 'Não foi possível excluir essa $type no momento.',
+        texto: LocaleKeys.typeDeleteError
+            .trParams({'type': NewsLabels.type(type).toLowerCase()}),
         cor: Colors.red,
       );
     } finally {
@@ -266,7 +270,7 @@ class NewsController extends GetxController {
     // Impede auto-revisão
     if (validator == creator) {
       PopUps.snackbar(
-        texto: 'Você não pode revisar sua própria matéria.',
+        texto: LocaleKeys.cannotReviewOwnNews.tr,
         cor: Colors.red,
       );
       return;
@@ -286,14 +290,14 @@ class NewsController extends GetxController {
       await syncNews(null);
       PopUps.snackbar(
         texto: isApproved
-            ? 'Matéria aprovada com sucesso!'
-            : 'Matéria rejeitada com sucesso!',
+            ? LocaleKeys.newsApprovedSuccess.tr
+            : LocaleKeys.newsRejectedSuccess.tr,
         cor: Colors.green,
       );
     } catch (e) {
       debugPrint("Erro no Controller (reviewNews): $e");
       PopUps.snackbar(
-        texto: 'Não foi possível revisar a matéria.',
+        texto: LocaleKeys.newsReviewError.tr,
         cor: Colors.red,
       );
     } finally {

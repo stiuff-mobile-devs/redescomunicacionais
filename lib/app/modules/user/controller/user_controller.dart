@@ -4,7 +4,9 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
+import 'package:redescomunicacionais/app/utils/components/friendly_exception.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class UserController extends GetxController {
   final UserRepository _repository = UserRepository();
@@ -34,7 +36,7 @@ class UserController extends GetxController {
   Future<void> saveCurrentUserName(String newName) async {
     if (newName.trim().isEmpty) {
       PopUps.snackbar(
-        texto: 'invalid_name'.tr,
+        texto: LocaleKeys.invalidName.tr,
         cor: Colors.orange,
       );
       return;
@@ -49,12 +51,13 @@ class UserController extends GetxController {
       _refreshMenuUser();
 
       PopUps.snackbar(
-        texto: 'name_updated_success'.tr,
+        texto: LocaleKeys.nameUpdatedSuccess.tr,
         cor: Colors.green,
       );
     } catch (e) {
+      debugPrint('Erro ao atualizar o nome: $e');
       PopUps.snackbar(
-        texto: '${'name_update_error'.tr}: $e',
+        texto: _errorMessage(e, LocaleKeys.nameUpdateError),
         cor: Colors.red,
       );
     } finally {
@@ -87,16 +90,24 @@ class UserController extends GetxController {
       await _repository.deleteCurrentUserDocFromFirebase();
       Get.offAllNamed(Routes.LOGIN);
       PopUps.snackbar(
-        texto: 'account_deleted_success'.tr,
+        texto: LocaleKeys.accountDeletedSuccess.tr,
         cor: Colors.green,
       );
     } catch (e) {
+      debugPrint('Erro ao excluir a conta: $e');
       PopUps.snackbar(
-        texto: '${'account_delete_error'.tr}: $e',
+        texto: _errorMessage(e, LocaleKeys.accountDeleteError),
         cor: Colors.red,
       );
     } finally {
       isDeletingAccount.value = false;
     }
+  }
+
+  // Mensagem para o usuário: a específica do erro, se houver, ou a genérica.
+  // O detalhe técnico do erro vai só para o log.
+  String _errorMessage(Object error, String fallbackKey) {
+    if (error is FriendlyException) return error.messageKey.tr;
+    return fallbackKey.tr;
   }
 }

@@ -32,8 +32,8 @@ class ReleaseNotesService {
 
       return {
         'version': data['version']?.toString() ?? version,
-        'title': data['title']?.toString() ??
-            'Novidades da atualização',
+        // Sem título no documento, a tela usa o título padrão traduzido
+        'title': data['title']?.toString(),
         'releaseNotes': notes.whereType<String>().toList(),
       };
     } catch (e) {

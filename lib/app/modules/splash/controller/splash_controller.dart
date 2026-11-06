@@ -7,6 +7,7 @@ import 'package:redescomunicacionais/app/modules/login/controller/login_controll
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/services/release_notes_service.dart';
 import 'package:redescomunicacionais/app/services/update_version_service.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class SplashController extends GetxController {
   late final LoginController _loginController;
@@ -87,7 +88,7 @@ class SplashController extends GetxController {
         AlertDialog(
           title: Text(
             notesData['title'] as String? ??
-                'Novidades da atualização',
+                LocaleKeys.releaseNotesTitle.tr,
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -112,7 +113,7 @@ class SplashController extends GetxController {
           actions: [
             TextButton(
               onPressed: () => Get.back<void>(),
-              child: const Text('Entendi'),
+              child: Text(LocaleKeys.gotIt.tr),
             ),
           ],
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class YouTubeController extends GetxController {
   late YoutubePlayerController _controller;
@@ -122,7 +123,7 @@ class YouTubeMiniPlayer extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                'invalid_youtube_url'.tr,
+                LocaleKeys.invalidYoutubeUrl.tr,
                 style: const TextStyle(color: Colors.white),
               ),
             ),
@@ -176,7 +177,7 @@ class YouTubeMiniPlayer extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.open_in_new),
-              label: Text('watch_on_youtube'.tr),
+              label: Text(LocaleKeys.watchOnYoutube.tr),
               onPressed: () async {
                 final url =
                     'https://www.youtube.com/watch?v=${controller.videoId}';

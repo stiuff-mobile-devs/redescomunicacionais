@@ -14,6 +14,7 @@ import 'package:redescomunicacionais/app/modules/news/utils/news_states.dart';
 import 'package:redescomunicacionais/app/utils/components/popups.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/publication_terms_dialog.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/publication_opinion_terms_dialog.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class CreateNewsFormController extends GetxController {
 
@@ -72,7 +73,10 @@ class CreateNewsFormController extends GetxController {
     _newsController = Get.find<NewsController>();
     _imageController = Get.find<ImageBase64Service>();
     users = await userRepository.getAllUsersFromFirebase();
-    availableEditors = users.map((user) => user.name ?? 'Nome não Informado').toList()..sort();
+    availableEditors = users
+        .map((user) => user.name ?? LocaleKeys.nameNotProvided.tr)
+        .toList()
+      ..sort();
   }
 
   @override
@@ -149,7 +153,7 @@ class CreateNewsFormController extends GetxController {
       
       final Map<String, dynamic>? terms;
 
-      if (_type.value == 'Opinião') {
+      if (_type.value == NewsTypes.opinion) {
         terms = await Get.dialog<Map<String, dynamic>>(
           const PublicationOpinionTermsDialog(),
         );
@@ -166,7 +170,7 @@ class CreateNewsFormController extends GetxController {
       }
     } else {
       PopUps.snackbar(
-        texto: 'Por favor, preencha todos os campos obrigatórios.'.tr,
+        texto: LocaleKeys.fillRequiredFields.tr,
         cor: Colors.red,
       );
     }
@@ -203,24 +207,25 @@ class CreateNewsFormController extends GetxController {
 
       if (draft) {
         PopUps.snackbar(
-          texto: 'Rascunho salvo com sucesso!'.tr,
+          texto: LocaleKeys.draftSavedSuccess.tr,
           cor: Colors.green,
         );
       } else {
         PopUps.snackbar(
-          texto: 'Matéria enviada para análise com sucesso!'.tr,
+          texto: LocaleKeys.newsSentForReview.tr,
           cor: Colors.green,
         );
       }
     } catch (e) {
+      debugPrint('Erro ao salvar/publicar matéria: $e');
       if (draft) {
         PopUps.snackbar(
-          texto: 'Erro ao salvar rascunho'.tr,
+          texto: LocaleKeys.saveDraftError.tr,
           cor: Colors.red,
         );
       } else {
         PopUps.snackbar(
-          texto: 'Erro ao publicar matéria'.tr,
+          texto: LocaleKeys.publishNewsError.tr,
           cor: Colors.red,
         );
       }

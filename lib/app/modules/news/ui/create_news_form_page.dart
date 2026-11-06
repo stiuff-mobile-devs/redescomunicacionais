@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/create_news_form_controller.dart';
+import 'package:redescomunicacionais/app/modules/news/utils/news_labels.dart';
 import 'package:redescomunicacionais/app/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/utils/translations/locale_keys.dart';
 
 class CreateNewsPage extends GetView<CreateNewsFormController> {
   const CreateNewsPage({super.key});
@@ -30,7 +32,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 ),
               ),
         title: Text(
-          'Adicionar Matéria'.tr,
+          LocaleKeys.addNews.tr,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -126,7 +128,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Colaboradores (Opcional)'.tr,
+                    LocaleKeys.collaboratorsOptional.tr,
                     style: TextStyle(
                       color: colors.onSurfaceVariant,
                       fontSize: 12,
@@ -136,7 +138,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                   Obx(() {
                     if (controller.selectedCollaborators.isEmpty) {
                       return Text(
-                        'Toque para adicionar colaboradores...'.tr,
+                        LocaleKeys.tapToAddCollaborators.tr,
                         style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
                       );
                     }
@@ -172,7 +174,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     Get.dialog(
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
-        title: Text('Adicionar Colaboradores'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        title: Text(LocaleKeys.addCollaborators.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -185,7 +187,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                     child: TextField(
                       controller: manualInputController,
                       decoration: InputDecoration(
-                        hintText: 'Digitar nome manualmente...'.tr,
+                        hintText: LocaleKeys.typeNameManually.tr,
                         isDense: true,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -208,7 +210,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 padding: EdgeInsets.symmetric(vertical: 12.0),
                 child: Divider(),
               ),
-              Text('Editores do Projeto:'.tr, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+              Text(LocaleKeys.projectEditors.tr, style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
               const SizedBox(height: 8),
               Flexible(
                 child: SingleChildScrollView(
@@ -217,10 +219,10 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                       final isSelected = controller.selectedCollaborators.contains(editor);
                       return CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(editor ?? "Nome não Informado", style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                        title: Text(editor ?? LocaleKeys.nameNotProvided.tr, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
                         value: isSelected,
                         activeColor: theme.colorScheme.primary,
-                        onChanged: (_) => controller.toggleCollaborator(editor ?? "Nome não Informado"),
+                        onChanged: (_) => controller.toggleCollaborator(editor ?? LocaleKeys.nameNotProvided.tr),
                       );
                     }).toList(),
                   )),
@@ -232,7 +234,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Concluir'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+            child: Text(LocaleKeys.done.tr, style: TextStyle(color: theme.colorScheme.primary)),
           ),
         ],
       ),
@@ -265,14 +267,14 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'select_categories'.tr,
+                        LocaleKeys.selectCategories.tr,
                         style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Obx(() {
                         if (controller.selectedCategories.isEmpty) {
                           return Text(
-                            'Toque para selecionar...'.tr,
+                            LocaleKeys.tapToSelect.tr,
                             style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
                           );
                         }
@@ -281,7 +283,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                           runSpacing: 6,
                           children: controller.selectedCategories.map((category) {
                             return Chip(
-                              label: Text(category, style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
+                              label: Text(NewsLabels.category(category), style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
                               backgroundColor: colors.primaryContainer,
                               deleteIcon: Icon(Icons.close, size: 16, color: colors.onPrimaryContainer),
                               onDeleted: () => controller.toggleCategory(category),
@@ -303,7 +305,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           if (controller.showCategoryError) {
             return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('select_at_least_one_category'.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(LocaleKeys.selectAtLeastOneCategory.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
             );
           }
           return const SizedBox.shrink();
@@ -318,7 +320,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     Get.dialog(
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
-        title: Text('select_categories'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        title: Text(LocaleKeys.selectCategories.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -328,7 +330,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 final isSelected = controller.selectedCategories.contains(category);
                 return CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(category, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                  title: Text(NewsLabels.category(category), style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
                   value: isSelected,
                   activeColor: theme.colorScheme.primary,
                   onChanged: (_) => controller.toggleCategory(category),
@@ -340,7 +342,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Concluir'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+            child: Text(LocaleKeys.done.tr, style: TextStyle(color: theme.colorScheme.primary)),
           ),
         ],
       ),
@@ -373,14 +375,14 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'select_city'.tr,
+                        LocaleKeys.selectCity.tr,
                         style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Obx(() {
                         if (controller.selectedCities.isEmpty) {
                           return Text(
-                            'Toque para selecionar...'.tr,
+                            LocaleKeys.tapToSelect.tr,
                             style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
                           );
                         }
@@ -411,7 +413,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           if (controller.showCityError) {
             return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('select_at_least_one_city'.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(LocaleKeys.selectAtLeastOneCity.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
             );
           }
           return const SizedBox.shrink();
@@ -426,7 +428,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     Get.dialog(
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
-        title: Text('select_city'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        title: Text(LocaleKeys.selectCity.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -448,7 +450,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Concluir'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+            child: Text(LocaleKeys.done.tr, style: TextStyle(color: theme.colorScheme.primary)),
           ),
         ],
       ),
@@ -481,19 +483,19 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'select_type'.tr,
+                        LocaleKeys.selectType.tr,
                         style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Obx(() {
                         if (controller.type == null || controller.type!.isEmpty) {
                           return Text(
-                            'Toque para selecionar...'.tr,
+                            LocaleKeys.tapToSelect.tr,
                             style: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.8)),
                           );
                         }
                         return Chip(
-                          label: Text(controller.type!, style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
+                          label: Text(NewsLabels.type(controller.type), style: TextStyle(fontSize: 12, color: colors.onPrimaryContainer)),
                           backgroundColor: colors.primaryContainer,
                           padding: EdgeInsets.zero,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -511,7 +513,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           if (controller.showTypeError) {
             return Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('select_at_least_one_type'.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(LocaleKeys.selectAtLeastOneType.tr, style: const TextStyle(color: Colors.red, fontSize: 12)),
             );
           }
           return const SizedBox.shrink();
@@ -526,7 +528,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     Get.dialog(
       AlertDialog(
         backgroundColor: theme.colorScheme.surface,
-        title: Text('select_type'.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
+        title: Text(LocaleKeys.selectType.tr, style: TextStyle(color: theme.colorScheme.onSurface)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -536,7 +538,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                 final isSelected = controller.type == selectedType;
                 return CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(selectedType, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                  title: Text(NewsLabels.type(selectedType), style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
                   value: isSelected,
                   activeColor: theme.colorScheme.primary,
                   // Tipo normalmente é seleção única, então sobrescrevemos e fechamos o modal (ou permite fechar no botão concluir)
@@ -552,7 +554,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Cancelar'.tr, style: TextStyle(color: theme.colorScheme.primary)),
+            child: Text(LocaleKeys.cancel.tr, style: TextStyle(color: theme.colorScheme.primary)),
           ),
         ],
       ),
@@ -570,7 +572,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       controller: controller.titleController,
       style: TextStyle(color: colors.onSurface),
       decoration: InputDecoration(
-        labelText: 'title'.tr,
+        labelText: LocaleKeys.title.tr,
         labelStyle: TextStyle(color: colors.onSurfaceVariant),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: colors.outline),
@@ -591,7 +593,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'title_required'.tr;
+          return LocaleKeys.titleRequired.tr;
         }
         return null;
       },
@@ -606,7 +608,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
       controller: controller.subtitleController,
       style: TextStyle(color: colors.onSurface),
       decoration: InputDecoration(
-        labelText: 'subtitle_optional'.tr,
+        labelText: LocaleKeys.subtitleOptional.tr,
         labelStyle: TextStyle(color: colors.onSurfaceVariant),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: colors.outline),
@@ -631,9 +633,9 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           controller: controller.videoUrlController,
           style: TextStyle(color: colors.onSurface),
           decoration: InputDecoration(
-            labelText: 'youtube_url_optional'.tr,
+            labelText: LocaleKeys.youtubeUrlOptional.tr,
             labelStyle: TextStyle(color: colors.onSurfaceVariant),
-            hintText: 'youtube_url_placeholder'.tr,
+            hintText: LocaleKeys.youtubeUrlPlaceholder.tr,
             hintStyle: TextStyle(color: colors.onSurfaceVariant.withOpacity(0.6)),
             prefixIcon: Icon(Icons.video_library, color: colors.onSurfaceVariant),
             enabledBorder: OutlineInputBorder(
@@ -647,7 +649,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           ),
         ),
         const SizedBox(height: 8),
-        Text('paste_youtube_link_here'.tr, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12)),
+        Text(LocaleKeys.pasteYoutubeLinkHere.tr, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12)),
       ],
     );
   }
@@ -672,7 +674,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           controller.imageController.pickImage();
         },
         icon: const Icon(Icons.image),
-        label: Text('add_image'.tr),
+        label: Text(LocaleKeys.addImage.tr),
         style: ElevatedButton.styleFrom(
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
@@ -688,7 +690,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     final colors = theme.colorScheme;
 
     return Text(
-      'image_requirements'.tr,
+      LocaleKeys.imageRequirements.tr,
       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.onSurface),
     );
   }
@@ -745,7 +747,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               ),
             ),
             label: Text(
-              'save_draft_news'.tr,
+              LocaleKeys.saveDraft.tr,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
             ),
           ),
@@ -764,7 +766,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               ),
             ),
             label: Text(
-              'publish_news'.tr,
+              LocaleKeys.publishNews.tr,
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
