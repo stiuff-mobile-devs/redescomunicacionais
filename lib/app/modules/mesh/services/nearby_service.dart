@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart' show NewsRepository;
 
@@ -168,10 +169,31 @@ class NearbyService extends GetxService {
     }
   }
 
+  // Pacotes que circulam na mesh: os verificados (box principal, exceto
+  // rascunhos, que ficam só no aparelho) + os de retransmissão (assinatura não
+  // verificada). Para o mesmo id, fica o mais recente.
+  Future<Map<String, NewsPackageModel>> _meshPackages() async {
+    final Map<String, NewsPackageModel> result = {};
+
+    void add(NewsPackageModel p) {
+      final id = p.id;
+      if (id == null || p.news?.status == NewsStates.rascunho) return;
+      final current = result[id];
+      if (current == null || _isNewer(p, current)) result[id] = p;
+    }
+
+    (await newsRepository.getAllPackageNews()).forEach(add);
+    (await newsRepository.getAllRelayPackages()).forEach(add);
+    return result;
+  }
+
+  bool _isNewer(NewsPackageModel a, NewsPackageModel b) =>
+      (a.lastUpdated ?? DateTime(1970)).isAfter(b.lastUpdated ?? DateTime(1970));
+
   void _sendHandshake(String endpointId) async {
     debugPrint('NearbyService: Preparando Handshake para $endpointId.');
     try {
-      final localNews = await newsRepository.getAllPackageNews(); 
+      final localNews = (await _meshPackages()).values;
       List<Map<String, dynamic>> handshakeItems = localNews.map((news) {
         return {'id': news.id, 'lastUpdated': news.lastUpdated?.toIso8601String()};
       }).toList();
@@ -202,12 +224,12 @@ class NearbyService extends GetxService {
       if (data['type'] == 'HANDSHAKE') {
         debugPrint("Começou a Conferir as matérias");
         final List<dynamic> remoteItems = data['items'] ?? [];
-        final localNews = await newsRepository.getAllPackageNews();
+        final localNews = await _meshPackages();
 
         for (var remoteItem in remoteItems) {
           String remoteId = remoteItem['id'];
           DateTime remoteDate = DateTime.parse(remoteItem['lastUpdated']);
-          final localMatch = localNews.firstWhereOrNull((news) => news.id == remoteId);
+          final localMatch = localNews[remoteId];
 
           if (localMatch == null) {
             _requestSpecificNews(endpointId, remoteId);
@@ -252,25 +274,41 @@ class NearbyService extends GetxService {
       else if (data['type'] == 'FULL_NEWS_PACKAGE') {
         NewsPackageModel receivedPackage = NewsPackageModel.fromJson(data['package']);
         String authorEmail = receivedPackage.email ?? '';
-        
+        final String? id = receivedPackage.id;
+
+        // Rascunho não circula (versões antigas do app ainda podem enviar)
+        if (id == null ||
+            receivedPackage.news == null ||
+            receivedPackage.news?.status == NewsStates.rascunho) {
+          debugPrint('NearbyService: Pacote sem id/matéria ou rascunho. Ignorado.');
+          return;
+        }
+
         debugPrint('NearbyService: Pacote assinado por $authorEmail recebido. Validando...');
-        
+
         List<String> keysToTest = await newsRepository.getKeysListByEmail(authorEmail);
+        bool isAuthentic = false;
+        for (String keyStr in keysToTest) {
+          isAuthentic = offlinePackageService.verifyNewsPackage(receivedPackage, keyStr);
+          if (isAuthentic) break;
+        }
 
-        if (keysToTest.isNotEmpty) {
-          bool isAuthentic = false;
-
-          for (String keyStr in keysToTest) {
-            isAuthentic = offlinePackageService.verifyNewsPackage(receivedPackage, keyStr);
-            if (isAuthentic) break; 
+        if (isAuthentic) {
+          // LWW: não troca a versão local por uma mais antiga
+          final local = await newsRepository.getPackageNews(id);
+          if (local == null || _isNewer(receivedPackage, local)) {
+            debugPrint('NearbyService: SUCESSO! Assinatura autêntica. Matéria salva.');
+            await newsRepository.saveNewsPackageInHive(receivedPackage);
           }
-
-          if (isAuthentic && receivedPackage.news != null) {
-            debugPrint('NearbyService: SUCESSO! Assinatura autêntica. Matéria e pacote salvos.');
-            await newsRepository.saveNewsPackageInHive(receivedPackage);
-          } else {
-            debugPrint('NearbyService: Falha na validação. Salvando como nó de retransmissão.');
-            await newsRepository.saveNewsPackageInHive(receivedPackage);
+          await newsRepository.removeRelayPackage(id);
+        } else {
+          // Assinatura inválida ou autor sem chave conhecida: não é exibida
+          // nem sobrescreve a versão válida, mas segue sendo retransmitida
+          debugPrint('NearbyService: Falha na validação. Salvando como nó de retransmissão.');
+          final relay = (await newsRepository.getAllRelayPackages())
+              .firstWhereOrNull((p) => p.id == id);
+          if (relay == null || _isNewer(receivedPackage, relay)) {
+            await newsRepository.saveRelayPackage(receivedPackage);
           }
         }
       }
@@ -304,7 +342,8 @@ class NearbyService extends GetxService {
   void _sendFullNewsPackage(String endpointId, String? newsId) async {
     if (newsId == null) return;
     try {
-      NewsPackageModel? package = await newsRepository.getPackageNews(newsId);
+      // Nunca envia rascunho (só pacotes que circulam na mesh)
+      NewsPackageModel? package = (await _meshPackages())[newsId];
       if (package != null) {
         Map<String, dynamic> payloadData = {'type': 'FULL_NEWS_PACKAGE', 'package': package.toJson()};
         String jsonString = jsonEncode(payloadData);

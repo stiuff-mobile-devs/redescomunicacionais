@@ -22,6 +22,8 @@ class HiveInitializer {
       await _openBoxSafe<UserModel>('users');
       await _openBoxSafe<NewsModel>('news');
       await _openBoxSafe<NewsPackageModel>('news_packages');
+      // Pacotes da mesh com assinatura não verificada (só retransmissão)
+      await _openBoxSafe<NewsPackageModel>('news_relay_packages');
       await _openBoxSafe<PublicKeyModel>('public_key_model');
       await _openBoxSafe<PublicKeyPackage>('public_key_package');
     } catch (e) {

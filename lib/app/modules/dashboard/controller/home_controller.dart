@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
@@ -22,7 +21,6 @@ class HomeController extends GetxController {
   late ConnectionsController connectionsController;
 
   final UserRepository _userRepository = UserRepository();
-  final NewsRepository _newsRepository = NewsRepository();
 
   UserModel user = UserModel.empty();
 
@@ -84,9 +82,8 @@ class HomeController extends GetxController {
 
   Future<void> refreshDashboardData() async {
     try {
-      await _newsRepository.syncNewsHiveAndFirebase(user);
-      await newsController.getPublicNewsFromHive(null);
-      await newsController.getOuthersNewsFromHive();
+      // Usa a mesma fila do NewsController (uma sincronização por vez)
+      await newsController.requestSync();
       forceRecreate();
     } catch (e) {
       debugPrint('Erro ao atualizar os dados da Home: $e');

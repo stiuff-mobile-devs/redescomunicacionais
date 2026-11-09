@@ -464,7 +464,6 @@ class NewsWidgets extends GetView<NewsController> {
       validator: controller.user.email!,
       creator: news.createdBy,
       validatorName: controller.user.name ?? '',
-      newsType: news.type,
     );
   }
 

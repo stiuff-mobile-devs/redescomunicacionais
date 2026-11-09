@@ -19,6 +19,19 @@ class NewsProvider {
   final String publicKeyPackageKey = "publicKeyPackage";
   final String publicKeyPackagePath = "public_key_packages";
   final String collectionPackageNews = "news_packages";
+  // Pacotes recebidos pela mesh sem assinatura válida: só retransmitidos,
+  // nunca exibidos nem enviados à API
+  final String collectionRelayPackages = "news_relay_packages";
+
+  Future<Box<NewsPackageModel>> _newsBox() async =>
+      Hive.isBoxOpen(collectionPackageNews)
+          ? Hive.box<NewsPackageModel>(collectionPackageNews)
+          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+
+  Future<Box<NewsPackageModel>> _relayBox() async =>
+      Hive.isBoxOpen(collectionRelayPackages)
+          ? Hive.box<NewsPackageModel>(collectionRelayPackages)
+          : await Hive.openBox<NewsPackageModel>(collectionRelayPackages);
 
   //-----------------------------------------
   // Funções de manipulação Online (Firebase)
@@ -135,9 +148,7 @@ class NewsProvider {
   //-----------------------------------------
   Future<NewsPackageModel?> getPackageNewsFromHive(String id) async {
     try {
-      var box = Hive.isBoxOpen(collectionPackageNews)
-          ? Hive.box<NewsPackageModel>(collectionPackageNews)
-          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+      final box = await _newsBox();
 
       return box.get(id);
     } catch (e) {
@@ -147,9 +158,7 @@ class NewsProvider {
 
   Future<List<NewsPackageModel>> getAllPackageNewsFromHive() async {
     try {
-      var box = Hive.isBoxOpen(collectionPackageNews)
-          ? Hive.box<NewsPackageModel>(collectionPackageNews)
-          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+      final box = await _newsBox();
 
       // Pega todos os valores da caixa e transforma em uma lista
       return box.values.toList();
@@ -160,9 +169,7 @@ class NewsProvider {
 
   Future<void> saveNewsPackageInHive(NewsPackageModel package) async {
     try {
-      var box = Hive.isBoxOpen(collectionPackageNews)
-          ? Hive.box<NewsPackageModel>(collectionPackageNews)
-          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+      final box = await _newsBox();
 
       //  salva ou atualiza se o ID já existir
       await box.put(package.id, package);
@@ -176,9 +183,7 @@ class NewsProvider {
     if (newsList.isEmpty) return;
 
     try {
-      var box = Hive.isBoxOpen(collectionPackageNews)
-          ? Hive.box<NewsPackageModel>(collectionPackageNews)
-          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+      final box = await _newsBox();
 
       final Map<String, NewsPackageModel> newsMap = {};
       for (var news in newsList) {
@@ -202,9 +207,7 @@ class NewsProvider {
     DateTime now = DateTime.now();
 
     try {
-      final box = Hive.isBoxOpen(collectionPackageNews)
-          ? Hive.box<NewsPackageModel>(collectionPackageNews)
-          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+      final box = await _newsBox();
 
       NewsPackageModel? news = box.get(newsId);
 
@@ -213,7 +216,10 @@ class NewsProvider {
         news.news?.excludedAt = now;
         news.news?.excludedBy = userEmail;
         news.news?.lastUpdated = now;
-        await offlinePackageService.resignNewsPackage(news);
+        final resigned = await offlinePackageService.resignNewsPackage(news);
+        if (resigned == null) {
+          throw Exception('Falha ao assinar a exclusão.');
+        }
       }
     } catch (e) {
       debugPrint("Erro crítico ao atualizar Hive local: $e");
@@ -224,9 +230,7 @@ class NewsProvider {
   Future<void> updateNews(
       String newsId, Map<String, dynamic> updatedData) async {
     try {
-      final box = Hive.isBoxOpen(collectionPackageNews)
-          ? Hive.box<NewsPackageModel>(collectionPackageNews)
-          : await Hive.openBox<NewsPackageModel>(collectionPackageNews);
+      final box = await _newsBox();
 
       NewsPackageModel? existingNews = box.get(newsId);
 
@@ -264,50 +268,61 @@ class NewsProvider {
     required String reason,
     required String validator,
     required String validatorName,
-    required String newsType,
   }) async {
-    DateTime now = DateTime.now();
-    bool isDeleted = newsType == NewsStates.deletado;
-    String status = isApproved ? NewsStates.publicado : NewsStates.rejeitado;
-
-    final Map<String, dynamic> updates = {
-      'status': isDeleted ? NewsStates.deletado : status,
-      'type': newsType,
-    };
+    final DateTime now = DateTime.now();
 
     try {
-      if (Hive.isBoxOpen(collectionPackageNews)) {
-        var box = Hive.box<NewsPackageModel>(collectionPackageNews);
-        var news = box.get(newsId);
+      final box = await _newsBox();
+      final news = box.get(newsId);
 
-        if (news != null) {
-          news.news?.status = updates['status'];
-          news.news?.type = updates['type'];
-          news.news?.lastUpdated = now;
+      if (news == null) {
+        throw Exception('Notícia $newsId não encontrada no Hive local.');
+      }
 
-          if (isApproved) {
-            news.news?.validatedAt = now;
-            news.news?.validatedObservation = reason;
-            news.news?.validatedBy = validator;
-            news.news?.validatedByName = validatorName;
-          } else {
-            if (isDeleted) {
-              news.news?.excludedAt = now;
-              news.news?.excludedBy = validator;
-              news.news?.excludedObservation = reason;
-            } else {
-              news.news?.rejectedAt = now;
-              news.news?.rejectedBy = validator;
-              news.news?.rejectedObservation = reason;
-            }
-          }
-          await offlinePackageService.resignNewsPackage(news);
-        }
+      news.news?.status =
+          isApproved ? NewsStates.publicado : NewsStates.rejeitado;
+      news.news?.lastUpdated = now;
+
+      if (isApproved) {
+        news.news?.validatedAt = now;
+        news.news?.validatedObservation = reason;
+        news.news?.validatedBy = validator;
+        news.news?.validatedByName = validatorName;
+      } else {
+        news.news?.rejectedAt = now;
+        news.news?.rejectedBy = validator;
+        news.news?.rejectedObservation = reason;
+      }
+
+      final resigned = await offlinePackageService.resignNewsPackage(news);
+      if (resigned == null) {
+        throw Exception('Falha ao assinar a revisão.');
       }
     } catch (e) {
       debugPrint("Erro ao atualizar revisão no Hive: $e");
       throw Exception("Erro ao atualizar revisão no Hive");
     }
+  }
+
+  //-----------------------------------------
+  // Pacotes de retransmissão (mesh)
+  //-----------------------------------------
+
+  Future<void> saveRelayPackage(NewsPackageModel package) async {
+    final key = package.id ?? package.news?.id;
+    if (key == null) return;
+    final box = await _relayBox();
+    await box.put(key, package);
+  }
+
+  Future<List<NewsPackageModel>> getAllRelayPackages() async {
+    final box = await _relayBox();
+    return box.values.toList();
+  }
+
+  Future<void> removeRelayPackage(String id) async {
+    final box = await _relayBox();
+    await box.delete(id);
   }
 
   //-----------------------------------------
@@ -345,6 +360,9 @@ class NewsProvider {
           await getAllPackageNewsFromHive();
 
       for (NewsPackageModel hiveNews in hivePackageNewsList) {
+        // Rascunho fica só no aparelho: nunca vai para a API
+        if (hiveNews.news?.status == NewsStates.rascunho) continue;
+
         try {
           NewsPackageModel? fbNews =
               await _getNewsByIdFromFirebase(hiveNews.news?.id ?? "");
@@ -356,7 +374,7 @@ class NewsProvider {
                 !_isLessThan30DaysOld(hiveNews.news?.lastUpdated)) {
               continue;
             } else {
-              await _savePackageNewsToFirebase(hiveNews);
+              await _uploadAndMark(hiveNews);
             }
           } else {
             // Ambas existem: compara as datas de modificação para ver quem ganha
@@ -365,7 +383,7 @@ class NewsProvider {
 
             if (fbDate == null && hiveDate != null) {
               // Documento antigo no Firebase sem data no pacote: o local vence
-              await _savePackageNewsToFirebase(hiveNews);
+              await _uploadAndMark(hiveNews);
             } else if (fbDate != null && hiveDate != null) {
               DateTime cleanFbDate = _trimDateTime(fbDate);
               DateTime cleanHiveDate = _trimDateTime(hiveDate);
@@ -373,7 +391,7 @@ class NewsProvider {
               if (cleanFbDate.isAfter(cleanHiveDate)) {
                 await saveNewsPackageInHive(fbNews);
               } else if (cleanHiveDate.isAfter(cleanFbDate)) {
-                await _savePackageNewsToFirebase(hiveNews);
+                await _uploadAndMark(hiveNews);
               }
             }
           }
@@ -383,6 +401,32 @@ class NewsProvider {
       }
     } catch (e) {
       throw Exception("Erro fatal ao sincronizar Hive e Firebase: $e");
+    }
+  }
+
+  // Envia o pacote à API e, com sucesso, marca isUploaded = true no Hive.
+  // isUploaded não entra na assinatura, então o pacote continua válido.
+  Future<void> _uploadAndMark(NewsPackageModel package) async {
+    await _savePackageNewsToFirebase(package);
+
+    final box = await _newsBox();
+    final key = package.id ?? package.news?.id;
+    if (key == null) return;
+
+    // Só marca se o pacote local não mudou durante o envio
+    final current = box.get(key);
+    if (current != null && current.lastUpdated == package.lastUpdated) {
+      await box.put(
+        key,
+        NewsPackageModel(
+          news: current.news,
+          signature: current.signature,
+          email: current.email,
+          lastUpdated: current.lastUpdated,
+          isUploaded: true,
+          id: current.id,
+        ),
+      );
     }
   }
 

@@ -63,11 +63,11 @@ Ao criar uma tela nova: adicionar a constante em `Routes`, registrar o `GetPage`
 
 | Ação | Status resultante | Efeitos |
 |---|---|---|
-| Salvar rascunho | Rascunho | Só no Hive. **Não** gera pacote, não vai para a API nem para a mesh |
+| Salvar rascunho | Rascunho | Só no Hive (hoje fica num pacote assinado na mesma box, por compatibilidade). **Não** vai para a API nem para a mesh: a sincronização e o `NearbyService` filtram o status `rascunho` |
 | Enviar para revisão | Em revisão | Assina, cria `NewsPackageModel` com `isUploaded = false` |
 | Aceitar | Aprovado | Atualiza `lastUpdated`, reassina, entra na sincronização |
 | Rejeitar | Rejeitado | Atualiza `lastUpdated`, reassina, entra na sincronização |
-| Excluir | Deletado (**soft delete**) | Nunca apagar fisicamente: o status precisa se propagar pela mesh |
+| Excluir | Deletado (**soft delete**) | Nunca apagar fisicamente: o status precisa se propagar pela mesh. Matéria excluída não pode mais ser editada (`canEdit`) |
 | Editar matéria já submetida | Volta obrigatoriamente para Em revisão | Novo `lastUpdated`, reassina, `isUploaded = false` |
 
 Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e nova assinatura**, senão a mudança não vence nos outros aparelhos.
@@ -78,7 +78,9 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - Mesh: o pacote fica sempre disponível para o `NearbyService`, online ou offline.
 - Nuvem: se online, envia à API (`uploadNewsPackage`), que valida a assinatura e faz merge na coleção `news`; com sucesso, marca `isUploaded = true` no Hive. Se offline, mantém `isUploaded = false`.
 - Conflitos: **Last Write Wins** pelo `lastUpdated`.
-- Ações que **exigem internet**: aprovar, rejeitar, excluir, alterar matéria em análise e gerar par de chaves. Rascunhos funcionam offline.
+- **Offline first com fila**: criar, editar, aprovar, rejeitar e excluir funcionam sem internet. A ação grava e assina no Hive, a tela é atualizada na hora (`NewsController.onLocalNewsChanged`) e a sincronização roda em segundo plano. Só **gerar o par de chaves** exige internet.
+- `NewsController.requestSync()` é o único ponto de entrada da sincronização: roda uma de cada vez (pedidos durante uma sincronização geram só mais uma rodada no fim). Ele é chamado ao abrir o app, no pull-to-refresh, após cada ação e quando a internet volta (se houver pacotes com `isUploaded = false`). Não chame `syncNewsHiveAndFirebase` direto das telas.
+- As listas da tela são montadas só a partir do Hive (`_rebuildListsFromHive`). **Rascunhos, rejeitadas e excluídas mostram apenas as matérias do próprio autor**; "Em revisão" mostra todas. O Hive guarda matérias de outros (ex.: as que o editor rejeitou), então sempre filtre por `createdBy`.
 
 **Feed de notícias publicadas:** paginação em lotes de **10** (carga inicial, "carregar mais" e pull-to-refresh), com cache no Hive.
 
@@ -104,10 +106,11 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - **Handshake**: troca apenas metadados (IDs + `lastUpdated` das notícias e timestamp do pacote de chaves). Só depois pede/envia o que falta ou o que está desatualizado (LWW).
 - **Transporte**: payload de bytes para mensagens pequenas (**limite de 32 KB**); matérias completas (até ~1 MB com imagens) e pacotes de chaves vão como **arquivo temporário**, que deve ser apagado após a leitura.
 - `_processIncomingJson` trata: handshake, pedidos de matéria/chaves, recebimento de matéria e recebimento de chaves.
-- Matéria com assinatura inválida/desconhecida: **não é exibida**, mas o pacote bruto é salvo e continua sendo repassado (nó de retransmissão).
+- Matéria com assinatura inválida ou de autor sem chave conhecida: **não é exibida** nem sobrescreve a versão válida. O pacote vai para a box `news_relay_packages` (mesmo adapter, sem typeId novo) e continua sendo repassado (nó de retransmissão). Ela nunca é enviada à API. Quando chega uma versão válida, ela entra na box principal (`news_packages`) se for mais nova, e a cópia de retransmissão é removida.
+- O handshake e os envios usam `_meshPackages()`: a box principal (sem rascunhos) mais a de retransmissão, ficando o mais recente por id.
 - Alterações no formato dos pacotes precisam ser compatíveis entre app e Functions (`functions/src/model/`) e com versões antigas do app em circulação na mesh.
 
-**Ainda não implementado** (não presuma que existe; só implemente se pedido): worker em segundo plano para reenviar pacotes com `isUploaded = false`, restrição de editor por `cities` e flag "Importância da Imagem" (prioridade de envio de imagens na mesh — regra ainda em discussão).
+**Ainda não implementado** (não presuma que existe; só implemente se pedido): worker em segundo plano para reenviar pacotes com `isUploaded = false` com o app fechado (hoje o reenvio só acontece com o app aberto), restrição de editor por `cities` e flag "Importância da Imagem" (prioridade de envio de imagens na mesh — regra ainda em discussão).
 
 ## Firebase e API
 

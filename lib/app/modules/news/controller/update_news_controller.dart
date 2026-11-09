@@ -24,7 +24,8 @@ class UpdateNewsController extends GetxController {
 
       // Chama o repository para atualizar
       String result = await newsRepository.updateNews(newsId, updatedData);
-      newsController.syncNews(null);
+      // Atualiza a tela na hora e sincroniza em segundo plano
+      await newsController.onLocalNewsChanged();
       return result;
     } catch (e) {
       return "Erro ao atualizar notícia: $e";

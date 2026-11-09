@@ -43,16 +43,25 @@ class NewsRepository {
   }
 
   Future<void> reviewNews(String newsId, bool isApproved, String reason,
-      String validator, String validatorName, String newsType) async {
+      String validator, String validatorName) async {
     await newsProvider.reviewNews(
       newsId: newsId,
       isApproved: isApproved,
       reason: reason,
       validator: validator,
       validatorName: validatorName,
-      newsType: newsType,
     );
   }
+
+  // Pacotes de retransmissão da mesh (assinatura não verificada)
+  Future<void> saveRelayPackage(NewsPackageModel package) =>
+      newsProvider.saveRelayPackage(package);
+
+  Future<List<NewsPackageModel>> getAllRelayPackages() =>
+      newsProvider.getAllRelayPackages();
+
+  Future<void> removeRelayPackage(String id) =>
+      newsProvider.removeRelayPackage(id);
 
   Future<void> saveNewsToPackage(NewsModel news, String email) async {
     await _offlinePackageService.createNewsPackage(news, email);

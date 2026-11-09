@@ -7,7 +7,6 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
-import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
@@ -53,7 +52,57 @@ class NewsController extends GetxController {
     } catch (e) {
       debugPrint("Erro ao carregar usuário: $e");
     }
-    await syncNews(null);
+    // Reenvia o que ficou pendente quando a internet volta
+    ever<bool>(homeController.connectionsController.isInternetConnected,
+        (connected) async {
+      if (connected && await _hasPendingUploads()) requestSync();
+    });
+
+    await requestSync();
+  }
+
+  // ---------------------------------------------------------------------------
+  // SINCRONIZAÇÃO (offline first)
+  // ---------------------------------------------------------------------------
+  // As ações gravam no Hive e atualizam a tela na hora; a sincronização com a
+  // nuvem roda depois, uma de cada vez. Se pedirem outra durante uma em
+  // andamento, ela roda mais uma vez no final (em vez de rodar em paralelo).
+
+  Future<void>? _currentSync;
+  bool _syncAgain = false;
+
+  Future<void> requestSync() {
+    if (_currentSync != null) {
+      _syncAgain = true;
+      return _currentSync!;
+    }
+    _currentSync = _runSyncLoop().whenComplete(() => _currentSync = null);
+    return _currentSync!;
+  }
+
+  Future<void> _runSyncLoop() async {
+    do {
+      _syncAgain = false;
+      await syncNews(null);
+    } while (_syncAgain);
+  }
+
+  // Depois de uma alteração local: atualiza as listas e sincroniza em segundo
+  // plano, sem travar a tela (funciona offline)
+  Future<void> onLocalNewsChanged() async {
+    await _rebuildListsFromHive();
+    unawaited(requestSync());
+  }
+
+  // Há pacotes (que não são rascunho) esperando para subir?
+  Future<bool> _hasPendingUploads() async {
+    try {
+      final packages = await _repository.getAllPackageNews();
+      return packages.any((p) =>
+          p.isUploaded != true && p.news?.status != NewsStates.rascunho);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> syncNews(
@@ -90,55 +139,60 @@ class NewsController extends GetxController {
     try {
       isLoading(true);
       // So admin e editor veem as listas de análise, rascunho, rejeitado e deletado
-      if (user.role == UserRoles.admin || user.role == UserRoles.editor) {
+      if (_isEditorOrAdmin) {
         await _repository.getOuthersNewsFromFirebase(
             user); // Atualiza o Hive com os dados do Firebase
-
-        List<NewsPackageModel> outhersNews =
-            await _repository.getAllPackageNews();
-
-        outhersNews.sort((a, b) {
-          final dateA = a.news?.lastUpdated;
-          final dateB = b.news?.lastUpdated;
-
-          final compareB = dateB ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final compareA = dateA ?? DateTime.fromMillisecondsSinceEpoch(0);
-
-          return compareB.compareTo(compareA);
-        });
-
-        inAnalysisNewsList.assignAll(
-          outhersNews
-              .where((item) => item.news?.status == NewsStates.emAnalise)
-              .map((item) => item.news)
-              .whereType<NewsModel>(),
-        );
-
-        myDraftsList.assignAll(
-          outhersNews
-              .where((item) => item.news?.status == NewsStates.rascunho)
-              .map((item) => item.news)
-              .whereType<NewsModel>(),
-        );
-
-        rejectedNewsList.assignAll(
-          outhersNews
-              .where((item) => item.news?.status == NewsStates.rejeitado)
-              .map((item) => item.news)
-              .whereType<NewsModel>(),
-        );
-
-        deletedNewsList.assignAll(
-          outhersNews
-              .where((item) => item.news?.status == NewsStates.deletado)
-              .map((item) => item.news)
-              .whereType<NewsModel>(),
-        );
       }
     } catch (e) {
-      debugPrint("Erro no Controller (Hive): $e");
+      debugPrint("Erro ao buscar matérias editoriais: $e");
     } finally {
+      await _rebuildListsFromHive();
       isLoading(false);
+    }
+  }
+
+  bool get _isEditorOrAdmin =>
+      user.role == UserRoles.admin || user.role == UserRoles.editor;
+
+  // Monta todas as listas da tela a partir do Hive (sem rede)
+  Future<void> _rebuildListsFromHive() async {
+    try {
+      final List<NewsModel> all = (await _repository.getAllPackageNews())
+          .map((item) => item.news)
+          .whereType<NewsModel>()
+          .toList();
+
+      DateTime orEpoch(DateTime? d) =>
+          d ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+      // Feed: mais recentes primeiro pela data de criação
+      final published = all
+          .where((n) => n.status == NewsStates.publicado)
+          .toList()
+        ..sort((a, b) => orEpoch(b.createdAt).compareTo(orEpoch(a.createdAt)));
+      publishedNewsList.assignAll(published);
+
+      if (!_isEditorOrAdmin) return;
+
+      // Listas editoriais: mais recentes primeiro pela última alteração
+      all.sort(
+          (a, b) => orEpoch(b.lastUpdated).compareTo(orEpoch(a.lastUpdated)));
+
+      // Em revisão: todas (qualquer editor revisa)
+      inAnalysisNewsList.assignAll(
+          all.where((n) => n.status == NewsStates.emAnalise));
+
+      // Rascunhos, rejeitadas e excluídas: só as do próprio autor (o Hive
+      // também guarda matérias de outros, ex.: as que este editor rejeitou)
+      bool mine(NewsModel n) => n.createdBy == user.email;
+      myDraftsList.assignAll(
+          all.where((n) => n.status == NewsStates.rascunho && mine(n)));
+      rejectedNewsList.assignAll(
+          all.where((n) => n.status == NewsStates.rejeitado && mine(n)));
+      deletedNewsList.assignAll(
+          all.where((n) => n.status == NewsStates.deletado && mine(n)));
+    } catch (e) {
+      debugPrint("Erro ao montar as listas a partir do Hive: $e");
     }
   }
 
@@ -151,26 +205,11 @@ class NewsController extends GetxController {
       }
       lastDocument = await _repository.getPublicNewsPaginatedFromFirebase(
           ld); // Atualiza o Hive com os dados do Firebase e obtém o próximo ponteiro de paginação
-      List<NewsPackageModel> publicNews = await _repository.getAllPackageNews();
-
-      publicNews.sort((a, b) {
-        final dateA = a.news?.createdAt;
-        final dateB = b.news?.createdAt;
-        final compareB = dateB ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final compareA = dateA ?? DateTime.fromMillisecondsSinceEpoch(0);
-
-        return compareB.compareTo(compareA);
-      });
-
-      publishedNewsList.assignAll(
-        publicNews
-            .where((item) => item.news?.status == NewsStates.publicado)
-            .map((item) => item.news)
-            .whereType<NewsModel>(),
-      );
     } catch (e) {
-      debugPrint("Erro no Controller (Hive): $e");
+      debugPrint("Erro ao buscar o feed: $e");
     } finally {
+      // Mesmo sem internet, mostra o que está no Hive
+      await _rebuildListsFromHive();
       isLoading(false);
     }
   }
@@ -213,7 +252,7 @@ class NewsController extends GetxController {
 
       await _repository.saveNewsToPackage(news, user.email!);
 
-      await syncNews(null);
+      await onLocalNewsChanged();
 
     } catch (e) {
       throw Exception("Erro ao salvar notícia: $e");
@@ -238,7 +277,7 @@ class NewsController extends GetxController {
 
     try {
       await _repository.hideNews(newsId, status, userEmail);
-      await syncNews(null);
+      await onLocalNewsChanged();
       AppPopups.success(LocaleKeys.typeDeletedSuccess
           .trParams({'type': NewsLabels.type(type)}));
     } catch (e) {
@@ -257,7 +296,6 @@ class NewsController extends GetxController {
     required String validator,
     required String creator,
     required String validatorName,
-    required String newsType,
   }) async {
     // Impede auto-revisão
     if (validator == creator) {
@@ -274,9 +312,8 @@ class NewsController extends GetxController {
         reason,
         validator,
         validatorName,
-        newsType,
       );
-      await syncNews(null);
+      await onLocalNewsChanged();
       AppPopups.success(isApproved
           ? LocaleKeys.newsApprovedSuccess.tr
           : LocaleKeys.newsRejectedSuccess.tr);
@@ -288,8 +325,10 @@ class NewsController extends GetxController {
     }
   }
 
+  // Matéria excluída não volta a ser editada (o soft delete é definitivo)
   bool canEdit(NewsModel news) {
-    return user.email == news.createdBy;
+    return user.email == news.createdBy &&
+        news.status != NewsStates.deletado;
   }
 
   bool canDelete(NewsModel news) {
