@@ -52,35 +52,13 @@ class _UserPageState extends State {
     final String? cityName = await AppPopups.custom<String>(
       Builder(
         builder: (sheetContext) {
-          final theme = Theme.of(sheetContext);
-
           return SizedBox(
             height: MediaQuery.of(sheetContext).size.height * 0.75,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  Text(
-                    LocaleKeys.favoriteCity.tr,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  AppSheetButton.primary(
-                    label: LocaleKeys.allCities.tr,
-                    onPressed: () =>
-                        Navigator.of(sheetContext).pop(_allCitiesValue),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: CitySelectorWidget(
-                      onCitySelected: (city) =>
-                          Navigator.of(sheetContext).pop(city),
-                    ),
-                  ),
-                ],
-              ),
+            child: CitySelectorWidget(
+              title: LocaleKeys.favoriteCity.tr,
+              onAllCitiesSelected: () =>
+                  Navigator.of(sheetContext).pop(_allCitiesValue),
+              onCitySelected: (city) => Navigator.of(sheetContext).pop(city),
             ),
           );
         },

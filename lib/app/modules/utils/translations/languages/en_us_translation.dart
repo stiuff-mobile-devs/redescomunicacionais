@@ -43,6 +43,28 @@ final Map<String, String> enUsTranslation = {
   LocaleKeys.communicationCenter: 'Communication center',
   LocaleKeys.connections: 'Connections',
   LocaleKeys.about: 'About',
+  LocaleKeys.meshConsoleMenu:
+      'Mesh Console (tests)',
+  LocaleKeys.meshConsoleIntroTitle:
+      'What is the Mesh Console?',
+  LocaleKeys.meshConsoleIntroMessage:
+      'It is a testing tool that shows how news travels from one phone to another, even without internet.',
+  LocaleKeys.meshConsoleIntroShare:
+      'Phones that are close to each other share news using Bluetooth and Wi-Fi, without needing internet. We call this a "mesh network".',
+  LocaleKeys.meshConsoleIntroRadar:
+      'In the console you turn this sharing on and off and follow, in real time, everything being sent and received.',
+  LocaleKeys.meshConsoleIntroSafe:
+      'It is used by the project team for testing. Feel free to use it: it does not delete your articles.',
+  LocaleKeys.openConsole:
+      'Open console',
+  LocaleKeys.notNow:
+      'Not now',
+  LocaleKeys.chooseYourCity:
+      'Choose your city',
+  LocaleKeys.chooseYourCitySubtitle:
+      'See the news from your city or from the whole region',
+  LocaleKeys.allCitiesSubtitle:
+      'News from the whole region',
   LocaleKeys.aboutUs: 'About us',
   LocaleKeys.whoWeAre: 'Who are we?',
   LocaleKeys.userGuide: 'User guide',
@@ -65,8 +87,6 @@ final Map<String, String> enUsTranslation = {
   LocaleKeys.chipDeleted: 'Deleted',
   LocaleKeys.backToNewsCenter: 'Back to news center',
   LocaleKeys.back: 'Back',
-  LocaleKeys.chooseCityToViewNews: 'Choose the city to view the articles',
-  LocaleKeys.viewAllCities: 'View all cities',
   LocaleKeys.changeCity: 'Change city',
   LocaleKeys.cityLabel: 'City: @city',
   LocaleKeys.allCities: 'All cities',

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
 
@@ -11,11 +13,11 @@ class ConnectionsPage extends GetView<ConnectionsController> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final bool isLight = Get.find<ThemeController>().isLight;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isLight ? theme.scaffoldBackgroundColor : null,
 
-      // AppBar totalmente branco
       appBar: AppBars.build(
         title: LocaleKeys.connections.tr,
         tone: AppTone.info,
@@ -25,7 +27,10 @@ class ConnectionsPage extends GetView<ConnectionsController> {
             () => Container(
           width: double.infinity,
           height: double.infinity,
-          color: Colors.white,
+          // Mesmo fundo das outras telas: liso no claro, degradê no escuro
+          decoration: isLight
+              ? BoxDecoration(color: theme.scaffoldBackgroundColor)
+              : BoxDecoration(gradient: AppColors.darkBlueToBlackGradient()),
 
           child: controller.isLoading.value
               ? Center(
@@ -61,31 +66,50 @@ class ConnectionsPage extends GetView<ConnectionsController> {
     );
   }
 
+  // Fundo e borda dos cards: superfície no claro, vidro translúcido no escuro
+  // (mesmo estilo dos cards da central da matéria)
+  BoxDecoration _cardDecoration(
+    BuildContext context, {
+    required double radius,
+    Color? borderColor,
+    double borderWidth = 1,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final bool isLight = Get.find<ThemeController>().isLight;
+
+    return BoxDecoration(
+      color: isLight ? scheme.surface : Colors.white.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: borderColor ??
+            (isLight
+                ? scheme.outlineVariant
+                : Colors.white.withValues(alpha: 0.14)),
+        width: borderWidth,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isLight ? 0.06 : 0.20),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+
   Widget _buildConnectionsHeader(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 14,
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(context, radius: 14),
       child: Text(
         LocaleKeys.connectionsDescription.tr,
-        style: const TextStyle(
-          color: Colors.black87,
+        style: TextStyle(
+          color: scheme.onSurface,
           fontSize: 14,
           height: 1.35,
           fontWeight: FontWeight.w500,
@@ -115,25 +139,15 @@ class ConnectionsPage extends GetView<ConnectionsController> {
     required Color accentColor,
     required bool isConnected,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(14),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.55),
-          width: 1.2,
-        ),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      decoration: _cardDecoration(
+        context,
+        radius: 16,
+        borderColor: accentColor.withValues(alpha: 0.55),
+        borderWidth: 1.2,
       ),
 
       child: Row(
@@ -162,8 +176,8 @@ class ConnectionsPage extends GetView<ConnectionsController> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.black87,
+                  style: TextStyle(
+                    color: scheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
                   ),
@@ -174,7 +188,7 @@ class ConnectionsPage extends GetView<ConnectionsController> {
                 Text(
                   description,
                   style: TextStyle(
-                    color: Colors.grey.shade700,
+                    color: scheme.onSurfaceVariant,
                     fontSize: 13,
                     height: 1.25,
                   ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/modules/mesh/console_page.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_widgets.dart';
 import 'package:redescomunicacionais/app/modules/utils/responsive_utils.dart';
@@ -63,17 +62,6 @@ class HomePage extends GetView<HomeController> {
                 ),
       drawer: !useHorizontalLayout && !isEditorial ? MenuPage() : null,
 
-      // === BOTÃO FLUTUANTE QUE ABRE A TELA DO CONSOLE ===
-      floatingActionButton: isEditorial
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => Get.to(() => const ConsolePage()), // Navega para a página dedicada
-              icon: const Icon(Icons.bug_report),
-              label: const Text('Console Mesh'),
-              backgroundColor: Colors.blueAccent,
-              foregroundColor: Colors.white,
-            ),
-
       body: RefreshIndicator(
         onRefresh: () async {
           await controller.refreshDashboardData();
@@ -88,52 +76,16 @@ class HomePage extends GetView<HomeController> {
               : BoxDecoration(
                 gradient: AppColors.darkBlueToBlackGradient(),
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      LocaleKeys.chooseCityToViewNews.tr,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: theme.colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          controller.updateSelectedCity('Todas');
-                        },
-                        icon: const Icon(Icons.public, color: Colors.white),
-                        label: Text(
-                          LocaleKeys.viewAllCities.tr,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent.withOpacity(0.8),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: CitySelectorWidget(
-                      onCitySelected: (String cityName) {
-                        debugPrint('Cidade selecionada na Home: $cityName');
-                        controller.updateSelectedCity(cityName);
-                      },
-                    ),
-                  ),
-                ],
+              child: CitySelectorWidget(
+                title: LocaleKeys.chooseYourCity.tr,
+                subtitle: LocaleKeys.chooseYourCitySubtitle.tr,
+                // 'Todas' é o valor interno de "sem filtro"
+                onAllCitiesSelected: () =>
+                    controller.updateSelectedCity('Todas'),
+                onCitySelected: (String cityName) {
+                  debugPrint('Cidade selecionada na Home: $cityName');
+                  controller.updateSelectedCity(cityName);
+                },
               ),
             );
           }

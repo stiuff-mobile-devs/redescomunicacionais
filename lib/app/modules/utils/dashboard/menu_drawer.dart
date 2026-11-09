@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
+import 'package:redescomunicacionais/app/modules/mesh/ui/console_intro.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
@@ -183,6 +184,24 @@ class MenuPage extends GetView<HomeController> {
               onTap: () {
                 Get.back();
                 Get.toNamed(Routes.CONNECTIONS);
+              },
+            ),
+
+            // CONSOLE MESH (ferramenta de testes; explica antes de abrir)
+            ListTile(
+              leading: Icon(
+                Icons.hub_outlined,
+                color: theme.colorScheme.onSurface,
+              ),
+              title: Text(
+                LocaleKeys.meshConsoleMenu.tr,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              onTap: () {
+                Get.back();
+                MeshConsoleIntro.open();
               },
             ),
 
@@ -395,6 +414,11 @@ class MenuPage extends GetView<HomeController> {
                   icon: Icons.language,
                   title: LocaleKeys.language.tr,
                   onTap: () => _showLanguageDialog(context),
+                ),
+                _buildHorizontalMenuTile(
+                  icon: Icons.hub_outlined,
+                  title: LocaleKeys.meshConsoleMenu.tr,
+                  onTap: MeshConsoleIntro.open,
                 ),
                 _buildHorizontalMenuTile(
                   icon: controller.isAnonymousUser

@@ -59,6 +59,29 @@ abstract class LocaleKeys {
   static const communicationCenter = 'Central de comunicação';
   static const connections = 'Conexões';
   static const about = 'Sobre';
+  // Console Mesh (aviso antes de abrir) e seletor de cidades
+  static const meshConsoleMenu =
+      'Console Mesh (testes)';
+  static const meshConsoleIntroTitle =
+      'O que é o Console Mesh?';
+  static const meshConsoleIntroMessage =
+      'É uma ferramenta de testes que mostra como as notícias passam de um celular para outro, mesmo sem internet.';
+  static const meshConsoleIntroShare =
+      'Celulares que estão perto trocam notícias entre si usando Bluetooth e Wi-Fi, sem precisar de internet. Chamamos isso de "rede mesh".';
+  static const meshConsoleIntroRadar =
+      'No console você liga e desliga essa troca e acompanha, na hora, tudo o que está sendo enviado e recebido.';
+  static const meshConsoleIntroSafe =
+      'É usado pela equipe do projeto para testes. Pode usar sem medo: ele não apaga as suas matérias.';
+  static const openConsole =
+      'Abrir console';
+  static const notNow =
+      'Agora não';
+  static const chooseYourCity =
+      'Escolha sua cidade';
+  static const chooseYourCitySubtitle =
+      'Veja as notícias da sua cidade ou de toda a região';
+  static const allCitiesSubtitle =
+      'Notícias de toda a região';
   static const aboutUs = 'Sobre nós';
   static const whoWeAre = 'Quem somos?';
   static const userGuide = 'Guia do usuário';
@@ -82,9 +105,6 @@ abstract class LocaleKeys {
   static const chipDeleted = 'Excluídas';
   static const backToNewsCenter = 'Voltar à central da matéria';
   static const back = 'Voltar';
-  static const chooseCityToViewNews =
-      'Escolha a cidade para visualizar as matérias';
-  static const viewAllCities = 'Visualizar todas as cidades';
   static const changeCity = 'Trocar cidade';
   static const cityLabel = 'Cidade: @city';
   static const allCities = 'Todas as cidades';

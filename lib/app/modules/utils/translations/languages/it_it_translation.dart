@@ -43,6 +43,28 @@ final Map<String, String> itItTranslation = {
   LocaleKeys.communicationCenter: 'Centro di comunicazione',
   LocaleKeys.connections: 'Connessioni',
   LocaleKeys.about: 'Informazioni',
+  LocaleKeys.meshConsoleMenu:
+      'Console Mesh (test)',
+  LocaleKeys.meshConsoleIntroTitle:
+      'Che cos\'è la Console Mesh?',
+  LocaleKeys.meshConsoleIntroMessage:
+      'È uno strumento di test che mostra come le notizie passano da un telefono all\'altro, anche senza internet.',
+  LocaleKeys.meshConsoleIntroShare:
+      'I telefoni vicini si scambiano notizie usando Bluetooth e Wi-Fi, senza bisogno di internet. Lo chiamiamo "rete mesh".',
+  LocaleKeys.meshConsoleIntroRadar:
+      'Nella console puoi attivare e disattivare questo scambio e seguire, in tempo reale, tutto ciò che viene inviato e ricevuto.',
+  LocaleKeys.meshConsoleIntroSafe:
+      'Viene usata dal team del progetto per i test. Usala senza paura: non cancella i tuoi articoli.',
+  LocaleKeys.openConsole:
+      'Apri console',
+  LocaleKeys.notNow:
+      'Non ora',
+  LocaleKeys.chooseYourCity:
+      'Scegli la tua città',
+  LocaleKeys.chooseYourCitySubtitle:
+      'Guarda le notizie della tua città o di tutta la regione',
+  LocaleKeys.allCitiesSubtitle:
+      'Notizie di tutta la regione',
   LocaleKeys.aboutUs: 'Chi siamo',
   LocaleKeys.whoWeAre: 'Chi siamo?',
   LocaleKeys.userGuide: 'Guida per l\'utente',
@@ -65,8 +87,6 @@ final Map<String, String> itItTranslation = {
   LocaleKeys.chipDeleted: 'Eliminati',
   LocaleKeys.backToNewsCenter: 'Torna al centro notizie',
   LocaleKeys.back: 'Indietro',
-  LocaleKeys.chooseCityToViewNews: 'Scegli la città per vedere gli articoli',
-  LocaleKeys.viewAllCities: 'Vedi tutte le città',
   LocaleKeys.changeCity: 'Cambia città',
   LocaleKeys.cityLabel: 'Città: @city',
   LocaleKeys.allCities: 'Tutte le città',

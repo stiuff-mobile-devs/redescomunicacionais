@@ -10,6 +10,7 @@ import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.
 import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/app_theme.dart';
 
 class AdminPage extends GetView<AdminController> {
   const AdminPage({super.key});
@@ -35,54 +36,19 @@ class AdminPage extends GetView<AdminController> {
         child: Obx(() {
           // Se nenhuma cidade foi selecionada, mostra o Widget de Seleção
           if (controller.selectedCity.value == null) {
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    LocaleKeys.chooseCityToManageEditors.tr,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                
-                // Botão de "Visualizar todas as cidades"
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        controller.selectedCity.value = 'Todas'; // Bypassa o filtro
-                      },
-                      label: Text(
-                        LocaleKeys.viewAllCities.tr,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent.withOpacity(0.8),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                Expanded(
-                  child: CitySelectorWidget(
-                    onCitySelected: (String cityName) {
-                      debugPrint('Cidade selecionada: $cityName');
-                      controller.selectedCity.value = cityName;
-                    },
-                  ),
-                ),
-              ],
+            // O fundo desta tela é sempre escuro: usa o tema escuro no
+            // seletor para o cabeçalho ficar legível
+            return Theme(
+              data: appThemeDataClassic,
+              child: CitySelectorWidget(
+                title: LocaleKeys.chooseCityToManageEditors.tr,
+                onAllCitiesSelected: () =>
+                    controller.selectedCity.value = 'Todas', // Bypassa o filtro
+                onCitySelected: (String cityName) {
+                  debugPrint('Cidade selecionada: $cityName');
+                  controller.selectedCity.value = cityName;
+                },
+              ),
             );
           }
           
