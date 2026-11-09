@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/news_center/controller/news_center_controller.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
@@ -20,37 +23,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
           ? theme.scaffoldBackgroundColor
           : null,
 
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 2,
-
-        backgroundColor: themeController.isLight
-            ? theme.scaffoldBackgroundColor
-            : null,
-
-        foregroundColor: theme.colorScheme.onSurface,
-
-        flexibleSpace: themeController.isLight
-            ? null
-            : Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appBarBottomGradient(),
-          ),
-        ),
-
-        title: Text(
-          LocaleKeys.newsCenter.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
-          ),
-        ),
-      ),
+      appBar: AppBars.build(title: LocaleKeys.newsCenter.tr),
       body: Container(
         decoration: themeController.isLight
             ? BoxDecoration(
@@ -85,42 +58,22 @@ class NewsCenterPage extends GetView<NewsCenterController> {
                             title: LocaleKeys.createNewNews.tr,
                             subtitle: LocaleKeys.createNewNewsSubtitle.tr,
                             icon: Icons.create_rounded,
-                            accentColor: Colors.green,
+                            accentColor: AppTone.success.color,
                             onTap: () =>
                                 Get.toNamed(Routes.CREATE_NEWS),
                           ),
-                          _ActionCard(
-                            title: LocaleKeys.reviewNews.tr,
-                            subtitle: LocaleKeys.reviewNewsSubtitle.tr,
-                            icon: Icons.fact_check_rounded,
-                            accentColor: Colors.lightBlue,
-                            onTap: () =>
-                                controller.openNewsMode('revision'),
-                          ),
-                          _ActionCard(
-                            title: LocaleKeys.viewDrafts.tr,
-                            subtitle: LocaleKeys.viewDraftsSubtitle.tr,
-                            icon: Icons.drafts_outlined,
-                            accentColor: Colors.amber.shade700,
-                            onTap: () =>
-                                controller.openNewsMode('drafts'),
-                          ),
-                          _ActionCard(
-                            title: LocaleKeys.viewRejected.tr,
-                            subtitle: LocaleKeys.viewRejectedSubtitle.tr,
-                            icon: Icons.report_outlined,
-                            accentColor: Colors.redAccent,
-                            onTap: () =>
-                                controller.openNewsMode('rejected'),
-                          ),
-                          _ActionCard(
-                            title: LocaleKeys.viewDeleted.tr,
-                            subtitle: LocaleKeys.viewDeletedSubtitle.tr,
-                            icon: Icons.delete_outline_rounded,
-                            accentColor: Colors.deepOrange,
-                            onTap: () =>
-                                controller.openNewsMode('deleted'),
-                          ),
+                          _modeCard(NewsListMode.revision,
+                              LocaleKeys.reviewNews.tr,
+                              LocaleKeys.reviewNewsSubtitle.tr),
+                          _modeCard(NewsListMode.drafts,
+                              LocaleKeys.viewDrafts.tr,
+                              LocaleKeys.viewDraftsSubtitle.tr),
+                          _modeCard(NewsListMode.rejected,
+                              LocaleKeys.viewRejected.tr,
+                              LocaleKeys.viewRejectedSubtitle.tr),
+                          _modeCard(NewsListMode.deleted,
+                              LocaleKeys.viewDeleted.tr,
+                              LocaleKeys.viewDeletedSubtitle.tr),
                         ],
                       ),
                     ],
@@ -131,6 +84,18 @@ class NewsCenterPage extends GetView<NewsCenterController> {
           ),
         ),
       ),
+    );
+  }
+
+  // Card que abre a Home já filtrada; ícone e cor vêm do modo, para combinar
+  // com a AppBar da lista
+  Widget _modeCard(NewsListMode mode, String title, String subtitle) {
+    return _ActionCard(
+      title: title,
+      subtitle: subtitle,
+      icon: mode.icon,
+      accentColor: mode.tone.color,
+      onTap: () => controller.openNewsMode(mode),
     );
   }
 

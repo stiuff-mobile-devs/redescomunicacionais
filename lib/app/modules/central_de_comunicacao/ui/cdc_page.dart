@@ -7,6 +7,8 @@ import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.
 import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
 
 class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
   const CentralDeComunicacaoPage({super.key});
@@ -18,37 +20,9 @@ class CentralDeComunicacaoPage extends GetView<CentralDeComunicacaoController> {
     final bool isLight = themeController.isLight;
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 2,
-
-        backgroundColor: isLight
-            ? theme.scaffoldBackgroundColor
-            : null,
-
-        foregroundColor: theme.colorScheme.onSurface,
-
-        title: Text(
-          LocaleKeys.communicationCenter.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
-          ),
-        ),
-
-        flexibleSpace: isLight
-            ? null
-            : Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appBarBottomGradient(),
-          ),
-        ),
+      appBar: AppBars.build(
+        title: LocaleKeys.communicationCenter.tr,
+        tone: AppTone.info,
       ),
 
       body: Obx(

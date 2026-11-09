@@ -9,6 +9,7 @@ import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart'
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 
 class AdminPage extends GetView<AdminController> {
   const AdminPage({super.key});
@@ -16,15 +17,8 @@ class AdminPage extends GetView<AdminController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleKeys.manageUsers.tr),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appBarBottomGradient(),
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        centerTitle: true,
+      appBar: AppBars.build(
+        title: LocaleKeys.manageUsers.tr,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

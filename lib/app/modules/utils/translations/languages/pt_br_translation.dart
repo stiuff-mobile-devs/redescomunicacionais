@@ -61,6 +61,12 @@ final Map<String, String> ptBrTranslation = {
   LocaleKeys.rejectedNews: 'Matérias rejeitadas',
   LocaleKeys.deletedNews: 'Matérias excluídas',
   LocaleKeys.newsReview: 'Revisão de matérias',
+  LocaleKeys.chipRevision: 'Em revisão',
+  LocaleKeys.chipDrafts: 'Rascunhos',
+  LocaleKeys.chipRejected: 'Rejeitadas',
+  LocaleKeys.chipDeleted: 'Excluídas',
+  LocaleKeys.backToNewsCenter: 'Voltar à central da matéria',
+  LocaleKeys.back: 'Voltar',
   LocaleKeys.chooseCityToViewNews:
       'Escolha a cidade para visualizar as matérias',
   LocaleKeys.viewAllCities: 'Visualizar todas as cidades',

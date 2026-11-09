@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
 
 class ConnectionsPage extends GetView<ConnectionsController> {
   const ConnectionsPage({super.key});
@@ -14,28 +16,9 @@ class ConnectionsPage extends GetView<ConnectionsController> {
       backgroundColor: Colors.white,
 
       // AppBar totalmente branco
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 2,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        foregroundColor: Colors.black87,
-
-        title: Text(
-          LocaleKeys.connections.tr,
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-
-        actions: const [],
-
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
-          ),
-        ),
+      appBar: AppBars.build(
+        title: LocaleKeys.connections.tr,
+        tone: AppTone.info,
       ),
 
       body: Obx(

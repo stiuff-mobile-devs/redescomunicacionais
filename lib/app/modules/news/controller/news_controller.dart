@@ -10,6 +10,7 @@ import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart
 import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
@@ -41,7 +42,7 @@ class NewsController extends GetxController {
   RxBool initialLoadDone = false.obs;
   RxnInt selectedCardIndex = RxnInt();
 
-  static const Duration fetchTimeout = Duration(seconds: 10);
+  static const Duration fetchTimeout = Duration(seconds: 30);
 
   @override
   onInit() async {
@@ -382,22 +383,19 @@ class NewsController extends GetxController {
     }
   }
 
-  List<NewsModel> getNewsForCurrentMode() {
-    if (homeController.isDeletedMode.value) {
-      return deletedNewsList.toList();
+  // Lista de matérias do filtro exibido na Home
+  List<NewsModel> getNewsForMode(NewsListMode mode) {
+    switch (mode) {
+      case NewsListMode.deleted:
+        return deletedNewsList.toList();
+      case NewsListMode.rejected:
+        return rejectedNewsList.toList();
+      case NewsListMode.revision:
+        return inAnalysisNewsList.toList();
+      case NewsListMode.drafts:
+        return myDraftsList.toList();
+      case NewsListMode.published:
+        return publishedNewsList.toList();
     }
-
-    if (homeController.isRejectedMode.value) {
-      return rejectedNewsList.toList();
-    }
-
-    if (homeController.isRevisionMode.value) {
-      return inAnalysisNewsList.toList();
-    }
-
-    if (homeController.isDraftMode.value) {
-      return myDraftsList.toList();
-    }
-    return publishedNewsList.toList();
   }
 }

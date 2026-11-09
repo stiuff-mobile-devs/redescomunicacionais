@@ -14,6 +14,8 @@ import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/modules/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
 
 class EditNewsPage extends StatefulWidget {
   const EditNewsPage({super.key});
@@ -233,15 +235,9 @@ class _EditNewsPageState extends State<EditNewsPage> {
       // APP BAR
       // ========================================================
 
-      appBar: AppBar(
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        foregroundColor: theme.appBarTheme.foregroundColor,
-        centerTitle: true,
-        elevation: theme.appBarTheme.elevation,
-        title: Text(
-          LocaleKeys.editNews.tr,
-          style: theme.appBarTheme.titleTextStyle,
-        ),
+      appBar: AppBars.build(
+        title: LocaleKeys.editNews.tr,
+        tone: AppTone.success,
       ),
 
       // ========================================================

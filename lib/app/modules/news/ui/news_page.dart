@@ -9,10 +9,10 @@ import 'package:redescomunicacionais/app/modules/utils/responsive_utils.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
-import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 
 class NewsPage extends GetView<NewsController> {
   const NewsPage({super.key});
@@ -73,34 +73,8 @@ class NewsPage extends GetView<NewsController> {
 
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            flexibleSpace: isLight
-                ? null
-                : Container(
-                    decoration: BoxDecoration(
-                      gradient: AppColors.appBarBottomGradient(),
-                    ),
-                  ),
-            title: Text(
-              NewsLabels.type(controller.selectedNews.type),
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: ResponsiveUtils.calculateAppBarTitleSize(
-                  screenWidth,
-                  isTablet,
-                  false,
-                ),
-              ),
-            ),
-            iconTheme: IconThemeData(
-              color: theme.colorScheme.onSurface,
-              size: ResponsiveUtils.calculateIconSize(
-                screenWidth,
-                isTablet,
-              ),
-            ),
-            centerTitle: true,
-            toolbarHeight: isTablet ? 70.0 : 56.0,
+          appBar: AppBars.build(
+            title: NewsLabels.type(controller.selectedNews.type),
           ),
           body: isWideScreen
               ? _buildWideScreenLayout(

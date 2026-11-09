@@ -75,6 +75,13 @@ abstract class LocaleKeys {
   static const rejectedNews = 'Matérias rejeitadas';
   static const deletedNews = 'Matérias excluídas';
   static const newsReview = 'Revisão de matérias';
+  // Rótulos curtos dos filtros da central (chips da Home editorial)
+  static const chipRevision = 'Em revisão';
+  static const chipDrafts = 'Rascunhos';
+  static const chipRejected = 'Rejeitadas';
+  static const chipDeleted = 'Excluídas';
+  static const backToNewsCenter = 'Voltar à central da matéria';
+  static const back = 'Voltar';
   static const chooseCityToViewNews =
       'Escolha a cidade para visualizar as matérias';
   static const viewAllCities = 'Visualizar todas as cidades';

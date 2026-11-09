@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
@@ -16,8 +17,13 @@ import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.da
 
 class NewsWidgets extends GetView<NewsController> {
   final String? selectedCity; // Recebe a cidade selecionada na Home
+  final NewsListMode mode; // Filtro de matérias (feed ou modo editorial)
 
-  const NewsWidgets({super.key, this.selectedCity});
+  const NewsWidgets({
+    super.key,
+    this.selectedCity,
+    this.mode = NewsListMode.published,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +65,7 @@ class NewsWidgets extends GetView<NewsController> {
               return _buildEmptyState(theme);
             }
 
-            List<NewsModel> selectedNewss = controller.getNewsForCurrentMode();
+            List<NewsModel> selectedNewss = controller.getNewsForMode(mode);
 
             // Filtra as notícias pela cidade selecionada (se não for nula e nem 'Todas')
             if (selectedCity != null && selectedCity != 'Todas') {
@@ -85,7 +91,7 @@ class NewsWidgets extends GetView<NewsController> {
                   // Lista vertical de notícias
                   ..._buildNewsList(selectedNewss, theme),
 
-                  if (controller.homeController.isPublishedMode.value &&
+                  if (mode == NewsListMode.published &&
                       selectedNewss.isNotEmpty)
                     _buildCreateMoreItem(theme),
                 ],
@@ -290,7 +296,7 @@ class NewsWidgets extends GetView<NewsController> {
           color: Colors.amber.shade700,
           onTap: () => _showReviewDialog(news),
         ),
-      if (controller.homeController.isRejectedMode.value)
+      if (mode == NewsListMode.rejected)
         _CardAction(
           icon: Icons.sticky_note_2_outlined,
           label: LocaleKeys.observations.tr,

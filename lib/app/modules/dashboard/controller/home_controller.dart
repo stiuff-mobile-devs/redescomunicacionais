@@ -7,6 +7,7 @@ import 'package:redescomunicacionais/app/modules/news/controller/news_controller
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
@@ -30,11 +31,9 @@ class HomeController extends GetxController {
   final RxnString selectedCity = RxnString(null);
 
 
-  RxBool isRevisionMode = false.obs;
-  RxBool isDraftMode = false.obs;
-  RxBool isRejectedMode = false.obs;
-  RxBool isDeletedMode = false.obs;
-  RxBool isPublishedMode = true.obs;
+  // Filtro da Home editorial (aberta pela central da matéria).
+  // A Home do feed público usa sempre NewsListMode.published.
+  final Rx<NewsListMode> editorialMode = NewsListMode.revision.obs;
 
   bool isAnonymousUser = true;
 

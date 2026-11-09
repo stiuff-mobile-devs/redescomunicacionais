@@ -4,11 +4,11 @@ import 'package:redescomunicacionais/app/modules/user/controller/user_controller
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
-import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -389,20 +389,8 @@ class _UserPageState extends State {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleKeys.profile.tr),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appBarBottomGradient(),
-          ),
-        ),
-        iconTheme: IconThemeData(
-          color: theme.colorScheme.onSurface,
-        ),
-      ),
+      appBar: AppBars.build(title: LocaleKeys.profile.tr),
       body: Obx(
         () {
           if (controller.isDataLoading.value) {

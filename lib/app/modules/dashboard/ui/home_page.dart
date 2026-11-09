@@ -5,6 +5,8 @@ import 'package:redescomunicacionais/app/modules/mesh/console_page.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_widgets.dart';
 import 'package:redescomunicacionais/app/modules/utils/responsive_utils.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/utils/dashboard/menu_drawer.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
@@ -16,129 +18,68 @@ class HomePage extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    // A Home editorial (aberta pela central da matéria) recebe
+    // {'editorial': true}. Lido da própria rota: com duas Homes na pilha,
+    // cada uma mantém o seu modo.
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    final bool isEditorial = routeArgs is Map && routeArgs['editorial'] == true;
+
     // Lógicas de responsividade
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
     final bool isTablet = ResponsiveUtils.isTablet(screenWidth);
-    final bool useHorizontalLayout =
+    // O modo editorial usa sempre o layout vertical (o menu lateral é do feed)
+    final bool useHorizontalLayout = !isEditorial &&
         ResponsiveUtils.shouldUseHorizontalLayout(screenWidth, screenHeight);
 
     double appBarTitleSize = ResponsiveUtils.calculateAppBarTitleSize(
         screenWidth, isTablet, useHorizontalLayout).clamp(16.0, 24.0);
     double iconSize = ResponsiveUtils.calculateIconSize(screenWidth, isTablet).clamp(20.0, 28.0);
-    ResponsiveUtils.calculateBottomBarHeight(screenHeight, isTablet);
-    ResponsiveUtils.calculateBottomBarFontSize(screenWidth, isTablet);
 
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: useHorizontalLayout
-          ? null
-          : AppBar(
-              centerTitle: false,
-              elevation: isTablet ? 8.0 : 4.0,
-              foregroundColor: theme.colorScheme.onSurface,
-              titleSpacing: isTablet ? 16.0 : 12.0,
-              title: Obx(() {
-                final titleText = controller.isRevisionMode.value
-                    ? LocaleKeys.newsReview.tr
-                    : controller.isDraftMode.value
-                        ? LocaleKeys.myDrafts.tr
-                        : controller.isRejectedMode.value
-                            ? LocaleKeys.rejectedNews.tr
-                            : controller.isDeletedMode.value
-                                ? LocaleKeys.deletedNews.tr
-                                : LocaleKeys.appShortName.tr;
-                return Text(
-                  titleText,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: appBarTitleSize,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                );
-              }),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
-              ),
-              flexibleSpace: Get.find<ThemeController>().isLight
-                  ? null
-                  : Container(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.appBarBottomGradient(),
-                      ),
+      appBar: isEditorial
+          ? _buildEditorialAppBar(iconSize)
+          : useHorizontalLayout
+              ? null
+              : AppBars.build(
+                  title: LocaleKeys.appShortName.tr,
+                  centerTitle: false,
+                  actions: [
+                    _buildConnectionAction(iconSize),
+                    IconButton(
+                      tooltip: LocaleKeys.filterNews.tr,
+                      icon: const Icon(Icons.search),
+                      onPressed: controller.openNewsFilter,
                     ),
-              iconTheme: IconThemeData(
-                color: theme.colorScheme.onSurface,
-                size: iconSize,
-              ),
-              toolbarHeight: isTablet ? 82.0 : 74.0,
-              actions: [
-                Obx(() => controller.isRevisionMode.value ||
-                        controller.isDraftMode.value ||
-                        controller.isRejectedMode.value ||
-                        controller.isDeletedMode.value
-                    ? IconButton(
-                        onPressed: () {
-                          controller.isRevisionMode.value = false;
-                          controller.isDraftMode.value = false;
-                          controller.isRejectedMode.value = false;
-                          controller.isDeletedMode.value = false;
-                          controller.isPublishedMode.value = true;
-                        },
-                        icon: const Icon(Icons.arrow_back, color: Colors.orange),
-                      )
-                    : const SizedBox.shrink()),
-                Obx(() {
-                  final conn = controller.connectionsController;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: IconButton(
-                      onPressed: () => Get.toNamed(Routes.CONNECTIONS),
-                      icon: Icon(
-                        Icons.wifi,
-                        color: conn.isInternetConnected.value
-                            ? Colors.green
-                            : Colors.red,
-                        size: iconSize,
-                      ),
+                    IconButton(
+                      tooltip: LocaleKeys.userGuide.tr,
+                      icon: const Icon(Icons.help_outline),
+                      onPressed: controller.goUserGuide,
                     ),
-                  );
-                }),
-                IconButton(
-                  iconSize: iconSize,
-                  icon: const Icon(Icons.search),
-                  onPressed: controller.openNewsFilter,
+                  ],
                 ),
-                IconButton(
-                  iconSize: iconSize,
-                  icon: const Icon(Icons.help_outline),
-                  onPressed: () {
-                    controller.goUserGuide();
-                  },
-                ),
-              ],
-            ),
-      drawer: !useHorizontalLayout ? MenuPage() : null,
-      
+      drawer: !useHorizontalLayout && !isEditorial ? MenuPage() : null,
+
       // === BOTÃO FLUTUANTE QUE ABRE A TELA DO CONSOLE ===
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.to(() => const ConsolePage()), // Navega para a página dedicada
-        icon: const Icon(Icons.bug_report),
-        label: const Text('Console Mesh'),
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: isEditorial
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => Get.to(() => const ConsolePage()), // Navega para a página dedicada
+              icon: const Icon(Icons.bug_report),
+              label: const Text('Console Mesh'),
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+            ),
 
       body: RefreshIndicator(
         onRefresh: () async {
           await controller.refreshDashboardData();
         },
         child: Obx(() {
-          if (controller.selectedCity.value == null) {
+          if (!isEditorial && controller.selectedCity.value == null) {
             return Container(
               width: double.infinity,
               height: double.infinity,
@@ -206,7 +147,7 @@ class HomePage extends GetView<HomeController> {
                   appBarTitleSize,
                   iconSize,
                 )
-              : _buildVerticalLayout(context);
+              : _buildVerticalLayout(context, isEditorial);
         }),
       ),
     );
@@ -303,7 +244,10 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  Widget _buildVerticalLayout(BuildContext context) {
+  Widget _buildVerticalLayout(BuildContext context, bool isEditorial) {
+    final mode =
+        isEditorial ? controller.editorialMode.value : NewsListMode.published;
+
     return Container(
       color: Get.find<ThemeController>().isLight
           ? Colors.white
@@ -315,11 +259,19 @@ class HomePage extends GetView<HomeController> {
       ),
       child: Column(
         children: [
-          _buildCityIndicatorHeader(context),
+          if (!isEditorial)
+            _buildCityIndicatorHeader(context)
+          else if (controller.selectedCity.value != null)
+            _buildCityIndicatorHeader(context, showChangeButton: false),
           Expanded(
-            child: NewsWidgets(
-              key: ValueKey(controller.recreateKey),
-              selectedCity: controller.selectedCity.value,
+            // Troca suave da lista ao mudar o filtro editorial
+            child: AnimatedSwitcher(
+              duration: AppBars.toneAnimation,
+              child: NewsWidgets(
+                key: ValueKey('${controller.recreateKey}-${mode.name}'),
+                selectedCity: controller.selectedCity.value,
+                mode: mode,
+              ),
             ),
           ),
         ],
@@ -327,7 +279,46 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  Widget _buildCityIndicatorHeader(BuildContext context) {
+  // AppBar da Home editorial: seta para voltar à central, cor do modo e
+  // filtros para trocar de lista sem sair da tela
+  PreferredSizeWidget _buildEditorialAppBar(double iconSize) {
+    PreferredSizeWidget build(NewsListMode mode) => AppBars.build(
+          title: mode.title,
+          tone: mode.tone,
+          leading: IconButton(
+            tooltip: LocaleKeys.backToNewsCenter.tr,
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => Get.back(),
+          ),
+          actions: [_buildConnectionAction(iconSize)],
+          bottom: _EditorialModeFilter(controller: controller),
+        );
+
+    return PreferredSize(
+      preferredSize: build(controller.editorialMode.value).preferredSize,
+      child: Obx(() => build(controller.editorialMode.value)),
+    );
+  }
+
+  Widget _buildConnectionAction(double iconSize) {
+    return Obx(() {
+      final conn = controller.connectionsController;
+      return IconButton(
+        tooltip: LocaleKeys.connections.tr,
+        onPressed: () => Get.toNamed(Routes.CONNECTIONS),
+        icon: Icon(
+          Icons.wifi,
+          color: conn.isInternetConnected.value
+              ? Colors.greenAccent
+              : Colors.redAccent,
+          size: iconSize,
+        ),
+      );
+    });
+  }
+
+  Widget _buildCityIndicatorHeader(BuildContext context,
+      {bool showChangeButton = true}) {
     final isLight = Get.find<ThemeController>().isLight;
     
     return Container(
@@ -355,6 +346,7 @@ class HomePage extends GetView<HomeController> {
               ),
             ],
           ),
+          if (showChangeButton)
           TextButton.icon(
             onPressed: () {
               controller.updateSelectedCity(null); 
@@ -374,6 +366,60 @@ class HomePage extends GetView<HomeController> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Filtros da Home editorial (Em revisão · Rascunhos · Rejeitadas · Excluídas)
+class _EditorialModeFilter extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _EditorialModeFilter({required this.controller});
+
+  final HomeController controller;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(52);
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+
+    return SizedBox(
+      height: preferredSize.height,
+      child: Obx(() {
+        final current = controller.editorialMode.value;
+        final foreground = AppBars.foregroundColor(current.tone, brightness);
+
+        return ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+          children: NewsListMode.editorialModes.map((mode) {
+            final bool selected = mode == current;
+            final Color contentColor =
+                selected ? mode.tone.color : foreground;
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                selected: selected,
+                showCheckmark: false,
+                onSelected: (_) => controller.editorialMode.value = mode,
+                avatar: Icon(mode.icon, size: 18, color: contentColor),
+                label: Text(mode.shortLabel),
+                labelStyle: TextStyle(
+                  color: contentColor,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+                backgroundColor: foreground.withValues(alpha: 0.12),
+                selectedColor: Colors.white,
+                side: BorderSide(color: foreground.withValues(alpha: 0.25)),
+                shape: const StadiumBorder(),
+                visualDensity: VisualDensity.compact,
+              ),
+            );
+          }).toList(),
+        );
+      }),
     );
   }
 }

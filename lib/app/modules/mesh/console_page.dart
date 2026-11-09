@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 
 class ConsolePage extends GetView<HomeController> {
   const ConsolePage({super.key});
@@ -36,10 +37,7 @@ class ConsolePage extends GetView<HomeController> {
     final isLight = Get.find<ThemeController>().isLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Console Mesh (Nearby)', style: TextStyle(fontWeight: FontWeight.bold)),
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBars.build(title: 'Console Mesh (Nearby)'),
       backgroundColor: isLight ? Colors.grey.shade100 : Colors.black,
       body: SafeArea(
         child: Padding(

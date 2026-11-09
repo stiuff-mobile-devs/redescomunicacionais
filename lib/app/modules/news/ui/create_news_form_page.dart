@@ -8,6 +8,8 @@ import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
 
 class CreateNewsPage extends GetView<CreateNewsFormController> {
   const CreateNewsPage({super.key});
@@ -20,28 +22,9 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
 
     return Scaffold(
       backgroundColor: isLight ? theme.scaffoldBackgroundColor : null,
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 2,
-        backgroundColor: isLight ? theme.scaffoldBackgroundColor : null,
-        foregroundColor: theme.colorScheme.onSurface,
-        flexibleSpace: isLight
-            ? null
-            : Container(
-                decoration: BoxDecoration(
-                  gradient: AppColors.appBarBottomGradient(),
-                ),
-              ),
-        title: Text(
-          LocaleKeys.addNews.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        iconTheme: IconThemeData(
-          color: theme.colorScheme.onSurface,
-        ),
+      appBar: AppBars.build(
+        title: LocaleKeys.addNews.tr,
+        tone: AppTone.success,
       ),
       body: Container(
         decoration: isLight

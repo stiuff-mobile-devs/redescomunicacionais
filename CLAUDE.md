@@ -41,9 +41,10 @@ modules/utils/   módulo de utilitários compartilhados (não é uma tela)
 `modules/utils/` reúne tudo o que é reutilizável (não crie mais pastas `utils` dentro dos outros módulos):
 
 - `popups/` — `AppPopups` (snackbars, diálogos, bottom sheets, carregamento)
+- `app_bar/` — `AppBars` (AppBar padrão com degradê) e `AppTone` (tom de cor de cada tela)
 - `translations/` — `LocaleKeys`, dicionários e `AppTranslation`
 - `theme/`, `components/`, `widgets/`, `responsive_utils.dart`
-- `news/` (categorias, tipos, status, cidades, `NewsLabels`), `user/` (`UserRoles`), `dashboard/` (`menu_drawer`)
+- `news/` (categorias, tipos, status, cidades, `NewsLabels`, `NewsListMode`), `user/` (`UserRoles`), `dashboard/` (`menu_drawer`)
 
 Cada módulo em `modules/<nome>/` segue o padrão:
 
@@ -80,6 +81,11 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - Ações que **exigem internet**: aprovar, rejeitar, excluir, alterar matéria em análise e gerar par de chaves. Rascunhos funcionam offline.
 
 **Feed de notícias publicadas:** paginação em lotes de **10** (carga inicial, "carregar mais" e pull-to-refresh), com cache no Hive.
+
+**Central da matéria e filtros da Home:** as listas (em revisão, rascunhos, rejeitadas, excluídas) **reutilizam a Home**, só trocando o filtro `NewsListMode` (`modules/utils/news/news_list_mode.dart`, que define título, ícone e tom de cada modo).
+- O feed público é a Home normal (`NewsListMode.published`), **sem** controles de modo.
+- A central abre uma **segunda Home empilhada** com `Get.toNamed(Routes.HOME, arguments: {'editorial': true}, preventDuplicates: false)`, e o modo fica em `HomeController.editorialMode`. A `HomePage` lê o argumento pela própria rota (`ModalRoute.of(context)`), então a Home do feed nunca muda de modo.
+- Na Home editorial: seta de voltar (volta à central), chips para trocar de filtro e nada de drawer, busca ou FAB. O `NewsWidgets` recebe o modo por parâmetro (`mode`); não use flags globais.
 
 ## Segurança e chaves (`modules/mesh/services/keys_service.dart`)
 
@@ -194,5 +200,9 @@ Ao mudar um modelo Hive, não reaproveite `@HiveField` removidos e rode o `build
    - Texto: `AppPopups.input(...)`; lista de opções: `AppPopups.choose<T>(...)`; conteúdo livre: `AppPopups.sheet(...)` ou `AppPopups.custom(widget)` usando `AppSheet`/`AppSheetButton` por dentro.
    - Aviso simples centralizado: `AppPopups.alert(...)`; carregamento bloqueante: `AppPopups.showLoading()`/`hideLoading()`.
    - Dentro das folhas, feche com `Navigator.of(context).pop(valor)`.
-5. **Não quebre a segurança**: nunca exponha a chave privada, nunca desative a verificação de assinatura nem aceite pacotes de chaves sem validar com a chave pública da API.
-6. **Não quebre a compatibilidade da mesh**: mudanças em `NewsPackageModel`, `PublicKeyPackage` ou no handshake devem continuar legíveis por versões antigas do app e pelas Functions.
+5. **AppBars só pelo `AppBars.build`** (`modules/utils/app_bar/app_bars.dart`). Nunca use `AppBar(...)` direto nas telas.
+   - A cor vem de um `AppTone` (`brand`, `success`, `info`, `warning`, `danger`, `deleted`), nunca de uma cor solta: o degradê vai do azul da marca até a cor do tom, nos temas claro e escuro, e a cor do texto/ícones é calculada para manter o contraste.
+   - A seta de voltar e o ícone do menu (quando há drawer) são automáticos; passe `leading` só para comportamentos especiais (ex.: WebView). Filtros/abas vão em `bottom`.
+   - Para um tom novo, adicione-o em `AppTone` (e reaproveite a cor em outros destaques da tela, como os cards da central).
+6. **Não quebre a segurança**: nunca exponha a chave privada, nunca desative a verificação de assinatura nem aceite pacotes de chaves sem validar com a chave pública da API.
+7. **Não quebre a compatibilidade da mesh**: mudanças em `NewsPackageModel`, `PublicKeyPackage` ou no handshake devem continuar legíveis por versões antigas do app e pelas Functions.
