@@ -8,6 +8,7 @@ import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
 import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -40,13 +41,25 @@ class LoginController extends GetxController {
       Get.offAllNamed(Routes.HOME);
     } catch (e) {
       debugPrint("Erro de Login: $e");
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Get.context != null) {
-          AppPopups.error(LocaleKeys.loginGoogleError.tr);
-        }
-      });
+      await _showLoginError(e, LocaleKeys.loginGoogleError);
     }
+  }
+
+  // Mostra a mensagem específica (ex.: conta sem e-mail) ou a genérica.
+  // Com mensagem específica, a conta entrou no Firebase mas não pode ser usada:
+  // desloga para não ficar numa sessão pela metade.
+  Future<void> _showLoginError(Object error, String fallbackKey) async {
+    String messageKey = fallbackKey;
+    if (error is FriendlyException) {
+      messageKey = error.messageKey;
+      await _repository.logoutGoogle();
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.context != null) {
+        AppPopups.error(messageKey.tr);
+      }
+    });
   }
 
   void loginMicrosoft() async {
@@ -111,12 +124,7 @@ class LoginController extends GetxController {
       Get.offAllNamed(Routes.HOME);
     } catch (e) {
       debugPrint("Erro de Login Apple: $e");
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Get.context != null) {
-          AppPopups.error(LocaleKeys.loginAppleError.tr);
-        }
-      });
+      await _showLoginError(e, LocaleKeys.loginAppleError);
     }
   }
 

@@ -66,3 +66,11 @@ android/app/google-services.json
 ios/GoogleService-Info.plist
 lib/app/config/secrets.dart
 guia_contexto.md
+
+# Documentos locais (relatórios e cópia das regras do Firestore)
+docs/
+firestore.rules
+
+# Configuração pessoal do Claude Code
+.claude/settings.local.json
+.claude/hooks/

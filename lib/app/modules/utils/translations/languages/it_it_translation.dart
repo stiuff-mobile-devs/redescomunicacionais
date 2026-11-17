@@ -191,6 +191,8 @@ final Map<String, String> itItTranslation = {
   LocaleKeys.loginAgain: 'La sessione è scaduta. Accedi di nuovo.',
   LocaleKeys.loginAgainBeforeDelete:
       'Per sicurezza, accedi di nuovo prima di eliminare il tuo account.',
+  LocaleKeys.loginEmailRequired:
+      'Impossibile accedere: il tuo account deve condividere l\'email con l\'app.',
 
   // ===== Central da matéria =====
   LocaleKeys.createNewNews: 'Crea nuovo articolo',

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
@@ -50,8 +51,36 @@ class HomeController extends GetxController {
       isAnonymousUser = false;
     }
     _loadPackageInfo();
-    _checkSavedCity(); 
+    _checkSavedCity();
+
+    // Quando a internet volta, baixa o perfil (cargo, nome...) da nuvem para o Hive
+    ever<bool>(connectionsController.isInternetConnected, (connected) {
+      if (connected) _refreshUserFromCloud();
+    });
     super.onInit();
+  }
+
+  Future<void> _refreshUserFromCloud() async {
+    if (isAnonymousUser) return;
+
+    final UserModel? updated =
+        await _userRepository.refreshCurrentUserFromCloud();
+    if (updated == null) return;
+
+    final bool changed = updated.role != user.role ||
+        updated.name != user.name ||
+        updated.urlImage != user.urlImage;
+
+    user = updated;
+    if (Get.isRegistered<NewsController>()) newsController.user = updated;
+    if (Get.isRegistered<UserController>()) {
+      Get.find<UserController>().currentUser.value = updated;
+    }
+
+    if (changed) {
+      update();
+      forceRecreate();
+    }
   }
 
   Future<void> _loadPackageInfo() async {

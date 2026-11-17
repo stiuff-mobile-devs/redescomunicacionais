@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'dart:convert';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
@@ -72,11 +73,31 @@ class CreateNewsFormController extends GetxController {
     _homeController = Get.find<HomeController>();
     _newsController = Get.find<NewsController>();
     _imageController = Get.find<ImageBase64Service>();
-    users = await userRepository.getAllUsersFromFirebase();
-    availableEditors = users
-        .map((user) => user.name ?? LocaleKeys.nameNotProvided.tr)
-        .toList()
-      ..sort();
+    availableEditors = await _loadCollaboratorNames();
+  }
+
+  // Nomes para a lista de colaboradores. Online, busca na nuvem e guarda só os
+  // nomes no aparelho; offline (ou sem permissão), usa a última lista salva.
+  // Sem nada salvo, a lista fica vazia e resta o campo de nome manual.
+  static const String _collaboratorsCacheKey = 'collaborator_names';
+
+  Future<List<String>> _loadCollaboratorNames() async {
+    final storage = GetStorage();
+    try {
+      users = await userRepository.getAllUsersFromFirebase();
+      final names = users
+          .map((user) => user.name?.trim() ?? '')
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+      await storage.write(_collaboratorsCacheKey, names);
+      return names;
+    } catch (e) {
+      debugPrint('Lista de colaboradores indisponível, usando o cache: $e');
+      final cached = storage.read<List<dynamic>>(_collaboratorsCacheKey);
+      return cached?.whereType<String>().toList() ?? [];
+    }
   }
 
   @override

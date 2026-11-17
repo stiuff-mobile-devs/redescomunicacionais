@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/modules/utils/components/date_parser.dart';
@@ -66,23 +67,58 @@ class UserModel extends HiveObject {
     );
   }
 
+  // Leitura tolerante: campo com tipo errado vira null (ou o padrão) em vez de
+  // lançar erro, para um documento ruim não derrubar o login nem a listagem.
+  // Campos a mais são ignorados. `selectedAppCity` é só local (não vem da nuvem).
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String?, 
-      email: json['email'] as String? ,
-      role: json['role'] as String? ?? UserRoles.user, 
-      name: json['name'] as String?,
-      urlImage: json['urlImage'] as String?,
-      roleUpdatedBy: json['roleUpdatedBy'] as String?,
+      id: _readString(json, 'id'),
+      email: _readString(json, 'email'),
+      role: _readRole(json),
+      name: _readString(json, 'name'),
+      urlImage: _readString(json, 'urlImage'),
+      roleUpdatedBy: _readString(json, 'roleUpdatedBy'),
       createdAt: DateParser.parse(json['createdAt']),
       roleUpdatedAt: DateParser.parse(json['roleUpdatedAt']),
       lastUpdated: DateParser.parse(json['lastUpdated']),
-      operationsCities: json['operationsCities'] != null
-          ? (json['operationsCities'] as Map<dynamic, dynamic>).map(
-              (key, value) => MapEntry(key.toString(), value.toString()),
-            )
-          : null,
+      operationsCities: _readCities(json),
     );
+  }
+
+  static String? _readString(Map<String, dynamic> json, String key) {
+    final value = json[key];
+    if (value == null || value is String) return value as String?;
+    debugPrint('UserModel: campo "$key" ignorado (tipo ${value.runtimeType})');
+    return null;
+  }
+
+  // Só aceita os papéis conhecidos; ausente ou inválido vira 'user'
+  static String _readRole(Map<String, dynamic> json) {
+    const validRoles = [UserRoles.admin, UserRoles.editor, UserRoles.user];
+    final value = json['role'];
+    if (value is String && validRoles.contains(value)) return value;
+    if (value != null) {
+      debugPrint('UserModel: papel inválido "$value", usando "${UserRoles.user}"');
+    }
+    return UserRoles.user;
+  }
+
+  // Mantém só os pares texto -> texto; qualquer outro formato é descartado
+  static Map<String, String>? _readCities(Map<String, dynamic> json) {
+    final value = json['operationsCities'];
+    if (value == null) return null;
+    if (value is! Map) {
+      debugPrint('UserModel: operationsCities ignorado (tipo ${value.runtimeType})');
+      return null;
+    }
+    final cities = <String, String>{};
+    value.forEach((key, city) {
+      if (key is String && city is String) cities[key] = city;
+    });
+    if (cities.length != value.length) {
+      debugPrint('UserModel: ${value.length - cities.length} cidade(s) inválida(s) ignorada(s)');
+    }
+    return cities;
   }
 
   Map<String, dynamic> toJson() {
@@ -119,9 +155,20 @@ class UserModel extends HiveObject {
       'operationsCities': operationsCities,
     };
 
-    // Remove os campos nulos 
+    // Remove os campos nulos
     data.removeWhere((key, value) => value == null);
 
+    return data;
+  }
+
+  // Campos que o próprio usuário pode alterar (para update(), nunca set()):
+  // enviar campos do admin, mesmo nulos, faz a regra do Firestore negar.
+  Map<String, dynamic> toFirebaseProfile() {
+    final Map<String, dynamic> data = {
+      'name': name,
+      'urlImage': urlImage,
+    };
+    data.removeWhere((key, value) => value == null);
     return data;
   }
 }

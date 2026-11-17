@@ -222,6 +222,8 @@ abstract class LocaleKeys {
   static const loginAgain = 'Sua sessão expirou. Faça login novamente.';
   static const loginAgainBeforeDelete =
       'Por segurança, faça login novamente antes de excluir sua conta.';
+  static const loginEmailRequired =
+      'Não foi possível entrar: sua conta precisa compartilhar o e-mail com o app.';
 
   // ===========================================================================
   // CENTRAL DA MATÉRIA

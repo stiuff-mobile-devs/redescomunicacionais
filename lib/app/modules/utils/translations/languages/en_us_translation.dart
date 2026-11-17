@@ -188,6 +188,8 @@ final Map<String, String> enUsTranslation = {
   LocaleKeys.loginAgain: 'Your session has expired. Please sign in again.',
   LocaleKeys.loginAgainBeforeDelete:
       'For security, please sign in again before deleting your account.',
+  LocaleKeys.loginEmailRequired:
+      'Could not sign in: your account needs to share its email with the app.',
 
   // ===== Central da matéria =====
   LocaleKeys.createNewNews: 'Create new article',

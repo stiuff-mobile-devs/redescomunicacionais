@@ -19,53 +19,110 @@ class UserProvider {
 
   // Armazena sempre na mesma chave para garantir apenas uma entrada
   final String hiveUserKey = 'current_user';
-  final String userCollection = 'users_v2';
 
+  // Box local (precisa ser a mesma aberta no HiveService) e coleção remota.
+  // São coisas diferentes: não use uma no lugar da outra.
+  static const String _hiveBox = 'users';
+  static const String _collection = 'users';
+
+  // Tempo máximo desde o login para o Firebase aceitar excluir a conta
+  static const Duration _recentLoginWindow = Duration(minutes: 5);
+
+  Future<Box<UserModel>> _box() async {
+    return Hive.isBoxOpen(_hiveBox)
+        ? Hive.box<UserModel>(_hiveBox)
+        : await Hive.openBox<UserModel>(_hiveBox);
+  }
+
+  // Chamado no login: baixa o usuário da nuvem para o Hive (sincronia de cima
+  // para baixo) e cria o documento só quando ele realmente não existe.
   Future<void> createUserDoc(
       String email, String name, String uid, String urlImage) async {
+    // E-mail é a identidade da chave de assinatura e exigido pelas regras
+    if (email.trim().isEmpty) {
+      throw const FriendlyException(LocaleKeys.loginEmailRequired,
+          details: 'Conta sem e-mail no provedor de login.');
+    }
 
-    // Inicializa o usuário como convidado
-    UserModel userFirebase = UserModel.empty();
+    DocumentSnapshot<Map<String, dynamic>> doc;
+    try {
+      // Só o servidor responde se o documento existe (o cache pode estar vazio)
+      doc = await _firestore
+          .collection(_collection)
+          .doc(uid)
+          .get(const GetOptions(source: Source.server));
+    } catch (e) {
+      // Sem rede, sem permissão ou outro erro: mantém o usuário local, se for o mesmo
+      debugPrint("Erro ao ler o usuário do Firebase: $e");
+      final UserModel localUser = await getCurrentUserFromHive();
+      if (localUser.id == uid) {
+        debugPrint("Mantendo o usuário salvo no Hive.");
+        return;
+      }
+      rethrow;
+    }
 
-    UserModel newUser = UserModel(
-      id: uid,
-      name: name,
-      email: email,
-      urlImage: urlImage,
-      role: UserRoles.user,
-      createdAt: DateTime.now(),
-      lastUpdated: DateTime.now(),
-    );
+    if (!doc.exists) {
+      final now = DateTime.now();
+      final UserModel newUser = UserModel(
+        id: uid,
+        name: name,
+        email: email,
+        urlImage: urlImage,
+        role: UserRoles.user,
+        createdAt: now,
+        lastUpdated: now,
+      );
+      await _createUserDocInFirebase(newUser);
+      await _saveFromCloud(newUser);
+      return;
+    }
+
+    final UserModel cloudUser = UserModel.fromJson(doc.data()!);
+    cloudUser.id ??= doc.id;
+    await _saveFromCloud(cloudUser);
+  }
+
+  // Baixa o usuário logado da nuvem para o Hive (ex.: quando a internet volta).
+  // Devolve o usuário atualizado ou null se não foi possível.
+  Future<UserModel?> refreshCurrentUserFromCloud() async {
+    final String? uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+
+    final UserModel localUser = await getCurrentUserFromHive();
+    if (localUser.id != uid) return null;
 
     try {
-      await _auth.currentUser?.getIdToken(true);
-      userFirebase = await _getCurrentUserFromFirebase(uid);
-    } catch (e) {
-      debugPrint("Usuário não encontrado no Firebase");
-    }
+      final doc = await _firestore
+          .collection(_collection)
+          .doc(uid)
+          .get(const GetOptions(source: Source.server));
+      if (!doc.exists) return null;
 
-    // Se o usuário não existir no Firebase, cria o documento no Firebase e no Hive
-    if (userFirebase.role == UserRoles.guest) {
-      try {
-        await _createUserDocInFirebase(newUser);
-        await createUserDocInHive(newUser);
-      } catch (e) {
-        throw Exception("Erro ao criar documento no Firebase: $e");
-      }
-    } else {
-      try {
-        await createUserDocInHive(userFirebase);
-      } catch (e) {
-        throw Exception("Erro ao criar documento no Hive: $e");
-      }
+      final UserModel cloudUser = UserModel.fromJson(doc.data()!);
+      cloudUser.id ??= uid;
+      await _saveFromCloud(cloudUser);
+      return getCurrentUserFromHive();
+    } catch (e) {
+      debugPrint("Não foi possível atualizar o usuário da nuvem: $e");
+      return null;
     }
+  }
+
+  // Grava no Hive o usuário vindo da nuvem, preservando os campos só locais
+  Future<void> _saveFromCloud(UserModel cloudUser) async {
+    final UserModel localUser = await getCurrentUserFromHive();
+    if (localUser.id == cloudUser.id) {
+      cloudUser.selectedAppCity = localUser.selectedAppCity;
+    }
+    await createUserDocInHive(cloudUser);
   }
 
   //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<void> _createUserDocInFirebase(UserModel user) async {
     try {
       await _firestore
-          .collection(userCollection)
+          .collection(_collection)
           .doc(user.id)
           .set(user.toFirebase());
     } catch (e) {
@@ -75,12 +132,7 @@ class UserProvider {
 
   Future<void> createUserDocInHive(UserModel user) async {
     try {
-       var box = Hive.isBoxOpen(userCollection)
-          ? Hive.box<UserModel>(userCollection)
-          : await Hive.openBox<UserModel>(userCollection);
-
-      // Verifica se a chave já existe
-
+      final box = await _box();
       await box.put(hiveUserKey, user);
       await box.flush(); // Força a escrita no disco
     } catch (e) {
@@ -90,39 +142,16 @@ class UserProvider {
 
   Future<UserModel> getCurrentUserFromHive() async {
     try {
-       var box = Hive.isBoxOpen(userCollection)
-          ? Hive.box<UserModel>(userCollection)
-          : await Hive.openBox<UserModel>(userCollection);
-
-      if (!box.containsKey(hiveUserKey)) {
-        throw Exception("Nenhum usuário encontrado no Hive");
+      final box = await _box();
+      final UserModel? user = box.get(hiveUserKey);
+      if (user == null) {
+        debugPrint("Nenhum usuário encontrado no Hive");
+        return UserModel.empty();
       }
-
-      UserModel user = box.get(hiveUserKey)!;
-
-      debugPrint("Usuário recuperado do Hive:");
-
       return user;
     } catch (e) {
+      debugPrint("Erro ao ler o usuário do Hive: $e");
       return UserModel.empty();
-    }
-  }
-
-  //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
-  Future<UserModel> _getCurrentUserFromFirebase(String uid) async {
-    try {
-      DocumentSnapshot doc =
-          await _firestore.collection(userCollection).doc(uid).get();
-
-      if (!doc.exists) {
-        throw Exception("Nenhum usuário encontrado no Firebase");
-      }
-
-      UserModel user = UserModel.fromJson(doc.data() as Map<String, dynamic>);
-      debugPrint("Usuário recuperado do Firebase: ${user.name}");
-      return user;
-    } catch (e) {
-      throw Exception("Erro ao recuperar usuário do Firebase: $e");
     }
   }
 
@@ -130,16 +159,20 @@ class UserProvider {
   //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<List<UserModel>> getAllUsersFromFirebase() async {
     try {
-      QuerySnapshot querySnapshot =
-          await _firestore.collection(userCollection).get();
+      final querySnapshot = await _firestore.collection(_collection).get();
 
-      return querySnapshot.docs.map((doc) {
-        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-
-        userData['id'] = doc.id;
-
-        return UserModel.fromJson(userData);
-      }).toList();
+      final List<UserModel> users = [];
+      for (final doc in querySnapshot.docs) {
+        // Um documento com problema não pode derrubar a lista inteira
+        try {
+          final UserModel user = UserModel.fromJson(doc.data());
+          user.id = doc.id;
+          users.add(user);
+        } catch (e) {
+          debugPrint("Usuário ${doc.id} ignorado na listagem: $e");
+        }
+      }
+      return users;
     } catch (e) {
       throw Exception("Erro ao buscar usuários: $e");
     }
@@ -147,9 +180,7 @@ class UserProvider {
 
   Future<void> deleteCurrentUserFromHive() async {
     try {
-      var box = Hive.isBoxOpen(userCollection)
-          ? Hive.box<UserModel>(userCollection)
-          : await Hive.openBox<UserModel>(userCollection);
+      final box = await _box();
 
       if (box.containsKey(hiveUserKey)) {
         await box.delete(hiveUserKey);
@@ -173,10 +204,20 @@ class UserProvider {
           details: 'Usuário não autenticado no Firebase.');
     }
 
+    // Confere o login recente ANTES de apagar qualquer coisa, para não
+    // apagar o documento e depois o Firebase recusar excluir a conta
+    final tokenResult = await currentFirebaseUser.getIdTokenResult();
+    final DateTime? authTime = tokenResult.authTime;
+    if (authTime == null ||
+        DateTime.now().difference(authTime) > _recentLoginWindow) {
+      throw FriendlyException(LocaleKeys.loginAgainBeforeDelete,
+          details: 'Último login em $authTime.');
+    }
+
     try {
       // Apaga o documento do usuário, a conta no Auth e o Hive
       await _firestore
-          .collection(userCollection)
+          .collection(_collection)
           .doc(currentFirebaseUser.uid)
           .delete();
       await currentFirebaseUser.delete();
@@ -211,7 +252,8 @@ class UserProvider {
         final now = DateTime.now();
         user.role = role;
         user.operationsCities = operationsCities;
-        user.roleUpdatedBy = adminEmail;
+        // Quem alterou é identificado pelo uid (contrato das regras do Firestore)
+        user.roleUpdatedBy = _auth.currentUser?.uid ?? adminEmail;
         user.roleUpdatedAt = now;
         user.lastUpdated = now;
 
@@ -227,22 +269,19 @@ class UserProvider {
   //TODO: migrar para uma Cloud Function (o app não deve acessar o Firestore direto)
   Future<void> updateUserNameToFirebase(String userId, String name) async {
     try {
-      final docRef = _firestore.collection(userCollection).doc(userId);
+      final docRef = _firestore.collection(_collection).doc(userId);
 
+      // Só campos de perfil: campos do admin são negados pelas regras
       await docRef.update({
-        'name': name,
+        ...UserModel(name: name).toFirebaseProfile(),
         'lastUpdated': FieldValue.serverTimestamp(),
       });
 
-      DocumentSnapshot updatedDoc = await docRef.get();
-      UserModel updatedUser =
-          UserModel.fromJson(updatedDoc.data() as Map<String, dynamic>);
+      final updatedDoc = await docRef.get();
+      final UserModel updatedUser = UserModel.fromJson(updatedDoc.data()!);
+      updatedUser.id ??= userId;
 
-      // A cidade escolhida só existe no Hive; mantém ao sobrescrever
-      final UserModel localUser = await getCurrentUserFromHive();
-      updatedUser.selectedAppCity = localUser.selectedAppCity;
-
-      await createUserDocInHive(updatedUser);
+      await _saveFromCloud(updatedUser);
     } catch (e) {
       throw Exception("Erro ao atualizar e recuperar usuário: $e");
     }
@@ -274,16 +313,14 @@ class UserProvider {
 
   Future<void> saveLocalSelectedCity(String cityName) async {
     try {
-      var box = Hive.isBoxOpen(userCollection)
-          ? Hive.box<UserModel>(userCollection)
-          : await Hive.openBox<UserModel>(userCollection);
+      final box = await _box();
 
       if (box.containsKey(hiveUserKey)) {
         UserModel user = box.get(hiveUserKey)!;
         user.selectedAppCity = cityName;
-        
-        await user.save(); 
-        
+
+        await user.save();
+
         debugPrint("Cidade salva no Hive do usuário: $cityName");
       }
     } catch (e) {
@@ -293,16 +330,14 @@ class UserProvider {
 
   Future<void> clearLocalSelectedCity() async {
     try {
-      var box = Hive.isBoxOpen(userCollection)
-          ? Hive.box<UserModel>(userCollection)
-          : await Hive.openBox<UserModel>(userCollection);
+      final box = await _box();
 
       if (box.containsKey(hiveUserKey)) {
         UserModel user = box.get(hiveUserKey)!;
         user.selectedAppCity = null;
-        
+
         await user.save();
-        
+
         debugPrint("Cidade removida do Hive do usuário.");
       }
     } catch (e) {

@@ -23,6 +23,10 @@ class UserRepository {
     return _userProvider.getCurrentUserFromHive();
   }
 
+  Future<UserModel?> refreshCurrentUserFromCloud() {
+    return _userProvider.refreshCurrentUserFromCloud();
+  }
+
 
   Future<void> deleteCurrentUserFromHive() {
     return _userProvider.deleteCurrentUserFromHive();

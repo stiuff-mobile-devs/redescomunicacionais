@@ -192,6 +192,8 @@ final Map<String, String> ptBrTranslation = {
   LocaleKeys.loginAgain: 'Sua sessão expirou. Faça login novamente.',
   LocaleKeys.loginAgainBeforeDelete:
       'Por segurança, faça login novamente antes de excluir sua conta.',
+  LocaleKeys.loginEmailRequired:
+      'Não foi possível entrar: sua conta precisa compartilhar o e-mail com o app.',
 
   // ===== Central da matéria =====
   LocaleKeys.createNewNews: 'Criar nova matéria',

@@ -57,7 +57,7 @@ Ao criar uma tela nova: adicionar a constante em `Routes`, registrar o `GetPage`
 
 ## Regras de negócio das matérias
 
-**Papéis** (`role`): `admin`, `editor`, `user` (+ `guest` no app). Hoje são lidos da **coleção `roles` do Firestore** (não de custom claims); veja "Usuários e papéis no Firestore". Constantes em `modules/utils/user/userRoles.dart`; validação no backend em `functions/src/service/auth.service.ts`. Editor/admin criam, submetem, aprovam, rejeitam e excluem matérias.
+**Papéis** (`role`): `admin`, `editor`, `user` (+ `guest` no app). No app são lidos do campo `role` do documento `users/{uid}` (as regras ainda aceitam a coleção `roles` na transição e as Functions usam a custom claim); veja "Usuários e papéis no Firestore". Constantes em `modules/utils/user/userRoles.dart`; validação no backend em `functions/src/service/auth.service.ts`. Editor/admin criam, submetem, aprovam, rejeitam e excluem matérias.
 
 **Ciclo de vida** (confira os nomes exatos dos status no `NewsModel`):
 
@@ -117,45 +117,27 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 **Princípio de arquitetura: o app conversa só com as Cloud Functions, e só as Functions conversam com o Firebase (Firestore/Storage).**
 - Toda leitura/escrita de dados nova deve ser feita por um endpoint em `functions/src/`, nunca com `FirebaseFirestore`/`FirebaseStorage` direto no app. O app usa o Firebase apenas para autenticação (Firebase Auth) e para chamar as Functions.
 - Ao alterar um fluxo que ainda acessa o Firestore direto no app, migre-o para uma Function em vez de ampliar o acesso direto.
-- **Ainda falta migrar** (acesso direto ao Firestore no app hoje): em `user_provider.dart`, `public_keys`; em `news_provider.dart`, leitura de notícias; e `release_notes_service.dart` (`app_updates`).
+- **Ainda falta migrar** (acesso direto ao Firestore no app hoje): em `user_provider.dart`, a coleção `users` (login, nome, listagem e exclusão); em `news_provider.dart`, leitura de notícias; e `release_notes_service.dart` (`app_updates`).
 
-- **Cloud Functions** (`functions/src/`): `controller/` (endpoints `onCall`/`onRequest`), `service/`, `repository/` e `model/`. Endpoints: `healthCheck`, `savePublicKey`, `getPublicKeysPackage`, `uploadNewsPackage`, `setUserRole`, `syncUserProfile`, `updateUserProfile`, `deleteUserAccount`, `listUsers`. Documentação completa em [functions/README.md](functions/README.md) — mantenha-a atualizada ao alterar/criar endpoints.
+- **Cloud Functions** (`functions/src/`): `controller/` (endpoints `onCall`/`onRequest`), `service/`, `repository/` e `model/`. Endpoints: `healthCheck`, `savePublicKey`, `getPublicKeysPackage`, `uploadNewsPackage`, `setUserRole`. Planejados (ainda não existem): `syncUserProfile`, `updateUserProfile`, `deleteUserAccount`, `listUsers`. Documentação completa em [functions/README.md](functions/README.md) — mantenha-a atualizada ao alterar/criar endpoints.
 - No Flutter, chamar as functions sempre com `FirebaseFunctions.instanceFor(region: 'southamerica-east1')`. As chamadas ficam nos providers/serviços (`news_provider.dart`, `user_provider.dart`, `mesh/services/package_service.dart`).
 
 ### Usuários e papéis no Firestore
 
-**Estado atual (produção):** duas coleções com o mesmo ID (o `uid` do Firebase Auth):
-- `users/{uid}`: dados pessoais. Leitura/escrita pelo próprio usuário ou por admin.
-- `roles/{uid}`: campo `role`. Leitura pelo próprio usuário; criação/alteração só por admin; exclusão pelo próprio usuário ou admin.
-- As regras usam `getRole()`, que lê `roles/{uid}`, para liberar escrita em `news`, `news_test` e `public_keys`.
-
-**Em teste: coleção unificada `users_v2/{uid}`** (mesmos campos do `UserModel`, via `toFirebase()`). Coexiste com `users` e `roles`, que **não devem ser alteradas nem removidas** durante o teste.
-- **Gravação dupla (só nas Functions)**: o app não acessa `users`, `roles` nem `users_v2`; tudo passa pelas Functions, que **leem de `users` e `roles`** e gravam cada alteração também em `users_v2`, na mesma transação/batch.
-  - `syncUserProfile` (login): cria `users` + `users_v2` para usuário novo (`role: 'user'`) e cria `users_v2` para usuário antigo copiando de `users` + `roles` (papel real). Sem API, o app usa o usuário do Hive.
-  - `updateUserProfile`: grava só `name`, `urlImage`, `selectedAppCity` nas duas coleções.
-  - `deleteUserAccount`: apaga `users`, `roles` e `users_v2` e a conta no Auth.
-  - `setUserRole`: grava `users`, `roles` e `users_v2`. `listUsers`: lê `users` (só admin, verificado em `roles`).
-- A validação de admin **nas Functions**: `setUserRole` usa a custom claim `token.role` (`getAdminUser`); `listUsers` usa a coleção `roles` (`getAdminUserFromRoles`, mesmo critério das regras do Firestore).
-- O `firestore.rules` não está versionado neste repositório (é publicado pelo console).
-- Campos: `id` (= uid), `name`, `email`, `urlImage`, `role` (`admin` | `editor` | `user`), `createdAt`, `roleUpdatedAt`, `roleUpdatedBy` (uid do admin), `lastUpdated`, `operationsCities`, `selectedAppCity`. O `UserModel` **não tem mais `status`** (índices Hive 8–11 obsoletos).
+**Coleção `users/{uid}`** (ID = `uid` do Firebase Auth), com o cargo no campo `role`: é a fonte do app. O app não usa mais `roles` nem `users_v2` (teste encerrado, já fora das regras). A `roles` **continua nas regras durante a transição** por causa das versões antigas do app. Pendências e o que mudar depois em `docs/relatorios/modulo-user.md` (local, fora do git).
+- **Regras (versão de transição)**: publicadas pelo console; cópia local em `firestore.rules` (fora do git). Mantêm as regras anteriores (`getRole()` lendo `roles` para `news`, `news_test` e `public_keys`; bloco `roles`) e só o bloco `users` foi endurecido; nele, admin/editor é reconhecido pela `roles` **ou** pelo `users.role`. Depois: `getRole()` passa a ler `users` e saem `roles` e os campos `status*`.
+- **Box do Hive** `users` (chave `current_user`) é diferente da coleção remota: no `user_provider.dart` são constantes separadas (`_hiveBox`, `_collection`).
+- Campos: `id` (= uid), `name`, `email`, `urlImage`, `role` (`admin` | `editor` | `user`), `createdAt`, `roleUpdatedAt`, `roleUpdatedBy` (uid do admin), `lastUpdated`, `operationsCities`. `selectedAppCity` é **só local** (Hive) e é preservada ao baixar o usuário da nuvem. O `UserModel` **não tem mais `status`** (índices Hive 8–11 obsoletos).
+- **`UserModel.fromJson` é tolerante**: campo com tipo errado vira null, `role` inválido vira `user`, `operationsCities` só mantém pares texto→texto, campos a mais são ignorados. Não volte a usar `as String` direto.
 - **Campos do admin**: `role`, `roleUpdatedAt`, `roleUpdatedBy`, `operationsCities`. **Imutáveis**: `id`, `createdAt`.
-- **Leitura**: o próprio usuário ou admin.
-- **Criação**: só o próprio usuário, com `id == uid`, `role: 'user'` e os campos do admin ausentes ou nulos.
-- **Atualização pelo usuário**: qualquer campo, **exceto** os campos do admin e os imutáveis (checado com `diff().affectedKeys()`, que também barra adicionar ou remover esses campos).
-- **Atualização pelo admin**: **somente** os campos do admin (+ `lastUpdated`), **somente** de outros usuários (o admin não altera o próprio papel, para não ficar sem admin). Ao mudar `role`, `roleUpdatedBy` deve ser o uid do admin.
-- **Atualizações do próprio usuário devem usar `update()` só com os campos de perfil** (`toFirebaseProfile()`), nunca `set(toFirebase())`: enviar `roleUpdatedBy: null` num documento que não tem esse campo conta como alteração e a regra nega.
-- **Exclusão**: só o próprio usuário. Excluir o documento não apaga a conta no Firebase Auth.
-- Admin na coleção nova é verificado por `isAdminV2()`, que lê `users_v2/{uid}` (independente de `roles`).
+- **Regras de `users`**: lista de campos permitidos (`hasOnly`) com tipos/tamanhos checados; leitura de um doc pelo dono ou admin; **listagem** por editor/admin (colaboradores das matérias e tela de admin); criação só pelo dono com `id == uid`, `email == token.email`, `role: 'user'` e sem campos do admin; atualização pelo dono sem tocar campos do admin/imutáveis; pelo admin só campos do admin (+ `lastUpdated`) de outros usuários; exclusão só pelo dono.
+- **Tolerância temporária**: as regras aceitam `status`, `statusUpdatedAt`, `statusUpdatedBy`, `statusObservation` por causa de versões antigas do app. Remover quando todos atualizarem.
+- **Atualizações do próprio usuário usam `update()` só com campos de perfil** (`toFirebaseProfile()`), nunca `set(toFirebase())`.
+- **Login** (`createUserDoc`): cria o doc só quando o servidor diz que ele não existe; qualquer outro erro mantém o usuário do Hive (mesmo uid). Conta sem e-mail é recusada (`LocaleKeys.loginEmailRequired`). Quando a internet volta, o `HomeController` baixa o perfil de novo (`refreshCurrentUserFromCloud`).
+- **Excluir conta** exige login recente (≤ 5 min) antes de apagar qualquer coisa.
+- **Troca de cargo**: Function `setUserRole` (grava em `users` com Admin SDK). Hoje as Functions ainda verificam o cargo pela custom claim `token.role`; a mudança para ler `users/{uid}.role` está documentada para a equipe da API no relatório.
 - O primeiro admin é criado **manualmente pelo console** (o console e o Admin SDK ignoram as regras).
 - Nunca permita que o usuário grave `role` (ou outros campos do admin) no próprio documento: isso permitiria se promover a admin.
-
-**Plano de virada** (só após validar os testes):
-1. Migrar `users` + `roles` para `users_v2` com script usando o Admin SDK.
-2. Fazer `getRole()` ler de `users_v2`.
-3. Atualizar a Function `setUserRole`, o `user_provider.dart` e o restante do app para ler/gravar em `users_v2`.
-4. Remover as regras de `users` e `roles` e, por último, os dados antigos.
-
-**Pendências em aberto:** avaliar migrar os papéis para custom claims (`request.auth.token.role`), o que eliminaria os `get()` nas regras.
 
 ### Hive
 

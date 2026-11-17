@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:redescomunicacionais/app/config/secrets.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 
 class SignInService {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
@@ -22,6 +23,8 @@ class SignInService {
       await _init;
       var account = await _googleSignIn.authenticate();
       await _signIn(account);
+    } on FriendlyException {
+      rethrow;
     } catch (e) {
       debugPrint('Error initializing GoogleSignIn: $e');
       throw Exception("Erro ao fazer login com Google");
@@ -38,6 +41,8 @@ class SignInService {
 
       return await _createUserDoc(
           userCredential, account.displayName, account.photoUrl);
+    } on FriendlyException {
+      rethrow;
     } catch (e) {
       debugPrint('Error during Google sign-in: $e');
       throw Exception("Erro ao fazer login com Google");
@@ -56,6 +61,8 @@ class SignInService {
         userCredential.user!.uid,
         photoUrl ?? userCredential.user!.photoURL ?? '',
       );
+    } on FriendlyException {
+      rethrow;
     } catch (err) {
       debugPrint(err.toString());
       throw Exception("Erro ao criar documento do usuário");
@@ -93,13 +100,16 @@ class SignInService {
       final user = userCredential.user;
 
       if (user != null) {
+        // Contas Microsoft podem vir sem nome ou foto
         return await _userRepository.createUserDoc(
-          userCredential.user!.email!,
-          userCredential.user!.displayName!,
-          userCredential.user!.uid,
-          userCredential.user!.photoURL!,
+          user.email ?? '',
+          user.displayName ?? '',
+          user.uid,
+          user.photoURL ?? '',
         );
       }
+    } on FriendlyException {
+      rethrow;
     } on FirebaseAuthException catch (e) {
       debugPrint("Erro no login com Microsoft: ${e.message}");
     } catch (err) {
@@ -115,10 +125,10 @@ class SignInService {
       try {
         debugPrint("Usuário já estava logado: ${user.email}");
         return await _userRepository.createUserDoc(
-          user.email!,
-          user.displayName!,
+          user.email ?? '',
+          user.displayName ?? '',
           user.uid,
-          user.photoURL!,
+          user.photoURL ?? '',
         );
       } catch (err) {
         debugPrint("Erro ao verificar usuário silenciosamente: $err");

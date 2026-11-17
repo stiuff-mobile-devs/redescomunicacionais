@@ -190,6 +190,8 @@ final Map<String, String> esEsTranslation = {
   LocaleKeys.loginAgain: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
   LocaleKeys.loginAgainBeforeDelete:
       'Por seguridad, inicia sesión de nuevo antes de eliminar tu cuenta.',
+  LocaleKeys.loginEmailRequired:
+      'No se pudo iniciar sesión: tu cuenta necesita compartir el correo con la app.',
 
   // ===== Central da matéria =====
   LocaleKeys.createNewNews: 'Crear nuevo artículo',

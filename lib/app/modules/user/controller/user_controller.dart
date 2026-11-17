@@ -43,7 +43,12 @@ class UserController extends GetxController {
 
     try {
       final UserModel user = await _repository.getCurrentUserFromHive();
-      await _repository.updateUserNameToFirebase(user.id!, newName.trim());
+      final String? userId = user.id;
+      if (userId == null) {
+        throw const FriendlyException(LocaleKeys.loginAgain,
+            details: 'Usuário sem id no Hive.');
+      }
+      await _repository.updateUserNameToFirebase(userId, newName.trim());
       await _reloadCurrentUser();
       _refreshMenuUser();
 
