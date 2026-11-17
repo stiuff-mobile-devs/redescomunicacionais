@@ -71,13 +71,7 @@ class NewsProvider {
         nextLastDocument = snapshot.docs.last;
       }
 
-      List<NewsPackageModel> newsList = snapshot.docs.map((doc) {
-        Map<String, dynamic> data = doc.data();
-        data['id'] = doc.id;
-        return NewsPackageModel.fromJson(data);
-      }).toList();
-
-      await saveNewsPackageListToHive(newsList);
+      await saveNewsPackageListToHive(_parseDocs(snapshot.docs));
 
       return nextLastDocument;
     } catch (e) {
@@ -121,17 +115,28 @@ class NewsProvider {
         }
       }
 
-      // Mapeia o resultado final unificado
-      List<NewsPackageModel> othersNewsList = docs.values.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return NewsPackageModel.fromJson(data);
-      }).toList();
-
-      await saveNewsPackageListToHive(othersNewsList);
+      await saveNewsPackageListToHive(_parseDocs(docs.values));
     } catch (e) {
       throw Exception("Erro ao buscar matérias de administração: $e");
     }
+  }
+
+  // Converte os documentos um a um: um documento inválido é descartado (com
+  // log) sem derrubar a lista inteira. Pacote sem notícia também é descartado.
+  List<NewsPackageModel> _parseDocs(
+      Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    final List<NewsPackageModel> result = [];
+    for (final doc in docs) {
+      try {
+        final data = doc.data();
+        data['id'] = doc.id;
+        final package = NewsPackageModel.fromJson(data);
+        if (package.news != null) result.add(package);
+      } catch (e) {
+        debugPrint("Matéria ${doc.id} ignorada (dados inválidos): $e");
+      }
+    }
+    return result;
   }
 
   Future<NewsPackageModel?> _getNewsByIdFromFirebase(String id) async {
@@ -203,63 +208,66 @@ class NewsProvider {
     }
   }
 
+  // Assina e grava uma versão alterada da matéria. A alteração é feita numa
+  // cópia: se a assinatura falhar, o pacote guardado no Hive fica intacto
+  // (o Hive devolve a mesma instância que mantém em memória).
+  Future<void> _signAndSave(NewsPackageModel original, NewsModel changed) async {
+    final resigned = await offlinePackageService.resignNewsPackage(
+      NewsPackageModel(
+        news: changed,
+        signature: original.signature,
+        email: original.email,
+        lastUpdated: original.lastUpdated,
+        isUploaded: original.isUploaded,
+        id: original.id ?? changed.id,
+      ),
+    );
+    if (resigned == null) {
+      throw Exception('Falha ao assinar a matéria ${changed.id}.');
+    }
+  }
+
+  // Soft delete (o status precisa se propagar pela mesh)
   Future<void> hideNews(String newsId, String status, String userEmail) async {
-    DateTime now = DateTime.now();
+    final DateTime now = DateTime.now();
 
     try {
       final box = await _newsBox();
-
-      NewsPackageModel? news = box.get(newsId);
-
-      if (news != null) {
-        news.news?.status = status;
-        news.news?.excludedAt = now;
-        news.news?.excludedBy = userEmail;
-        news.news?.lastUpdated = now;
-        final resigned = await offlinePackageService.resignNewsPackage(news);
-        if (resigned == null) {
-          throw Exception('Falha ao assinar a exclusão.');
-        }
+      final NewsPackageModel? package = box.get(newsId);
+      final NewsModel? news = package?.news;
+      if (package == null || news == null) {
+        throw Exception('Notícia $newsId não encontrada no Hive local.');
       }
+
+      final changed = news.copy()
+        ..status = status
+        ..excludedAt = now
+        ..excludedBy = userEmail
+        ..lastUpdated = now;
+
+      await _signAndSave(package, changed);
     } catch (e) {
       debugPrint("Erro crítico ao atualizar Hive local: $e");
       throw Exception("Falha ao ocultar notícia.");
     }
   }
 
-  Future<void> updateNews(
-      String newsId, Map<String, dynamic> updatedData) async {
-    try {
-      final box = await _newsBox();
+  // Apaga de verdade (só para rascunho, que nunca saiu do aparelho)
+  Future<void> deleteNewsFromHive(String newsId) async {
+    final box = await _newsBox();
+    await box.delete(newsId);
+  }
 
-      NewsPackageModel? existingNews = box.get(newsId);
+  // Grava uma nova versão do conteúdo/status montada pelo controller
+  Future<void> updateNews(NewsModel updated) async {
+    final box = await _newsBox();
+    final NewsPackageModel? existing = box.get(updated.id);
 
-      if (existingNews == null) {
-        throw Exception('Notícia não encontrada no Hive local.');
-      }
-
-      final mergedData = existingNews.news!.toFirebase()..addAll(updatedData);
-      mergedData['id'] = newsId;
-
-      // mergedData é o mapa da notícia, não do pacote: monta o NewsModel e
-      // embrulha num pacote, senão o pacote fica sem notícia e nada é salvo
-      final updatedNews = NewsPackageModel(
-        news: NewsModel.fromMap(mergedData),
-        signature: existingNews.signature,
-        email: existingNews.email,
-        lastUpdated: existingNews.lastUpdated,
-        isUploaded: existingNews.isUploaded,
-        id: existingNews.id ?? newsId,
-      );
-
-      final resigned =
-          await offlinePackageService.resignNewsPackage(updatedNews);
-      if (resigned == null) {
-        throw Exception('Falha ao assinar e salvar a notícia atualizada.');
-      }
-    } catch (e) {
-      throw Exception("Erro ao atualizar notícia no Hive local: $e");
+    if (existing == null) {
+      throw Exception('Notícia ${updated.id} não encontrada no Hive local.');
     }
+
+    await _signAndSave(existing, updated);
   }
 
   Future<void> reviewNews({
@@ -273,31 +281,31 @@ class NewsProvider {
 
     try {
       final box = await _newsBox();
-      final news = box.get(newsId);
+      final NewsPackageModel? package = box.get(newsId);
+      final NewsModel? news = package?.news;
 
-      if (news == null) {
+      if (package == null || news == null) {
         throw Exception('Notícia $newsId não encontrada no Hive local.');
       }
 
-      news.news?.status =
-          isApproved ? NewsStates.publicado : NewsStates.rejeitado;
-      news.news?.lastUpdated = now;
+      final changed = news.copy()
+        ..status = isApproved ? NewsStates.publicado : NewsStates.rejeitado
+        ..lastUpdated = now;
 
       if (isApproved) {
-        news.news?.validatedAt = now;
-        news.news?.validatedObservation = reason;
-        news.news?.validatedBy = validator;
-        news.news?.validatedByName = validatorName;
+        changed
+          ..validatedAt = now
+          ..validatedObservation = reason
+          ..validatedBy = validator
+          ..validatedByName = validatorName;
       } else {
-        news.news?.rejectedAt = now;
-        news.news?.rejectedBy = validator;
-        news.news?.rejectedObservation = reason;
+        changed
+          ..rejectedAt = now
+          ..rejectedBy = validator
+          ..rejectedObservation = reason;
       }
 
-      final resigned = await offlinePackageService.resignNewsPackage(news);
-      if (resigned == null) {
-        throw Exception('Falha ao assinar a revisão.');
-      }
+      await _signAndSave(package, changed);
     } catch (e) {
       debugPrint("Erro ao atualizar revisão no Hive: $e");
       throw Exception("Erro ao atualizar revisão no Hive");
@@ -360,22 +368,15 @@ class NewsProvider {
           await getAllPackageNewsFromHive();
 
       for (NewsPackageModel hiveNews in hivePackageNewsList) {
-        // Rascunho fica só no aparelho: nunca vai para a API
-        if (hiveNews.news?.status == NewsStates.rascunho) continue;
+        // Rascunho fica só no aparelho, e excluída/rejeitada antiga não sobe
+        if (!shouldUpload(hiveNews)) continue;
 
         try {
           NewsPackageModel? fbNews =
               await _getNewsByIdFromFirebase(hiveNews.news?.id ?? "");
 
           if (fbNews == null) {
-            //Se a matéria Deletada ou Rejeitada tem mais de 30 dias não sobe pro firebase
-            if ((hiveNews.news?.status == NewsStates.deletado ||
-                    hiveNews.news?.status == NewsStates.rejeitado) &&
-                !_isLessThan30DaysOld(hiveNews.news?.lastUpdated)) {
-              continue;
-            } else {
-              await _uploadAndMark(hiveNews);
-            }
+            await _uploadAndMark(hiveNews);
           } else {
             // Ambas existem: compara as datas de modificação para ver quem ganha
             DateTime? fbDate = fbNews.lastUpdated;
@@ -385,12 +386,13 @@ class NewsProvider {
               // Documento antigo no Firebase sem data no pacote: o local vence
               await _uploadAndMark(hiveNews);
             } else if (fbDate != null && hiveDate != null) {
-              DateTime cleanFbDate = _trimDateTime(fbDate);
-              DateTime cleanHiveDate = _trimDateTime(hiveDate);
+              // Milissegundos: a mesma precisão do texto assinado
+              final int fbMs = fbDate.millisecondsSinceEpoch;
+              final int hiveMs = hiveDate.millisecondsSinceEpoch;
 
-              if (cleanFbDate.isAfter(cleanHiveDate)) {
+              if (fbMs > hiveMs) {
                 await saveNewsPackageInHive(fbNews);
-              } else if (cleanHiveDate.isAfter(cleanFbDate)) {
+              } else if (hiveMs > fbMs) {
                 await _uploadAndMark(hiveNews);
               }
             }
@@ -435,11 +437,19 @@ class NewsProvider {
     final remoteDate = remote.lastUpdated;
     if (localDate == null) return false;
     if (remoteDate == null) return true;
-    return _trimDateTime(localDate).isAfter(_trimDateTime(remoteDate));
+    return localDate.millisecondsSinceEpoch > remoteDate.millisecondsSinceEpoch;
   }
 
-  DateTime _trimDateTime(DateTime dt) {
-    return DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second);
+  // Este pacote deve subir para a API? Rascunho nunca sobe, e matéria
+  // excluída ou rejeitada há mais de 30 dias também não (será limpa do aparelho).
+  bool shouldUpload(NewsPackageModel package) {
+    final news = package.news;
+    if (news == null || news.status == NewsStates.rascunho) return false;
+    if (news.status == NewsStates.deletado ||
+        news.status == NewsStates.rejeitado) {
+      return _isLessThan30DaysOld(news.lastUpdated);
+    }
+    return true;
   }
 
   bool _isLessThan30DaysOld(DateTime? data) {

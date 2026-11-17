@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/modules/news/controller/create_news_form_controller.dart';
+import 'package:redescomunicacionais/app/modules/news/controller/news_form_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/utils/components/markdown_editor.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
@@ -11,8 +11,9 @@ import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
 
-class CreateNewsPage extends GetView<CreateNewsFormController> {
-  const CreateNewsPage({super.key});
+// Formulário único: criar matéria (sem argumentos) ou editar ({'newsId': id})
+class NewsFormPage extends GetView<NewsFormController> {
+  const NewsFormPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +24,17 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     return Scaffold(
       backgroundColor: isLight ? theme.scaffoldBackgroundColor : null,
       appBar: AppBars.build(
-        title: LocaleKeys.addNews.tr,
+        title: (Get.arguments is Map ? LocaleKeys.editNews : LocaleKeys.addNews).tr,
         tone: AppTone.success,
       ),
-      body: Container(
+      body: Obx(() => controller.isLoadingNews.value
+          ? const Center(child: CircularProgressIndicator())
+          : _buildForm(context, isLight)),
+    );
+  }
+
+  Widget _buildForm(BuildContext context, bool isLight) {
+    return Container(
         decoration: isLight
             ? const BoxDecoration(
                 color: Colors.white,
@@ -78,6 +86,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
                   const SizedBox(height: 16),
 
                   // === BOTÕES PADRONIZADOS (MATERIAL 3) ===
+                  _buildSubmittedHint(context),
                   _buildPublishButton(context, controller),
                   const SizedBox(height: 32),
                 ],
@@ -85,6 +94,26 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
             ),
           ),
         ),
+      );
+  }
+
+  // Editando matéria já enviada: explica que o rascunho vira uma cópia
+  Widget _buildSubmittedHint(BuildContext context) {
+    if (!controller.isEditingSubmitted) return const SizedBox.shrink();
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, size: 18, color: colors.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              LocaleKeys.draftCopyHint.tr,
+              style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -92,7 +121,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // COLABORADORES
   // ============================================================
-  Widget _buildCollaboratorsField(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildCollaboratorsField(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -151,7 +180,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  Future<void> _showCollaboratorsDialog(BuildContext context, CreateNewsFormController controller) async {
+  Future<void> _showCollaboratorsDialog(BuildContext context, NewsFormController controller) async {
     final manualInputController = TextEditingController();
     final theme = Theme.of(context);
 
@@ -202,10 +231,10 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               final isSelected = controller.selectedCollaborators.contains(editor);
               return CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(editor ?? LocaleKeys.nameNotProvided.tr, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+                title: Text(editor, style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
                 value: isSelected,
                 activeColor: theme.colorScheme.primary,
-                onChanged: (_) => controller.toggleCollaborator(editor ?? LocaleKeys.nameNotProvided.tr),
+                onChanged: (_) => controller.toggleCollaborator(editor),
               );
             }).toList(),
           )),
@@ -225,7 +254,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // CATEGORIAS
   // ============================================================
-  Widget _buildCategorySelection(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildCategorySelection(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -295,7 +324,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  void _showCategoryDialog(BuildContext context, CreateNewsFormController controller) {
+  void _showCategoryDialog(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
 
     AppPopups.sheet<void>(
@@ -326,7 +355,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // CIDADE
   // ============================================================
-  Widget _buildCitySelection(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildCitySelection(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -396,7 +425,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  void _showCityDialog(BuildContext context, CreateNewsFormController controller) {
+  void _showCityDialog(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
 
     AppPopups.sheet<void>(
@@ -427,7 +456,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // TIPO
   // ============================================================
-  Widget _buildTypeSelection(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildTypeSelection(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -490,7 +519,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   }
 
   // Tipo é seleção única: escolher fecha a folha
-  Future<void> _showTypeDialog(BuildContext context, CreateNewsFormController controller) async {
+  Future<void> _showTypeDialog(BuildContext context, NewsFormController controller) async {
     final String? selectedType = await AppPopups.choose<String>(
       title: LocaleKeys.selectType.tr,
       icon: Icons.label_outline,
@@ -506,7 +535,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // TÍTULO E OUTROS CAMPOS DE TEXTO
   // ============================================================
-  Widget _buildTitleField(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildTitleField(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -542,7 +571,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  Widget _buildSubtitleField(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildSubtitleField(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -564,7 +593,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  Widget _buildYouTubeUrlField(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildYouTubeUrlField(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -599,14 +628,14 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // EDITOR E IMAGEM
   // ============================================================
-  Widget _buildMarkdownEditor(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildMarkdownEditor(BuildContext context, NewsFormController controller) {
     return SizedBox(
       height: 300,
       child: MarkdownEditor(controller: controller.bodyController),
     );
   }
 
-  Widget _buildImagePicker(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildImagePicker(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -616,7 +645,9 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
           controller.imageController.pickImage();
         },
         icon: const Icon(Icons.image),
-        label: Text(LocaleKeys.addImage.tr),
+        label: Obx(() => Text(controller.imageController.base64String != null
+            ? LocaleKeys.changeImage.tr
+            : LocaleKeys.addImage.tr)),
         style: ElevatedButton.styleFrom(
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
@@ -637,29 +668,30 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
     );
   }
 
-  Widget _buildImagePreview(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildImagePreview(BuildContext context, NewsFormController controller) {
     return Center(
       child: Obx(() {
-        if (controller.imageController.base64String != null) {
-          return Column(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.memory(
-                  base64Decode(controller.imageController.base64String!),
-                  height: 150,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ],
+        final String? image = controller.imageController.base64String;
+        if (image == null) return const SizedBox.shrink();
+        try {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.memory(
+              base64Decode(image),
+              height: 150,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
           );
+        } catch (_) {
+          // Imagem salva corrompida: não mostra a prévia
+          return const SizedBox.shrink();
         }
-        return const SizedBox.shrink();
       }),
     );
   }
 
-  Widget _buildImageMessage(BuildContext context, CreateNewsFormController controller) {
+  Widget _buildImageMessage(BuildContext context, NewsFormController controller) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -673,14 +705,15 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
   // ============================================================
   // BOTÕES DE AÇÃO PADRONIZADOS (MATERIAL 3)
   // ============================================================
-  Widget _buildPublishButton(BuildContext context, CreateNewsFormController controller) {
-    return Row(
+  Widget _buildPublishButton(BuildContext context, NewsFormController controller) {
+    // Botões desabilitados enquanto salva (evita matéria duplicada)
+    return Obx(() {
+      final bool saving = controller.isSaving.value;
+      return Row(
       children: [
         Expanded(
           child: FilledButton.tonalIcon(
-            onPressed: () {
-              controller.validateAndPublish(true);
-            },
+            onPressed: saving ? null : controller.saveDraft,
             icon: const Icon(Icons.save_outlined),
             style: FilledButton.styleFrom(
               minimumSize: const Size(double.infinity, 54),
@@ -697,9 +730,7 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
         const SizedBox(width: 12),
         Expanded(
           child: FilledButton.icon(
-            onPressed: () {
-              controller.validateAndPublish(false);
-            },
+            onPressed: saving ? null : controller.submitForReview,
             icon: const Icon(Icons.rocket_launch),
             style: FilledButton.styleFrom(
               minimumSize: const Size(double.infinity, 54),
@@ -708,12 +739,16 @@ class CreateNewsPage extends GetView<CreateNewsFormController> {
               ),
             ),
             label: Text(
-              LocaleKeys.publishNews.tr,
+              (controller.isEditing.value
+                      ? LocaleKeys.updateNews
+                      : LocaleKeys.publishNews)
+                  .tr,
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
         ),
       ],
     );
+    });
   }
 }

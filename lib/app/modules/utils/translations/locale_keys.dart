@@ -276,6 +276,17 @@ abstract class LocaleKeys {
   static const fillRequiredFields =
       'Por favor, preencha todos os campos obrigatórios.';
   static const draftSavedSuccess = 'Rascunho salvo com sucesso!';
+  static const draftCopySaved =
+      'Rascunho salvo. A versão enviada não muda até você enviar este rascunho.';
+  static const draftDeletedSuccess = 'Rascunho apagado do aparelho.';
+  static const deleteDraftTitle = 'Apagar rascunho';
+  static const confirmDeleteDraft =
+      'O rascunho será apagado deste aparelho e não poderá ser recuperado. Deseja continuar?';
+  static const savedOnDeviceWillSync =
+      'Salvo no aparelho. Será enviado quando houver internet.';
+  static const newsNotEditable = 'Esta matéria não pode ser editada.';
+  static const draftCopyHint =
+      'Esta matéria já foi enviada. "Salvar rascunho" guarda uma cópia só neste aparelho; a versão enviada só muda quando você enviar para revisão.';
   static const newsSentForReview = 'Matéria enviada para análise com sucesso!';
   static const newsUpdatedSuccess = 'Matéria atualizada com sucesso!';
   static const newsUpdateError = 'Não foi possível atualizar a matéria.';

@@ -240,6 +240,17 @@ final Map<String, String> esEsTranslation = {
   LocaleKeys.fillRequiredFields:
       'Por favor, completa todos los campos obligatorios.',
   LocaleKeys.draftSavedSuccess: '¡Borrador guardado con éxito!',
+  LocaleKeys.draftCopySaved:
+      'Borrador guardado. La versión enviada no cambia hasta que envíes este borrador.',
+  LocaleKeys.draftDeletedSuccess: 'Borrador eliminado del dispositivo.',
+  LocaleKeys.deleteDraftTitle: 'Eliminar borrador',
+  LocaleKeys.confirmDeleteDraft:
+      'El borrador se eliminará de este dispositivo y no se podrá recuperar. ¿Deseas continuar?',
+  LocaleKeys.savedOnDeviceWillSync:
+      'Guardado en el dispositivo. Se enviará cuando haya internet.',
+  LocaleKeys.newsNotEditable: 'Este artículo no se puede editar.',
+  LocaleKeys.draftCopyHint:
+      'Este artículo ya fue enviado. "Guardar borrador" guarda una copia solo en este dispositivo; la versión enviada solo cambia cuando lo envíes a revisión.',
   LocaleKeys.newsSentForReview: '¡Artículo enviado a revisión con éxito!',
   LocaleKeys.newsUpdatedSuccess: '¡Artículo actualizado con éxito!',
   LocaleKeys.newsUpdateError: 'No se pudo actualizar el artículo.',

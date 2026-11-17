@@ -33,16 +33,19 @@ class NewsPackageModel {
     required this.id,
   });
 
+  // Leitura tolerante: tipo errado vira o padrão. Uma `news` inválida lança
+  // erro (vem do NewsModel.fromMap), e quem chama descarta o pacote.
   factory NewsPackageModel.fromJson(Map<String, dynamic> json) {
+    final rawNews = json['news'];
     return NewsPackageModel(
-      news: json['news'] != null 
-          ? NewsModel.fromMap(Map<String, dynamic>.from(json['news'])) 
+      news: rawNews is Map
+          ? NewsModel.fromMap(Map<String, dynamic>.from(rawNews))
           : null,
-      signature: json['signature'] as String? ?? '',
-      email: json['email'] as String? ?? '',
+      signature: json['signature'] is String ? json['signature'] : '',
+      email: json['email'] is String ? json['email'] : '',
       lastUpdated: DateParser.parse(json['lastUpdated']),
-      isUploaded: json['isUploaded'] as bool? ?? false,
-      id: json['id'] as String?,
+      isUploaded: json['isUploaded'] is bool ? json['isUploaded'] : false,
+      id: json['id'] is String ? json['id'] : null,
     );
   }
 

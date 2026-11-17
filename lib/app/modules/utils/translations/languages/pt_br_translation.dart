@@ -242,6 +242,17 @@ final Map<String, String> ptBrTranslation = {
   LocaleKeys.fillRequiredFields:
       'Por favor, preencha todos os campos obrigatórios.',
   LocaleKeys.draftSavedSuccess: 'Rascunho salvo com sucesso!',
+  LocaleKeys.draftCopySaved:
+      'Rascunho salvo. A versão enviada não muda até você enviar este rascunho.',
+  LocaleKeys.draftDeletedSuccess: 'Rascunho apagado do aparelho.',
+  LocaleKeys.deleteDraftTitle: 'Apagar rascunho',
+  LocaleKeys.confirmDeleteDraft:
+      'O rascunho será apagado deste aparelho e não poderá ser recuperado. Deseja continuar?',
+  LocaleKeys.savedOnDeviceWillSync:
+      'Salvo no aparelho. Será enviado quando houver internet.',
+  LocaleKeys.newsNotEditable: 'Esta matéria não pode ser editada.',
+  LocaleKeys.draftCopyHint:
+      'Esta matéria já foi enviada. "Salvar rascunho" guarda uma cópia só neste aparelho; a versão enviada só muda quando você enviar para revisão.',
   LocaleKeys.newsSentForReview: 'Matéria enviada para análise com sucesso!',
   LocaleKeys.newsUpdatedSuccess: 'Matéria atualizada com sucesso!',
   LocaleKeys.newsUpdateError: 'Não foi possível atualizar a matéria.',

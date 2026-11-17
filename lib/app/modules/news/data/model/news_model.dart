@@ -223,38 +223,91 @@ class NewsModel {
     return data;
   }
 
+  // Leitura tolerante (Firestore e mesh):
+  // - campo obrigatório ausente ou com tipo errado → FormatException, e quem
+  //   chama descarta só esta matéria (inventar um valor mudaria o texto assinado);
+  // - campo opcional com tipo errado → null; listas mantêm só os itens de texto;
+  // - campos a mais são ignorados (ex.: publicationTerms, que existe só no
+  //   Firebase e pode trazer Timestamp, que o Hive não sabe gravar).
   factory NewsModel.fromMap(Map<String, dynamic> map) {
     return NewsModel(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      subtitle: map['subtitle'] as String?,
-      body: map['body'] as String,
-      cities: List<String>.from(map['cities'] ?? []),
-      categories: List<String>.from(map['categories'] ?? []),
-      urlImages: List<String>.from(map['urlImages'] ?? []),
-      videoUrl: map['videoUrl'] as String?,
-      type: map['type'] as String,
-      status: map['status'] as String,
+      id: _requiredString(map, 'id'),
+      title: _requiredString(map, 'title'),
+      subtitle: _optionalString(map, 'subtitle'),
+      body: _requiredString(map, 'body'),
+      cities: _stringList(map['cities']) ?? [],
+      categories: _stringList(map['categories']) ?? [],
+      urlImages: _stringList(map['urlImages']) ?? [],
+      videoUrl: _optionalString(map, 'videoUrl'),
+      type: _requiredString(map, 'type'),
+      status: _requiredString(map, 'status'),
       lastUpdated: DateParser.parse(map['lastUpdated']) ?? DateTime.now(),
-      author: map['author'] as String,
-      createdBy: map['createdBy'] as String,
+      author: _requiredString(map, 'author'),
+      createdBy: _requiredString(map, 'createdBy'),
       createdAt: DateParser.parse(map['createdAt']) ?? DateTime.now(),
-      validatedBy: map['validatedBy'] as String?,
-      validatedByName: map['validatedByName'] as String?,
+      validatedBy: _optionalString(map, 'validatedBy'),
+      validatedByName: _optionalString(map, 'validatedByName'),
       validatedAt: DateParser.parse(map['validatedAt']),
-      validatedObservation: map['validatedObservation'] as String?,
-      rejectedBy: map['rejectedBy'] as String?,
+      validatedObservation: _optionalString(map, 'validatedObservation'),
+      rejectedBy: _optionalString(map, 'rejectedBy'),
       rejectedAt: DateParser.parse(map['rejectedAt']),
-      rejectedObservation: map['rejectedObservation'] as String?,
+      rejectedObservation: _optionalString(map, 'rejectedObservation'),
       editedAt: DateParser.parse(map['editedAt']),
-      excludedBy: map['excludedBy'] as String?,
+      excludedBy: _optionalString(map, 'excludedBy'),
       excludedAt: DateParser.parse(map['excludedAt']),
-      excludedObservation: map['excludedObservation'] as String?,
-      // publicationTerms é ignorado: existe só no Firebase e pode trazer
-      // Timestamp, que o Hive não sabe gravar
-      collaborators: map['collaborators'] != null
-          ? List<String>.from(map['collaborators'])
-          : null,
+      excludedObservation: _optionalString(map, 'excludedObservation'),
+      collaborators: _stringList(map['collaborators']),
+    );
+  }
+
+  static String _requiredString(Map<String, dynamic> map, String key) {
+    final value = map[key];
+    if (value is String) return value;
+    throw FormatException('NewsModel: campo obrigatório "$key" inválido '
+        '(${value?.runtimeType ?? 'ausente'})');
+  }
+
+  static String? _optionalString(Map<String, dynamic> map, String key) {
+    final value = map[key];
+    return value is String ? value : null;
+  }
+
+  static List<String>? _stringList(dynamic value) {
+    if (value is! List) return null;
+    return value.whereType<String>().toList();
+  }
+
+  // Cópia independente, para alterar e assinar sem mexer no objeto guardado
+  // no Hive (que é a mesma instância em memória). Não muda o toJson().
+  NewsModel copy() {
+    return NewsModel(
+      id: id,
+      title: title,
+      subtitle: subtitle,
+      body: body,
+      cities: List<String>.from(cities),
+      categories: List<String>.from(categories),
+      urlImages: List<String>.from(urlImages),
+      videoUrl: videoUrl,
+      type: type,
+      status: status,
+      lastUpdated: lastUpdated,
+      author: author,
+      createdBy: createdBy,
+      createdAt: createdAt,
+      validatedBy: validatedBy,
+      validatedByName: validatedByName,
+      validatedAt: validatedAt,
+      validatedObservation: validatedObservation,
+      rejectedBy: rejectedBy,
+      rejectedAt: rejectedAt,
+      rejectedObservation: rejectedObservation,
+      editedAt: editedAt,
+      excludedBy: excludedBy,
+      excludedAt: excludedAt,
+      excludedObservation: excludedObservation,
+      collaborators:
+          collaborators != null ? List<String>.from(collaborators!) : null,
     );
   }
 }

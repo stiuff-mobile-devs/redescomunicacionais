@@ -57,17 +57,17 @@ Ao criar uma tela nova: adicionar a constante em `Routes`, registrar o `GetPage`
 
 ## Regras de negócio das matérias
 
-**Papéis** (`role`): `admin`, `editor`, `user` (+ `guest` no app). No app são lidos do campo `role` do documento `users/{uid}` (as regras ainda aceitam a coleção `roles` na transição e as Functions usam a custom claim); veja "Usuários e papéis no Firestore". Constantes em `modules/utils/user/userRoles.dart`; validação no backend em `functions/src/service/auth.service.ts`. Editor/admin criam, submetem, aprovam, rejeitam e excluem matérias.
+**Papéis** (`role`): `admin`, `editor`, `user` (+ `guest` no app). No app são lidos do campo `role` do documento `users/{uid}` (as regras ainda aceitam a coleção `roles` na transição e as Functions usam a custom claim); veja "Usuários e papéis no Firestore". Constantes em `modules/utils/user/userRoles.dart`; validação no backend em `functions/src/service/auth.service.ts`. Editor/admin criam, submetem, aprovam e rejeitam matérias (inclusive rejeitar uma publicada, para tirá-la do ar). **Só o autor edita e exclui a própria matéria**; ninguém revisa a própria matéria.
 
 **Ciclo de vida** (confira os nomes exatos dos status no `NewsModel`):
 
 | Ação | Status resultante | Efeitos |
 |---|---|---|
-| Salvar rascunho | Rascunho | Só no Hive (hoje fica num pacote assinado na mesma box, por compatibilidade). **Não** vai para a API nem para a mesh: a sincronização e o `NearbyService` filtram o status `rascunho` |
+| Salvar rascunho | Rascunho | Só no Hive (hoje fica num pacote assinado na mesma box, por compatibilidade). **Não** vai para a API nem para a mesh: a sincronização e o `NearbyService` filtram o status `rascunho`. Em matéria já enviada, cria uma **cópia** (id novo) e a versão que circula não muda (ver abaixo) |
 | Enviar para revisão | Em revisão | Assina, cria `NewsPackageModel` com `isUploaded = false` |
 | Aceitar | Aprovado | Atualiza `lastUpdated`, reassina, entra na sincronização |
 | Rejeitar | Rejeitado | Atualiza `lastUpdated`, reassina, entra na sincronização |
-| Excluir | Deletado (**soft delete**) | Nunca apagar fisicamente: o status precisa se propagar pela mesh. Matéria excluída não pode mais ser editada (`canEdit`) |
+| Excluir | Deletado (**soft delete**) | Só o autor. Nunca apagar fisicamente: o status precisa se propagar pela mesh. Matéria excluída não pode mais ser editada (`canEdit`) nem excluída de novo (`canDelete`). **Exceção: rascunho é apagado do aparelho** (nunca saiu dele), com confirmação |
 | Editar matéria já submetida | Volta obrigatoriamente para Em revisão | Novo `lastUpdated`, reassina, `isUploaded = false` |
 
 Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e nova assinatura**, senão a mudança não vence nos outros aparelhos.
@@ -81,6 +81,15 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - **Offline first com fila**: criar, editar, aprovar, rejeitar e excluir funcionam sem internet. A ação grava e assina no Hive, a tela é atualizada na hora (`NewsController.onLocalNewsChanged`) e a sincronização roda em segundo plano. Só **gerar o par de chaves** exige internet.
 - `NewsController.requestSync()` é o único ponto de entrada da sincronização: roda uma de cada vez (pedidos durante uma sincronização geram só mais uma rodada no fim). Ele é chamado ao abrir o app, no pull-to-refresh, após cada ação e quando a internet volta (se houver pacotes com `isUploaded = false`). Não chame `syncNewsHiveAndFirebase` direto das telas.
 - As listas da tela são montadas só a partir do Hive (`_rebuildListsFromHive`). **Rascunhos, rejeitadas e excluídas mostram apenas as matérias do próprio autor**; "Em revisão" mostra todas. O Hive guarda matérias de outros (ex.: as que o editor rejeitou), então sempre filtre por `createdBy`.
+
+**Formulário e rascunhos:**
+- Criar e editar usam o **mesmo formulário** (`NewsFormPage` + `NewsFormController`): `Routes.CREATE_NEWS` sem argumentos e `Routes.EDIT_NEWS` com `{'newsId': id}` (a matéria é carregada do Hive). Regras (status, datas, cópia de rascunho, assinatura) ficam no `NewsController` (`saveDraft`, `submitForReview`), que recebe um `NewsFormData`.
+- "Enviar para revisão" sempre valida e pede os **termos de publicação** (inclusive na edição). Botões ficam desabilitados enquanto salva.
+- **Cópia de rascunho**: o vínculo cópia -> original fica no GetStorage (`draft_copies`). Ao enviar a cópia, o conteúdo vai para a original (Em revisão) e a cópia é apagada; se a original foi excluída ou não está no aparelho, a cópia vira matéria nova. Limpar os dados do app apaga também esse vínculo.
+- Alterações são feitas numa `NewsModel.copy()` e só gravadas se a assinatura der certo (o Hive devolve a mesma instância em memória).
+- Sem internet, a confirmação das ações diz que ficou salvo no aparelho (`NewsController.notifySaved`).
+- `NewsModel.fromMap` é tolerante: obrigatório inválido descarta só aquela matéria; opcional inválido vira null. **Não altere o `toJson()`** sem planejar a compatibilidade: ele é o texto assinado.
+- Coleção no Firestore: `news_test` (de **teste**, usada nesta fase); a de produção será `news`.
 
 **Feed de notícias publicadas:** paginação em lotes de **10** (carga inicial, "carregar mais" e pull-to-refresh), com cache no Hive.
 

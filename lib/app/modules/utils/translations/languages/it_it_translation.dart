@@ -240,6 +240,17 @@ final Map<String, String> itItTranslation = {
   LocaleKeys.updateNews: 'Aggiorna e pubblica articolo',
   LocaleKeys.fillRequiredFields: 'Compila tutti i campi obbligatori.',
   LocaleKeys.draftSavedSuccess: 'Bozza salvata con successo!',
+  LocaleKeys.draftCopySaved:
+      'Bozza salvata. La versione inviata non cambia finché non invii questa bozza.',
+  LocaleKeys.draftDeletedSuccess: 'Bozza eliminata dal dispositivo.',
+  LocaleKeys.deleteDraftTitle: 'Elimina bozza',
+  LocaleKeys.confirmDeleteDraft:
+      'La bozza verrà eliminata da questo dispositivo e non potrà essere recuperata. Vuoi continuare?',
+  LocaleKeys.savedOnDeviceWillSync:
+      'Salvato sul dispositivo. Verrà inviato quando ci sarà internet.',
+  LocaleKeys.newsNotEditable: 'Questo articolo non può essere modificato.',
+  LocaleKeys.draftCopyHint:
+      'Questo articolo è già stato inviato. "Salva bozza" conserva una copia solo su questo dispositivo; la versione inviata cambia solo quando la invii per la revisione.',
   LocaleKeys.newsSentForReview: 'Articolo inviato per la revisione con successo!',
   LocaleKeys.newsUpdatedSuccess: 'Articolo aggiornato con successo!',
   LocaleKeys.newsUpdateError: 'Impossibile aggiornare l\'articolo.',

@@ -32,15 +32,16 @@ class NewsRepository {
     return await newsProvider.hideNews(newsId, status, userEmail);
   }
 
-  Future<String> updateNews(
-      String newsId, Map<String, dynamic> updatedData) async {
-    try {
-      await newsProvider.updateNews(newsId, updatedData);
-      return "success";
-    } catch (e) {
-      return "Erro ao atualizar notícia: $e";
-    }
-  }
+  // Grava uma nova versão assinada; lança erro se não conseguir
+  Future<void> updateNews(NewsModel updated) =>
+      newsProvider.updateNews(updated);
+
+  // Apaga do aparelho (só rascunho)
+  Future<void> deleteNewsFromHive(String newsId) =>
+      newsProvider.deleteNewsFromHive(newsId);
+
+  bool shouldUpload(NewsPackageModel package) =>
+      newsProvider.shouldUpload(package);
 
   Future<void> reviewNews(String newsId, bool isApproved, String reason,
       String validator, String validatorName) async {

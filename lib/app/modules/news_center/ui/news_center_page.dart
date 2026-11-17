@@ -90,13 +90,15 @@ class NewsCenterPage extends GetView<NewsCenterController> {
   // Card que abre a Home já filtrada; ícone e cor vêm do modo, para combinar
   // com a AppBar da lista
   Widget _modeCard(NewsListMode mode, String title, String subtitle) {
-    return _ActionCard(
-      title: title,
-      subtitle: subtitle,
-      icon: mode.icon,
-      accentColor: mode.tone.color,
-      onTap: () => controller.openNewsMode(mode),
-    );
+    // Contador reativo: vem das listas montadas a partir do Hive (funciona offline)
+    return Obx(() => _ActionCard(
+          title: title,
+          subtitle: subtitle,
+          icon: mode.icon,
+          accentColor: mode.tone.color,
+          count: controller.countFor(mode),
+          onTap: () => controller.openNewsMode(mode),
+        ));
   }
 
   Widget _buildHero(BuildContext context) {
@@ -176,6 +178,7 @@ class _ActionCard extends StatefulWidget {
     required this.icon,
     required this.accentColor,
     required this.onTap,
+    this.count,
   });
 
   final String title;
@@ -183,6 +186,8 @@ class _ActionCard extends StatefulWidget {
   final IconData icon;
   final Color accentColor;
   final VoidCallback onTap;
+  // Quantidade de matérias da lista (null = card sem contador)
+  final int? count;
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -299,6 +304,24 @@ class _ActionCardState extends State<_ActionCard> {
                                 color: widget.accentColor,
                               ),
                             ),
+                            if (widget.count != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: widget.accentColor
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${widget.count}',
+                                  style: TextStyle(
+                                    color: widget.accentColor,
+                                    fontSize: titleFontSize,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
 

@@ -98,4 +98,13 @@ class ImageBase64Service extends GetxController {
       _message.value = LocaleKeys.imageSelectedSuccess.tr;
     }
   }
+
+  // Usa a imagem já existente da matéria (modo edição)
+  void setImage(String? base64) {
+    _base64String.value = (base64 == null || base64.isEmpty) ? null : base64;
+    _message.value = '';
+  }
+
+  // Limpa a imagem ao abrir/fechar o formulário, para não vazar para a próxima matéria
+  void clear() => setImage(null);
 }

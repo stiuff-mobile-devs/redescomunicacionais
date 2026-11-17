@@ -83,8 +83,10 @@ class NewsWidgets extends GetView<NewsController> {
               onTap: () {
                 controller.selectedCardIndex.value = null;
               },
+              // Sem controller próprio: o ListView mantém a posição entre
+              // atualizações (antes um ScrollController novo a cada rebuild
+              // vazava memória e voltava a lista ao topo)
               child: ListView(
-                controller: ScrollController(),
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   const SizedBox(height: 16.0),
@@ -286,8 +288,7 @@ class NewsWidgets extends GetView<NewsController> {
           icon: Icons.delete_outline_rounded,
           label: LocaleKeys.delete.tr,
           color: Colors.red.shade600,
-          onTap: () => _hideNewsPopup(
-              news.id, controller.user.email!, news.createdBy, news.type),
+          onTap: () => _hideNewsPopup(news),
         ),
       if (controller.canReReview(news))
         _CardAction(
@@ -380,12 +381,17 @@ class NewsWidgets extends GetView<NewsController> {
     );
   }
 
-  Future<void> _hideNewsPopup(
-      String newsId, String userEmail, String authorEmail, String type) async {
+  Future<void> _hideNewsPopup(NewsModel news) async {
+    // Rascunho é apagado do aparelho (não tem volta); o resto vai para Excluídas
+    final bool isDraft = news.status == NewsStates.rascunho;
     final bool confirmed = await AppPopups.confirm(
-      title: LocaleKeys.deleteType.trParams({'type': NewsLabels.type(type)}),
-      message: LocaleKeys.confirmDeleteType
-          .trParams({'type': NewsLabels.type(type).toLowerCase()}),
+      title: isDraft
+          ? LocaleKeys.deleteDraftTitle.tr
+          : LocaleKeys.deleteType.trParams({'type': NewsLabels.type(news.type)}),
+      message: isDraft
+          ? LocaleKeys.confirmDeleteDraft.tr
+          : LocaleKeys.confirmDeleteType
+              .trParams({'type': NewsLabels.type(news.type).toLowerCase()}),
       icon: Icons.delete_outline_rounded,
       confirmText: LocaleKeys.delete.tr,
       destructive: true,
@@ -393,13 +399,7 @@ class NewsWidgets extends GetView<NewsController> {
 
     if (!confirmed) return;
 
-    await controller.hideNews(
-      newsId: newsId,
-      status: NewsStates.deletado,
-      userEmail: userEmail,
-      type: type,
-      creator: authorEmail,
-    );
+    await controller.hideNews(news);
   }
 
   Future<void> _showReviewDialog(NewsModel news) async {
@@ -457,14 +457,7 @@ class NewsWidgets extends GetView<NewsController> {
 
     if (reason == null) return;
 
-    await controller.reviewNews(
-      newsId: news.id,
-      isApproved: accepted,
-      reason: reason,
-      validator: controller.user.email!,
-      creator: news.createdBy,
-      validatorName: controller.user.name ?? '',
-    );
+    await controller.reviewNews(news, accepted, reason);
   }
 
   String _getFormattedDate(String dataCriacao) {

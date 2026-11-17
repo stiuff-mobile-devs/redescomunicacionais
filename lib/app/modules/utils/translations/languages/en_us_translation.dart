@@ -237,6 +237,17 @@ final Map<String, String> enUsTranslation = {
   LocaleKeys.updateNews: 'Update and publish article',
   LocaleKeys.fillRequiredFields: 'Please fill in all required fields.',
   LocaleKeys.draftSavedSuccess: 'Draft saved successfully!',
+  LocaleKeys.draftCopySaved:
+      'Draft saved. The submitted version stays the same until you send this draft.',
+  LocaleKeys.draftDeletedSuccess: 'Draft deleted from this device.',
+  LocaleKeys.deleteDraftTitle: 'Delete draft',
+  LocaleKeys.confirmDeleteDraft:
+      'The draft will be deleted from this device and cannot be recovered. Do you want to continue?',
+  LocaleKeys.savedOnDeviceWillSync:
+      'Saved on this device. It will be sent when there is internet.',
+  LocaleKeys.newsNotEditable: 'This article cannot be edited.',
+  LocaleKeys.draftCopyHint:
+      'This article has already been sent. "Save draft" keeps a copy only on this device; the sent version only changes when you send it for review.',
   LocaleKeys.newsSentForReview: 'Article sent for review successfully!',
   LocaleKeys.newsUpdatedSuccess: 'Article updated successfully!',
   LocaleKeys.newsUpdateError: 'Could not update the article.',

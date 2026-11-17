@@ -5,8 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_form_data.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_labels.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
@@ -98,8 +101,8 @@ class NewsController extends GetxController {
   Future<bool> _hasPendingUploads() async {
     try {
       final packages = await _repository.getAllPackageNews();
-      return packages.any((p) =>
-          p.isUploaded != true && p.news?.status != NewsStates.rascunho);
+      return packages
+          .any((p) => p.isUploaded != true && _repository.shouldUpload(p));
     } catch (_) {
       return false;
     }
@@ -214,61 +217,203 @@ class NewsController extends GetxController {
     }
   }
 
-  Future<void> addNews(
-    String title,
-    String? subtitle,
-    List<String> cities,
-    List<String> categories,
-    String body,
-    List<String> urlImages,
-    String author,
-    String email,
-    String type,
-    String status,
-    String? videoUrl,
-    List<String> collaborators,
-  ) async {
-    isLoading(true);
+  // ---------------------------------------------------------------------------
+  // CRIAR, EDITAR E RASCUNHOS
+  // ---------------------------------------------------------------------------
+  // Rascunho fica só no aparelho. Salvar como rascunho uma matéria já enviada
+  // cria uma CÓPIA (id novo) e a versão que circula não muda; o vínculo
+  // cópia -> original fica no GetStorage. Ao enviar a cópia, o conteúdo vai
+  // para a original (que volta para Em revisão) e a cópia é apagada.
 
+  static const String _draftCopiesKey = 'draft_copies';
+
+  Map<String, String> _draftCopies() {
     try {
-      UserModel user = await _userRepository.getCurrentUserFromHive();
-
-      NewsModel news = NewsModel(
-        title: title,
-        subtitle: subtitle,
-        cities: cities,
-        categories: categories,
-        body: body,
-        urlImages: urlImages,
-        author: author,
-        createdBy: email,
-        createdAt: DateTime.now(),
-        type: type,
-        status: status,
-        videoUrl: videoUrl,
-        lastUpdated: DateTime.now(),
-        collaborators: collaborators,
-      );
-
-      await _repository.saveNewsToPackage(news, user.email!);
-
-      await onLocalNewsChanged();
-
+      final raw = GetStorage().read<Map<dynamic, dynamic>>(_draftCopiesKey);
+      if (raw == null) return {};
+      return {
+        for (final entry in raw.entries)
+          if (entry.key is String && entry.value is String)
+            entry.key as String: entry.value as String,
+      };
     } catch (e) {
-      throw Exception("Erro ao salvar notícia: $e");
+      debugPrint("Erro ao ler as cópias de rascunho: $e");
+      return {};
+    }
+  }
+
+  Future<void> _setDraftCopy(String copyId, String? originalId) async {
+    final copies = _draftCopies();
+    if (originalId == null) {
+      copies.remove(copyId);
+    } else {
+      copies[copyId] = originalId;
+    }
+    await GetStorage().write(_draftCopiesKey, copies);
+  }
+
+  // Este rascunho é cópia de uma matéria já enviada?
+  bool isDraftCopy(NewsModel news) =>
+      news.status == NewsStates.rascunho && _draftCopies().containsKey(news.id);
+
+  // Usuário da sessão com e-mail (exigido para assinar e como autor)
+  UserModel _sessionUser() {
+    final email = user.email;
+    if (email == null || email.isEmpty || user.role == UserRoles.guest) {
+      throw const FriendlyException(LocaleKeys.loginAgain,
+          details: 'Usuário sem e-mail na sessão.');
+    }
+    return user;
+  }
+
+  Future<NewsModel> _editableNews(String newsId) async {
+    final NewsModel? news = (await _repository.getPackageNews(newsId))?.news;
+    if (news == null || !canEdit(news)) {
+      throw FriendlyException(LocaleKeys.newsNotEditable,
+          details: 'Matéria $newsId inexistente ou sem permissão.');
+    }
+    return news;
+  }
+
+  Future<NewsModel?> getNewsForEdit(String newsId) async {
+    final NewsModel? news = (await _repository.getPackageNews(newsId))?.news;
+    if (news == null || !canEdit(news)) return null;
+    return news;
+  }
+
+  Future<void> _createNews(NewsFormData form, String status) async {
+    final session = _sessionUser();
+    final now = DateTime.now();
+    final news = NewsModel(
+      title: form.title,
+      subtitle: form.subtitle,
+      body: form.body,
+      cities: form.cities,
+      categories: form.categories,
+      urlImages: form.urlImages,
+      videoUrl: form.videoUrl,
+      type: form.type,
+      status: status,
+      author: session.name ?? '',
+      createdBy: session.email!,
+      createdAt: now,
+      lastUpdated: now,
+      collaborators: form.collaborators,
+    );
+    await _repository.saveNewsToPackage(news, session.email!);
+  }
+
+  // Aplica o formulário numa cópia da matéria, com novo status e datas, e grava assinado
+  Future<void> _saveEdited(NewsModel base, NewsFormData form, String status) async {
+    final now = DateTime.now();
+    final changed = base.copy()
+      ..status = status
+      ..editedAt = now
+      ..lastUpdated = now;
+    form.applyTo(changed);
+    await _repository.updateNews(changed);
+  }
+
+  // Salvar rascunho. Devolve true quando criou uma cópia de matéria já enviada.
+  Future<bool> saveDraft(NewsFormData form, {String? editingId}) async {
+    isLoading(true);
+    try {
+      if (editingId == null) {
+        await _createNews(form, NewsStates.rascunho);
+        return false;
+      }
+
+      final existing = await _editableNews(editingId);
+      if (existing.status == NewsStates.rascunho) {
+        await _saveEdited(existing, form, NewsStates.rascunho);
+        return false;
+      }
+
+      // Matéria já enviada: cria a cópia em rascunho e guarda o vínculo
+      final session = _sessionUser();
+      final now = DateTime.now();
+      final copy = existing.copy();
+      form.applyTo(copy);
+      final draft = NewsModel(
+        title: copy.title,
+        subtitle: copy.subtitle,
+        body: copy.body,
+        cities: copy.cities,
+        categories: copy.categories,
+        urlImages: copy.urlImages,
+        videoUrl: copy.videoUrl,
+        type: copy.type,
+        status: NewsStates.rascunho,
+        author: existing.author,
+        createdBy: existing.createdBy,
+        createdAt: now,
+        lastUpdated: now,
+        collaborators: copy.collaborators,
+      );
+      await _repository.saveNewsToPackage(draft, session.email!);
+      await _setDraftCopy(draft.id, existing.id);
+      return true;
     } finally {
+      await onLocalNewsChanged();
       isLoading(false);
     }
   }
 
-  Future<void> hideNews({
-    required String newsId,
-    required String status,
-    required String userEmail,
-    required String type,
-    required String creator,
-  }) async {
-    if (creator != userEmail) {
+  // Enviar para revisão (criar, rascunho, cópia de rascunho ou matéria já enviada)
+  Future<void> submitForReview(NewsFormData form, {String? editingId}) async {
+    isLoading(true);
+    try {
+      if (editingId == null) {
+        await _createNews(form, NewsStates.emAnalise);
+        return;
+      }
+
+      final existing = await _editableNews(editingId);
+      final String? originalId = existing.status == NewsStates.rascunho
+          ? _draftCopies()[existing.id]
+          : null;
+
+      if (originalId == null) {
+        await _saveEdited(existing, form, NewsStates.emAnalise);
+        return;
+      }
+
+      // Cópia de rascunho: o conteúdo vai para a original, se ela ainda existir
+      final NewsModel? original =
+          (await _repository.getPackageNews(originalId))?.news;
+      if (original != null &&
+          original.status != NewsStates.deletado &&
+          canEdit(original)) {
+        await _saveEdited(original, form, NewsStates.emAnalise);
+        await _repository.deleteNewsFromHive(existing.id);
+      } else {
+        // Original excluída ou fora do aparelho: a cópia vira matéria nova
+        await _saveEdited(existing, form, NewsStates.emAnalise);
+      }
+      await _setDraftCopy(existing.id, null);
+    } finally {
+      await onLocalNewsChanged();
+      isLoading(false);
+    }
+  }
+
+  // Mensagem de sucesso; sem internet, avisa que o envio fica pendente
+  void notifySaved(String onlineMessage, {bool localOnly = false}) {
+    final bool online =
+        homeController.connectionsController.isInternetConnected.value;
+    if (online || localOnly) {
+      AppPopups.success(onlineMessage);
+    } else {
+      AppPopups.info(LocaleKeys.savedOnDeviceWillSync.tr);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // EXCLUIR E REVISAR
+  // ---------------------------------------------------------------------------
+
+  Future<void> hideNews(NewsModel news) async {
+    if (!canDelete(news)) {
       AppPopups.warning(LocaleKeys.onlyAuthorCanDelete.tr);
       return;
     }
@@ -276,45 +421,51 @@ class NewsController extends GetxController {
     isLoading(true);
 
     try {
-      await _repository.hideNews(newsId, status, userEmail);
+      if (news.status == NewsStates.rascunho) {
+        // Rascunho nunca saiu do aparelho: apaga de verdade
+        await _repository.deleteNewsFromHive(news.id);
+        await _setDraftCopy(news.id, null);
+        await onLocalNewsChanged();
+        AppPopups.success(LocaleKeys.draftDeletedSuccess.tr);
+        return;
+      }
+
+      await _repository.hideNews(
+          news.id, NewsStates.deletado, _sessionUser().email!);
       await onLocalNewsChanged();
-      AppPopups.success(LocaleKeys.typeDeletedSuccess
-          .trParams({'type': NewsLabels.type(type)}));
+      notifySaved(LocaleKeys.typeDeletedSuccess
+          .trParams({'type': NewsLabels.type(news.type)}));
     } catch (e) {
       debugPrint("Erro no hideNews: $e");
       AppPopups.error(LocaleKeys.typeDeleteError
-          .trParams({'type': NewsLabels.type(type).toLowerCase()}));
+          .trParams({'type': NewsLabels.type(news.type).toLowerCase()}));
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> reviewNews({
-    required String newsId,
-    required bool isApproved,
-    required String reason,
-    required String validator,
-    required String creator,
-    required String validatorName,
-  }) async {
-    // Impede auto-revisão
-    if (validator == creator) {
+  Future<void> reviewNews(
+      NewsModel news, bool isApproved, String reason) async {
+    // As mesmas regras do botão, conferidas também aqui
+    if (!canReReview(news)) {
       AppPopups.warning(LocaleKeys.cannotReviewOwnNews.tr);
       return;
     }
+    if (isApproved && news.status == NewsStates.publicado) return;
 
     try {
       isLoading(true);
 
+      final session = _sessionUser();
       await _repository.reviewNews(
-        newsId,
+        news.id,
         isApproved,
         reason,
-        validator,
-        validatorName,
+        session.email!,
+        session.name ?? '',
       );
       await onLocalNewsChanged();
-      AppPopups.success(isApproved
+      notifySaved(isApproved
           ? LocaleKeys.newsApprovedSuccess.tr
           : LocaleKeys.newsRejectedSuccess.tr);
     } catch (e) {
@@ -331,8 +482,10 @@ class NewsController extends GetxController {
         news.status != NewsStates.deletado;
   }
 
+  // Só o autor exclui; matéria já excluída não mostra o botão de novo
   bool canDelete(NewsModel news) {
-    return user.email == news.createdBy;
+    return user.email == news.createdBy &&
+        news.status != NewsStates.deletado;
   }
 
   bool canReReview(NewsModel news) {
@@ -387,21 +540,9 @@ class NewsController extends GetxController {
     Get.toNamed(Routes.NEWS_PAGE);
   }
 
-  // Abre a página de edição (usada quando o usuário pode editar)
+  // Abre o formulário em modo edição (ele carrega a matéria do Hive pelo id)
   void openEditNews(NewsModel news) {
-    Get.toNamed(Routes.EDIT_NEWS, arguments: {
-      "newsId": news.id,
-      "titulo": news.title,
-      "subtitulo": news.subtitle,
-      "cidade": news.cities,
-      "categoria": news.categories,
-      "corpo": news.body,
-      "imgurl": news.urlImages.isNotEmpty ? news.urlImages[0] : '',
-      "autor": news.author,
-      "dataCriacao": news.createdAt.toString(),
-      "type": news.type,
-      "status": news.status,
-    });
+    Get.toNamed(Routes.EDIT_NEWS, arguments: {'newsId': news.id});
   }
 
   void startQuillController() {

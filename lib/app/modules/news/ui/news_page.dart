@@ -589,9 +589,9 @@ class NewsPage extends GetView<NewsController> {
       ),
       child: AbsorbPointer(
         child: QuillEditor.basic(
-          controller: controller.quillController!,
-          focusNode: FocusNode(),
-          scrollController: ScrollController(),
+          // Sem FocusNode/ScrollController criados aqui: eram recriados a cada
+          // build e nunca descartados (o editor cria e descarta os próprios)
+          controller: controller.quillController,
           config: QuillEditorConfig(
             padding: EdgeInsets.all(isTablet ? 20 : 16),
             autoFocus: false,
@@ -748,16 +748,26 @@ class NewsPage extends GetView<NewsController> {
           hasMoreThanTwoCategories,
           context,
         ),
-        if (controller.selectedNews.collaborators != 0)
+        if (controller.selectedNews.collaborators?.isNotEmpty ?? false)
           _buildCollaboratorsItem(
               isTablet,
               controller.selectedNews.collaborators
                   ?.map<String>((e) => e.toString())
                   .toList(),
               visibleCollaborators,
-              hasMoreThanTwoCategories,
               context,
             ),
+        // REVISOR (antes só aparecia no layout de celular)
+        if ((controller.selectedNews.validatedByName ?? '').isNotEmpty) ...[
+          SizedBox(height: isTablet ? 12 : 10),
+          _buildInfoItem(
+            icon: Icons.supervisor_account,
+            label: LocaleKeys.reviewer.tr,
+            value: controller.selectedNews.validatedByName!,
+            isTablet: isTablet,
+            theme: Theme.of(context),
+          ),
+        ],
       ],
     );
   }
@@ -845,15 +855,13 @@ class NewsPage extends GetView<NewsController> {
           hasMoreThanTwoCategories,
           context,
         ),
-        if ( controller.selectedNews.collaborators?.length != 0)
-
+        if (controller.selectedNews.collaborators?.isNotEmpty ?? false)
           _buildCollaboratorsItem(
             isTablet,
             controller.selectedNews.collaborators
                 ?.map<String>((e) => e.toString())
                 .toList(),
             visibleCollaborators,
-            hasMoreThanTwoCategories,
             context,
           ),
 
@@ -1082,10 +1090,13 @@ class NewsPage extends GetView<NewsController> {
     bool isTablet,
     List<String>? collaborators,
     List<String>? visibleCollaborators,
-    bool hasMoreThanTwoCategories,
     BuildContext context,
   ) {
     final theme = Theme.of(context);
+    // Quantos colaboradores ficaram fora dos visíveis (antes usava a regra das
+    // categorias e mostrava o total)
+    final int hiddenCount =
+        (collaborators?.length ?? 0) - (visibleCollaborators?.length ?? 0);
 
     return Container(
       width: double.infinity,
@@ -1154,7 +1165,7 @@ class NewsPage extends GetView<NewsController> {
                   ),
                 ),
               ),
-              if (hasMoreThanTwoCategories)
+              if (hiddenCount > 0)
                 GestureDetector(
                   onTap: () {
                     _showAllCollaboratorsDialog(
@@ -1185,7 +1196,7 @@ class NewsPage extends GetView<NewsController> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '+${collaborators?.length ?? 0}',
+                          '+$hiddenCount',
                           style: TextStyle(
                             color: Colors.orange,
                             fontSize: isTablet ? 13 : 11,
