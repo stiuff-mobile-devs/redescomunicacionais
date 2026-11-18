@@ -181,7 +181,6 @@ class NewsFormPage extends GetView<NewsFormController> {
   }
 
   Future<void> _showCollaboratorsDialog(BuildContext context, NewsFormController controller) async {
-    final manualInputController = TextEditingController();
     final theme = Theme.of(context);
 
     await AppPopups.sheet<void>(
@@ -191,35 +190,9 @@ class NewsFormPage extends GetView<NewsFormController> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: manualInputController,
-                  decoration: InputDecoration(
-                    hintText: LocaleKeys.typeNameManually.tr,
-                    isDense: true,
-                    filled: true,
-                    fillColor: theme.colorScheme.surfaceContainerHighest,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                icon: const Icon(Icons.add),
-                onPressed: () {
-                  if (manualInputController.text.isNotEmpty) {
-                    controller.addManualCollaborator(manualInputController.text);
-                    manualInputController.clear();
-                  }
-                },
-              ),
-            ],
-          ),
+          // O campo é dono do próprio controlador (descartado quando a janela
+          // sai da tela; descartar logo após o await causava "_dependents.isEmpty")
+          _ManualCollaboratorField(onAdd: controller.addManualCollaborator),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12.0),
             child: Divider(),
@@ -247,8 +220,6 @@ class NewsFormPage extends GetView<NewsFormController> {
         ),
       ],
     );
-
-    manualInputController.dispose();
   }
 
   // ============================================================
@@ -750,5 +721,63 @@ class NewsFormPage extends GetView<NewsFormController> {
       ],
     );
     });
+  }
+}
+
+// Campo para digitar o nome de um colaborador. O controlador vive com o
+// widget e só é descartado quando a janela de colaboradores sai da tela.
+class _ManualCollaboratorField extends StatefulWidget {
+  final void Function(String name) onAdd;
+
+  const _ManualCollaboratorField({required this.onAdd});
+
+  @override
+  State<_ManualCollaboratorField> createState() =>
+      _ManualCollaboratorFieldState();
+}
+
+class _ManualCollaboratorFieldState extends State<_ManualCollaboratorField> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _add() {
+    if (_controller.text.trim().isEmpty) return;
+    widget.onAdd(_controller.text);
+    _controller.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _controller,
+            onSubmitted: (_) => _add(),
+            decoration: InputDecoration(
+              hintText: LocaleKeys.typeNameManually.tr,
+              isDense: true,
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerHighest,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton.filled(
+          icon: const Icon(Icons.add),
+          onPressed: _add,
+        ),
+      ],
+    );
   }
 }

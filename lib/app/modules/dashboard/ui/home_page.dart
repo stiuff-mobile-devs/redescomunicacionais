@@ -211,17 +211,17 @@ class HomePage extends GetView<HomeController> {
       ),
       child: Column(
         children: [
-          if (!isEditorial)
-            _buildCityIndicatorHeader(context)
-          else if (controller.selectedCity.value != null)
-            _buildCityIndicatorHeader(context, showChangeButton: false),
+          // Cidade só no feed: as listas da central mostram todas as cidades
+          if (!isEditorial) _buildCityIndicatorHeader(context),
           Expanded(
             // Troca suave da lista ao mudar o filtro editorial
             child: AnimatedSwitcher(
               duration: AppBars.toneAnimation,
+              // Listas da central sem filtro de cidade (o filtro é só do feed
+              // público); rascunhos sem cidade sumiam e o contador não batia
               child: NewsWidgets(
                 key: ValueKey('${controller.recreateKey}-${mode.name}'),
-                selectedCity: controller.selectedCity.value,
+                selectedCity: isEditorial ? null : controller.selectedCity.value,
                 mode: mode,
               ),
             ),
@@ -269,8 +269,7 @@ class HomePage extends GetView<HomeController> {
     });
   }
 
-  Widget _buildCityIndicatorHeader(BuildContext context,
-      {bool showChangeButton = true}) {
+  Widget _buildCityIndicatorHeader(BuildContext context) {
     final isLight = Get.find<ThemeController>().isLight;
     
     return Container(
@@ -298,7 +297,6 @@ class HomePage extends GetView<HomeController> {
               ),
             ],
           ),
-          if (showChangeButton)
           TextButton.icon(
             onPressed: () {
               controller.updateSelectedCity(null); 

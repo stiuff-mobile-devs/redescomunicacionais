@@ -62,6 +62,11 @@ class NewsController extends GetxController {
       if (connected && await _hasPendingUploads()) requestSync();
     });
 
+    // Mostra na hora o que já está no aparelho (listas e contadores da
+    // central), sem esperar a sincronização, que offline demora a desistir
+    await _rebuildListsFromHive();
+    if (!isAllListsEmpty()) initialLoadDone(true);
+
     await requestSync();
   }
 

@@ -10,6 +10,7 @@ import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart'
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/user_avatar.dart';
 
 class MenuPage extends GetView<HomeController> {
   final bool isHorizontal;
@@ -68,14 +69,7 @@ class MenuPage extends GetView<HomeController> {
                 child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor:
-                    theme.colorScheme.surfaceContainerHighest,
-                    backgroundImage: NetworkImage(
-                      _profileImageUrl,
-                    ),
-                  ),
+                  UserAvatar(url: _profileImageUrl, radius: 30),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -131,9 +125,9 @@ class MenuPage extends GetView<HomeController> {
               onTap: () => Get.toNamed(Routes.NEWSCENTER),
             ),
 
-            // CENTRAL DE COMUNICAÇÃO
+            // CENTRAL DE COMUNICAÇÃO (só com internet)
             if (!controller.isAnonymousUser)
-              ListTile(
+              _onlineOnly(() => ListTile(
                 leading: Icon(
                   Icons.chat_bubble_outline,
                   color: theme.colorScheme.onSurface,
@@ -150,7 +144,7 @@ class MenuPage extends GetView<HomeController> {
                     Routes.CENTRAL_DE_COMUNICACAO,
                   );
                 },
-              ),
+              )),
 
             // TEMA
             ListTile(
@@ -311,11 +305,7 @@ class MenuPage extends GetView<HomeController> {
                 borderRadius: BorderRadius.circular(12),
                 child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: isTablet! ? 25 : 20,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    backgroundImage: NetworkImage(_profileImageUrl),
-                  ),
+                  UserAvatar(url: _profileImageUrl, radius: isTablet! ? 25 : 20),
                   SizedBox(width: isTablet! ? 12.0 : 8.0),
                   Expanded(
                     child: Column(
@@ -398,11 +388,11 @@ class MenuPage extends GetView<HomeController> {
                   onTap: () => Get.toNamed(Routes.NEWSCENTER),
                 ),
                 if (!controller.isAnonymousUser)
-                  _buildHorizontalMenuTile(
+                  _onlineOnly(() => _buildHorizontalMenuTile(
                     icon: Icons.chat_bubble_outline,
                     title: LocaleKeys.communicationCenter.tr,
                     onTap: () => Get.toNamed(Routes.CENTRAL_DE_COMUNICACAO),
-                  ),
+                  )),
 
                 _buildHorizontalMenuTile(
                   icon: Icons.palette_outlined,
@@ -445,11 +435,22 @@ class MenuPage extends GetView<HomeController> {
     );
   }
 
+  // Itens que dependem da nuvem: somem do menu sem internet e voltam sozinhos
+  Widget _onlineOnly(Widget Function() builder) {
+    return Obx(() => controller.connectionsController.isInternetConnected.value
+        ? builder()
+        : const SizedBox.shrink());
+  }
+
+  // Admin só com internet (a tela lista e altera usuários na nuvem)
   Widget _buildAdminItem(BuildContext context, {required bool isDrawer}) {
     if (controller.user.role != UserRoles.admin) {
       return const SizedBox.shrink();
     }
+    return _onlineOnly(() => _buildAdminTile(context, isDrawer: isDrawer));
+  }
 
+  Widget _buildAdminTile(BuildContext context, {required bool isDrawer}) {
     if (isDrawer) {
       return ListTile(
         leading: Icon(
@@ -664,12 +665,7 @@ class MenuPage extends GetView<HomeController> {
     return controller.user.email!;
   }
 
-  String get _profileImageUrl {
-    final imageUrl = controller.user.urlImage?.trim();
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      return imageUrl;
-    }
-
-    return 'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png';
-  }
+  // Sem foto: o UserAvatar mostra um ícone (antes usava uma imagem da internet,
+  // que não carregava offline)
+  String? get _profileImageUrl => controller.user.urlImage;
 }

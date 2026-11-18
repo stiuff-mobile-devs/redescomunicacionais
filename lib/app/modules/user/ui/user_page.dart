@@ -8,6 +8,7 @@ import 'package:redescomunicacionais/app/modules/utils/translations/app_translat
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:redescomunicacionais/app/modules/utils/widgets/city_selector_widget.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/user_avatar.dart';
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 
 class UserPage extends StatefulWidget {
@@ -124,17 +125,11 @@ class _UserPageState extends State {
 
     return Column(
       children: [
-        CircleAvatar(
+        UserAvatar(
+          url: imageUrl,
           radius: 44,
           backgroundColor: theme.colorScheme.primaryContainer,
-          backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
-          child: imageUrl.isEmpty
-              ? Icon(
-                  Icons.person_outline,
-                  size: 44,
-                  color: theme.colorScheme.onPrimaryContainer,
-                )
-              : null,
+          iconColor: theme.colorScheme.onPrimaryContainer,
         ),
         const SizedBox(height: 12),
         Text(

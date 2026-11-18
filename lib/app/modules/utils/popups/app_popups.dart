@@ -319,49 +319,22 @@ class AppPopups {
     PopupType type = PopupType.info,
     String? confirmText,
     int maxLines = 1,
-  }) async {
-    final controller = TextEditingController(text: initialValue);
-
-    final result = await sheet<String>(
-      title: title,
-      message: message,
-      icon: icon,
-      type: type,
-      child: Builder(
-        builder: (ctx) => TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: maxLines,
-          textInputAction:
-              maxLines == 1 ? TextInputAction.done : TextInputAction.newline,
-          onSubmitted: maxLines == 1
-              ? (value) => Navigator.of(ctx).pop(value.trim())
-              : null,
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+  }) {
+    // O controlador do campo fica dentro do próprio widget da janela e só é
+    // descartado quando ela sai da tela. Descartar logo após o `await` (com a
+    // janela ainda fechando) causava o erro "_dependents.isEmpty".
+    return custom<String>(
+      _InputSheet(
+        title: title,
+        message: message,
+        hint: hint,
+        initialValue: initialValue,
+        icon: icon,
+        type: type,
+        confirmText: confirmText,
+        maxLines: maxLines,
       ),
-      actions: (ctx) => [
-        AppSheetButton.primary(
-          label: confirmText ?? LocaleKeys.confirm.tr,
-          onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-        ),
-        AppSheetButton.secondary(
-          label: LocaleKeys.cancel.tr,
-          onPressed: () => Navigator.of(ctx).pop(),
-        ),
-      ],
     );
-
-    controller.dispose();
-    return result;
   }
 
   // Lista de opções. Retorna o valor escolhido ou null se fechar.
@@ -531,6 +504,85 @@ class AppPopups {
       ThemeData.estimateBrightnessForColor(background) == Brightness.dark
           ? Colors.white
           : Colors.black;
+}
+
+// Folha do AppPopups.input. É StatefulWidget para que o controlador do campo
+// viva junto com a janela: criado no initState e descartado no dispose, que só
+// roda depois que a janela terminou de fechar.
+class _InputSheet extends StatefulWidget {
+  final String title;
+  final String? message;
+  final String? hint;
+  final String? initialValue;
+  final IconData icon;
+  final PopupType type;
+  final String? confirmText;
+  final int maxLines;
+
+  const _InputSheet({
+    required this.title,
+    this.message,
+    this.hint,
+    this.initialValue,
+    required this.icon,
+    required this.type,
+    this.confirmText,
+    required this.maxLines,
+  });
+
+  @override
+  State<_InputSheet> createState() => _InputSheetState();
+}
+
+class _InputSheetState extends State<_InputSheet> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialValue);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool singleLine = widget.maxLines == 1;
+    return AppSheet(
+      title: widget.title,
+      message: widget.message,
+      icon: widget.icon,
+      iconColor: AppPopups._accent(context, widget.type),
+      actions: [
+        AppSheetButton.primary(
+          label: widget.confirmText ?? LocaleKeys.confirm.tr,
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+        ),
+        AppSheetButton.secondary(
+          label: LocaleKeys.cancel.tr,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+      child: TextField(
+        controller: _controller,
+        autofocus: true,
+        maxLines: widget.maxLines,
+        textInputAction:
+            singleLine ? TextInputAction.done : TextInputAction.newline,
+        onSubmitted: singleLine
+            ? (value) => Navigator.of(context).pop(value.trim())
+            : null,
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // =============================================================================

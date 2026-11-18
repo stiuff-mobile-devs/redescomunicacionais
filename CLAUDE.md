@@ -38,7 +38,7 @@ modules/     uma pasta por funcionalidade
 modules/utils/   módulo de utilitários compartilhados (não é uma tela)
 ```
 
-`modules/utils/` reúne tudo o que é reutilizável (não crie mais pastas `utils` dentro dos outros módulos):
+`modules/utils/` reúne tudo o que é reutilizável (não crie mais pastas `utils` dentro dos outros módulos). Foto de perfil: sempre `UserAvatar` (`utils/widgets/user_avatar.dart`, guarda a foto no aparelho com `cached_network_image` e mostra ícone sem foto/offline). Itens do menu que dependem da nuvem (Admin, Central de Comunicação) só aparecem com internet:
 
 - `popups/` — `AppPopups` (snackbars, diálogos, bottom sheets, carregamento)
 - `app_bar/` — `AppBars` (AppBar padrão com degradê) e `AppTone` (tom de cor de cada tela)
@@ -97,6 +97,7 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - O feed público é a Home normal (`NewsListMode.published`), **sem** controles de modo.
 - A central abre uma **segunda Home empilhada** com `Get.toNamed(Routes.HOME, arguments: {'editorial': true}, preventDuplicates: false)`, e o modo fica em `HomeController.editorialMode`. A `HomePage` lê o argumento pela própria rota (`ModalRoute.of(context)`), então a Home do feed nunca muda de modo.
 - Na Home editorial: seta de voltar (volta à central), chips para trocar de filtro e nada de drawer, busca ou FAB. O `NewsWidgets` recebe o modo por parâmetro (`mode`); não use flags globais.
+- As listas da central **não aplicam o filtro de cidade** do feed (rascunho pode não ter cidade); contadores dos cards = tamanho das listas. As listas são montadas do Hive logo no `NewsController.onInit`, antes da sincronização.
 
 ## Segurança e chaves (`modules/mesh/security/`)
 
@@ -199,7 +200,7 @@ Ao mudar um modelo Hive, não reaproveite `@HiveField` removidos e rode o `build
    - Datas visíveis usam `AppTranslation.formatDate()`. O idioma escolhido é salvo no GetStorage por `AppTranslation.changeLocale()`. O padrão/fallback é `pt_BR`.
    - Erros mostrados ao usuário usam mensagens traduzidas; o detalhe técnico (`$e`) vai só para o `debugPrint`. Para uma mensagem específica, lance `FriendlyException(LocaleKeys.x)` (`modules/utils/components/friendly_exception.dart`).
    - Fora da tradução: o Console Mesh (tela de desenvolvedor), nomes de cidades e dos grupos de chat.
-4. **Pop-ups só pelo `AppPopups`** (`modules/utils/popups/app_popups.dart`). Nunca use `showDialog`, `Get.dialog`, `Get.snackbar`, `Get.bottomSheet`, `showModalBottomSheet` ou `ScaffoldMessenger` direto nas telas.
+4. **Pop-ups só pelo `AppPopups`** (campo de texto dentro de folha: o `TextEditingController` deve viver num `StatefulWidget` da própria folha e ser descartado no `dispose` dele, nunca logo após o `await` — causa o erro `_dependents.isEmpty`) (`modules/utils/popups/app_popups.dart`). Nunca use `showDialog`, `Get.dialog`, `Get.snackbar`, `Get.bottomSheet`, `showModalBottomSheet` ou `ScaffoldMessenger` direto nas telas.
    - Mensagem rápida: `AppPopups.success/error/warning/info(texto)` (snackbar flutuante embaixo, com ícone).
    - Confirmação: `await AppPopups.confirm(...)` → `bool` (`destructive: true` para excluir).
    - Texto: `AppPopups.input(...)`; lista de opções: `AppPopups.choose<T>(...)`; conteúdo livre: `AppPopups.sheet(...)` ou `AppPopups.custom(widget)` usando `AppSheet`/`AppSheetButton` por dentro.
