@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/modules/mesh/console_page.dart';
+import 'package:redescomunicacionais/app/modules/mesh/transport/ui/console_page.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 

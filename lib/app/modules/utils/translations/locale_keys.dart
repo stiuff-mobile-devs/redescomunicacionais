@@ -285,6 +285,8 @@ abstract class LocaleKeys {
   static const savedOnDeviceWillSync =
       'Salvo no aparelho. Será enviado quando houver internet.';
   static const newsNotEditable = 'Esta matéria não pode ser editada.';
+  static const signatureNotActive =
+      'Conecte-se à internet uma vez para ativar sua assinatura.';
   static const draftCopyHint =
       'Esta matéria já foi enviada. "Salvar rascunho" guarda uma cópia só neste aparelho; a versão enviada só muda quando você enviar para revisão.';
   static const newsSentForReview = 'Matéria enviada para análise com sucesso!';

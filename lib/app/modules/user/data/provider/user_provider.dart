@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/model/public_key_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
@@ -15,7 +14,6 @@ class UserProvider {
   final FirebaseFunctions _functions = FirebaseFunctions
       .instanceFor(region: 'southamerica-east1');
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final KeyStorageService _keyStorageService = KeyStorageService();
 
   // Armazena sempre na mesma chave para garantir apenas uma entrada
   final String hiveUserKey = 'current_user';
@@ -287,27 +285,18 @@ class UserProvider {
     }
   }
 
-  Future<String?> getPrivateKeyInStorage() async {
-    return await _keyStorageService.getPrivateKey();
-  }
-
+  // Registra a chave pública na API. Lança erro se não conseguir (sem internet,
+  // permissão negada...): quem chama NÃO deve salvar a chave privada nesse caso.
   Future<void> savePublicKey(PublicKeyModel publicKeyModel) async {
     try {
       final callable = _functions.httpsCallable('savePublicKey');
-      final payload = publicKeyModel.toJson();
-
-      await callable.call(payload);
+      await callable.call(publicKeyModel.toJson());
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'internal') {
-        debugPrint("Internal server error: ${e.message}");
-      } else if (e.code == 'permission-denied') {
-        debugPrint("Permission denied!");
-      } else {
-        debugPrint("API error while saving public key: ${e.code}");
-      }
-    }
-    catch (e) {
-      throw Exception("Error saving public Key");
+      debugPrint("Erro da API ao registrar a chave pública: ${e.code} ${e.message}");
+      throw Exception("Chave pública não registrada (${e.code})");
+    } catch (e) {
+      debugPrint("Erro ao registrar a chave pública: $e");
+      throw Exception("Chave pública não registrada");
     }
   }
 

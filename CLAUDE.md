@@ -6,7 +6,7 @@ Responda sempre em **português (PT-BR)**.
 
 **Redes Comunicacionais Locais (RCL)** — app Flutter (Android, iOS e Web) para produção e circulação colaborativa de notícias locais em cidades com menos de 10 mil habitantes no interior do RJ, onde a internet é instável. Projeto de TCC (UFF).
 
-As notícias são assinadas digitalmente (RSA) e circulam offline entre dispositivos por uma rede mesh epidêmica (Nearby Connections), além de serem sincronizadas com o Firebase quando há internet. **Assuma sempre que o dispositivo pode estar offline.**
+As notícias são assinadas digitalmente (RSA) e circulam offline entre dispositivos por uma **rede oportunista** (DTN, com roteamento epidêmico, via Nearby Connections), além de serem sincronizadas com o Firebase quando há internet. **Assuma sempre que o dispositivo pode estar offline.**
 
 - Flutter (sempre na última versão estável) / Dart `^3.5.4` / Java 21, gerência de estado e rotas com **GetX** ([padrão GetX Pattern](https://kauemurakami.github.io/getx_pattern/))
 - Firebase: Auth (Google e Apple), Firestore, Storage, Remote Config, Cloud Functions
@@ -98,22 +98,33 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - A central abre uma **segunda Home empilhada** com `Get.toNamed(Routes.HOME, arguments: {'editorial': true}, preventDuplicates: false)`, e o modo fica em `HomeController.editorialMode`. A `HomePage` lê o argumento pela própria rota (`ModalRoute.of(context)`), então a Home do feed nunca muda de modo.
 - Na Home editorial: seta de voltar (volta à central), chips para trocar de filtro e nada de drawer, busca ou FAB. O `NewsWidgets` recebe o modo por parâmetro (`mode`); não use flags globais.
 
-## Segurança e chaves (`modules/mesh/services/keys_service.dart`)
+## Segurança e chaves (`modules/mesh/security/`)
 
 - RSA 2048 com pointycastle (`FortunaRandom`), assinatura RSA + SHA-256 em Base64 (`toSign`/`toCheck`). PEM com cabeçalhos próprios `NEIGHBOR_NEWS`; `importPublicKey` rejeita chaves sem esse cabeçalho.
-- **Chave privada**: só no `flutter_secure_storage`. Nunca logar, enviar à rede, salvar no Hive/GetStorage ou incluir em pacotes.
-- **Geração só online**: ao logar, se não há chave privada, gera o par apenas com acesso à API. A privada só é persistida **depois** que a pública for registrada com sucesso (`savePublicKey`).
-- **Rotação**: a chave antiga vai para `oldPublicKeys`. A verificação de matérias deve testar a chave ativa **e** as antigas. `revocationInfo` invalida chaves comprometidas.
-- **Autoridade certificadora**: a API assina o `PublicKeyPackage` com sua chave privada (só no backend). A chave pública da API é embutida no app; todo pacote de chaves recebido pela mesh é validado com ela, e o `timestamp` do pacote impede replay (sempre fica o mais recente).
+- Arquivos: `keys_service.dart` (RSA), `key_storage_service.dart` (cofre), `signing_key_service.dart` (chave da conta), `package_service.dart` (assinar/verificar pacotes) e `model/` (`PublicKeyModel`, `PublicKeyPackage`).
+- **Chave privada**: só no `flutter_secure_storage`, **uma por conta** (alias com o e-mail). Nunca logar, enviar à rede, salvar no Hive/GetStorage ou incluir em pacotes. Logout não apaga (cada conta usa a sua). A chave antiga (uma por aparelho, sem e-mail) só é migrada para a conta se a pública dela estiver registrada para aquele e-mail no pacote de chaves.
+- **Geração só online** (`SigningKeyService.ensureKeyForCurrentUser`): roda no login (sem travar a tela, em `compute`) e quando a internet volta. A privada só é persistida **depois** que a pública for registrada com sucesso (`savePublicKey` lança erro se falhar).
+- **Sem chave ativa**: rascunho é salvo **sem assinatura** (nunca sai do aparelho); enviar, aprovar, rejeitar e excluir mostram `LocaleKeys.signatureNotActive`.
+- **Rotação**: a chave antiga vai para `oldPublicKeys`. A verificação de matérias deve testar a chave ativa **e** as antigas. Revogação (`revocationInfo`) **ainda não é aplicada** (regra em definição; ver `docs/relatorios/modulo-mesh.md`).
+- **Autoridade certificadora**: a API assina o `PublicKeyPackage` com sua chave privada (só no backend). A chave pública da API é embutida no app; todo pacote de chaves recebido (da API ou de vizinho) é validado com ela e **só é salvo se o `timestamp` for mais novo que o local** (anti-replay).
+- Pacote de chaves atualizado → `OfflinePackageService.revalidateRelayPackages()` testa de novo a caixa de retransmissão e move as matérias que passaram a ser válidas.
 - Chaves públicas são registradas via API, nunca escritas direto no Firestore.
 
-## Mesh (`modules/mesh/services/nearby_service.dart`)
+## Rede oportunista (`modules/mesh/`)
+
+**Terminologia:** não é uma rede em malha (*mesh*), que roteia mensagens em tempo real por um caminho de aparelhos conectados. É uma **rede oportunista / DTN** (tolerante a atrasos e interrupções) com **roteamento epidêmico** e estratégia **armazenar-carregar-repassar** (*store-carry-forward*): dois aparelhos se encontram, trocam o que falta e a matéria segue no bolso das pessoas até o próximo encontro. Use esses termos na documentação. O nome `mesh` no código (pasta, classes, "Console Mesh") é **provisório** e será trocado quando o termo final for escolhido.
+
+**Ativação:** na fase de testes, a troca **só liga pelo botão do Console** (menu lateral); todos participam, inclusive convidados (recebem e repassam; só quem tem chave assina). Ligar sozinho ao abrir o app e em segundo plano está planejado, não implementado. Pendências em `docs/relatorios/modulo-mesh.md` (local, fora do git).
+
+Arquivo principal: `modules/mesh/transport/nearby_service.dart` (console de testes em `mesh/transport/ui/`).
 
 `NearbyService` é um `GetxService` (vive fora da UI) usando `nearby_connections` com estratégia `P2P_CLUSTER`.
 
 - `startEpidemicMesh` pede permissões (Bluetooth, localização) e ativa anúncio + descoberta; conexões são aceitas automaticamente e são simétricas.
-- **Handshake**: troca apenas metadados (IDs + `lastUpdated` das notícias e timestamp do pacote de chaves). Só depois pede/envia o que falta ou o que está desatualizado (LWW).
-- **Transporte**: payload de bytes para mensagens pequenas (**limite de 32 KB**); matérias completas (até ~1 MB com imagens) e pacotes de chaves vão como **arquivo temporário**, que deve ser apagado após a leitura.
+- **Handshake**: troca apenas metadados (IDs + `lastUpdated` das notícias e timestamp do pacote de chaves), com datas em **UTC e milissegundos** (`DateParser.toJsIso`; comparações por `millisecondsSinceEpoch`). Item inválido é ignorado sem interromper o resto.
+- **Quem precisa pede** (pull): cada lado pede (`REQUEST_NEWS`/`REQUEST_KEYS`) o que falta ou está mais novo no outro; nada é enviado sem pedido. Mesmos 5 tipos de mensagem das versões antigas.
+- **Aviso aos conectados** (`announceToConnected`): após mudança local (`NewsController.onLocalNewsChanged`) ou matéria recebida, reenvia o handshake aos aparelhos conectados (repasse epidêmico), agrupando mudanças em ~2 s. Matéria recebida e válida atualiza a tela (`NewsController.refreshFromHive`).
+- **Transporte**: payload de bytes para mensagens pequenas (**limite de 32 KB**); matérias completas (até ~1 MB com imagens) e pacotes de chaves vão como **arquivo temporário** com nome único, apagado quando a transferência termina (envio) ou após a leitura (recebimento). Com muitas matérias o handshake pode passar de 32 KB (lotes por região estão planejados).
 - `_processIncomingJson` trata: handshake, pedidos de matéria/chaves, recebimento de matéria e recebimento de chaves.
 - Matéria com assinatura inválida ou de autor sem chave conhecida: **não é exibida** nem sobrescreve a versão válida. O pacote vai para a box `news_relay_packages` (mesmo adapter, sem typeId novo) e continua sendo repassado (nó de retransmissão). Ela nunca é enviada à API. Quando chega uma versão válida, ela entra na box principal (`news_packages`) se for mais nova, e a cópia de retransmissão é removida.
 - O handshake e os envios usam `_meshPackages()`: a box principal (sem rascunhos) mais a de retransmissão, ficando o mais recente por id.
@@ -129,7 +140,7 @@ Regra geral: **toda alteração de conteúdo/status exige novo `lastUpdated` e n
 - **Ainda falta migrar** (acesso direto ao Firestore no app hoje): em `user_provider.dart`, a coleção `users` (login, nome, listagem e exclusão); em `news_provider.dart`, leitura de notícias; e `release_notes_service.dart` (`app_updates`).
 
 - **Cloud Functions** (`functions/src/`): `controller/` (endpoints `onCall`/`onRequest`), `service/`, `repository/` e `model/`. Endpoints: `healthCheck`, `savePublicKey`, `getPublicKeysPackage`, `uploadNewsPackage`, `setUserRole`. Planejados (ainda não existem): `syncUserProfile`, `updateUserProfile`, `deleteUserAccount`, `listUsers`. Documentação completa em [functions/README.md](functions/README.md) — mantenha-a atualizada ao alterar/criar endpoints.
-- No Flutter, chamar as functions sempre com `FirebaseFunctions.instanceFor(region: 'southamerica-east1')`. As chamadas ficam nos providers/serviços (`news_provider.dart`, `user_provider.dart`, `mesh/services/package_service.dart`).
+- No Flutter, chamar as functions sempre com `FirebaseFunctions.instanceFor(region: 'southamerica-east1')`. As chamadas ficam nos providers/serviços (`news_provider.dart`, `user_provider.dart`, `mesh/security/package_service.dart`).
 
 ### Usuários e papéis no Firestore
 

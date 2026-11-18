@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
 import 'package:redescomunicacionais/app/modules/login/controller/login_controller.dart';
-import 'package:redescomunicacionais/app/modules/mesh/ui/console_intro.dart';
+import 'package:redescomunicacionais/app/modules/mesh/transport/ui/console_intro.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';

@@ -249,6 +249,8 @@ final Map<String, String> itItTranslation = {
   LocaleKeys.savedOnDeviceWillSync:
       'Salvato sul dispositivo. Verrà inviato quando ci sarà internet.',
   LocaleKeys.newsNotEditable: 'Questo articolo non può essere modificato.',
+  LocaleKeys.signatureNotActive:
+      'Connettiti a internet una volta per attivare la tua firma.',
   LocaleKeys.draftCopyHint:
       'Questo articolo è già stato inviato. "Salva bozza" conserva una copia solo su questo dispositivo; la versione inviata cambia solo quando la invii per la revisione.',
   LocaleKeys.newsSentForReview: 'Articolo inviato per la revisione con successo!',

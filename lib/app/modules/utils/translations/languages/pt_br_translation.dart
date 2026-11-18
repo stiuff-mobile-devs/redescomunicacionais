@@ -251,6 +251,8 @@ final Map<String, String> ptBrTranslation = {
   LocaleKeys.savedOnDeviceWillSync:
       'Salvo no aparelho. Será enviado quando houver internet.',
   LocaleKeys.newsNotEditable: 'Esta matéria não pode ser editada.',
+  LocaleKeys.signatureNotActive:
+      'Conecte-se à internet uma vez para ativar sua assinatura.',
   LocaleKeys.draftCopyHint:
       'Esta matéria já foi enviada. "Salvar rascunho" guarda uma cópia só neste aparelho; a versão enviada só muda quando você enviar para revisão.',
   LocaleKeys.newsSentForReview: 'Matéria enviada para análise com sucesso!',

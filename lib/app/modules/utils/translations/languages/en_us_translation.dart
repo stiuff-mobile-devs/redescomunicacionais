@@ -246,6 +246,8 @@ final Map<String, String> enUsTranslation = {
   LocaleKeys.savedOnDeviceWillSync:
       'Saved on this device. It will be sent when there is internet.',
   LocaleKeys.newsNotEditable: 'This article cannot be edited.',
+  LocaleKeys.signatureNotActive:
+      'Connect to the internet once to activate your signature.',
   LocaleKeys.draftCopyHint:
       'This article has already been sent. "Save draft" keeps a copy only on this device; the sent version only changes when you send it for review.',
   LocaleKeys.newsSentForReview: 'Article sent for review successfully!',

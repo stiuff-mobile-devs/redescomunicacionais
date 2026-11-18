@@ -1,6 +1,6 @@
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/provider/user_provider.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/model/public_key_model.dart';
 
 class UserRepository {
   UserRepository();
@@ -40,10 +40,7 @@ class UserRepository {
     return _userProvider.updateUserNameToFirebase(userId, name);
   }
 
-  Future<String?> getPrivateKeyInStorage() async {
-    return await _userProvider.getPrivateKeyInStorage();
-  }
-
+  // Registra a chave pública na API; lança erro se não conseguir
   Future<void> createPublicKey(PublicKeyModel publicKeyModel) async {
     return _userProvider.savePublicKey(publicKeyModel);
   }

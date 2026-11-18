@@ -7,6 +7,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
+import 'package:redescomunicacionais/app/modules/mesh/transport/nearby_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_form_data.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
@@ -95,7 +96,16 @@ class NewsController extends GetxController {
   Future<void> onLocalNewsChanged() async {
     await _rebuildListsFromHive();
     unawaited(requestSync());
+    // Aparelhos já conectados pela rede oportunista recebem a novidade sem
+    // precisar reconectar
+    if (Get.isRegistered<NearbyService>()) {
+      Get.find<NearbyService>().announceToConnected();
+    }
   }
+
+  // Atualiza as listas da tela a partir do Hive (ex.: matéria recebida de um
+  // aparelho vizinho), sem sincronizar com a nuvem
+  Future<void> refreshFromHive() => _rebuildListsFromHive();
 
   // Há pacotes (que não são rascunho) esperando para subir?
   Future<bool> _hasPendingUploads() async {
@@ -435,6 +445,9 @@ class NewsController extends GetxController {
       await onLocalNewsChanged();
       notifySaved(LocaleKeys.typeDeletedSuccess
           .trParams({'type': NewsLabels.type(news.type)}));
+    } on FriendlyException catch (e) {
+      debugPrint("Erro no hideNews: $e");
+      AppPopups.warning(e.messageKey.tr);
     } catch (e) {
       debugPrint("Erro no hideNews: $e");
       AppPopups.error(LocaleKeys.typeDeleteError
@@ -468,6 +481,9 @@ class NewsController extends GetxController {
       notifySaved(isApproved
           ? LocaleKeys.newsApprovedSuccess.tr
           : LocaleKeys.newsRejectedSuccess.tr);
+    } on FriendlyException catch (e) {
+      debugPrint("Erro no Controller (reviewNews): $e");
+      AppPopups.warning(e.messageKey.tr);
     } catch (e) {
       debugPrint("Erro no Controller (reviewNews): $e");
       AppPopups.error(LocaleKeys.newsReviewError.tr);

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
+import 'package:redescomunicacionais/app/modules/mesh/transport/nearby_service.dart';
 
 class HomeBinding implements Bindings {
   @override

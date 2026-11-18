@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_form_controller.dart';
 

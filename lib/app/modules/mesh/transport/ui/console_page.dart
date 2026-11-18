@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/controller/home_controller.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/nearby_service.dart';
+import 'package:redescomunicacionais/app/modules/mesh/transport/nearby_service.dart';
 import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
 import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 
@@ -90,8 +90,25 @@ class ConsolePage extends GetView<HomeController> {
                   )
                 ],
               ),
+              // Nearby Connections só existe no Android
+              if (!Get.find<NearbyService>().isSupported) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.amber.shade700),
+                  ),
+                  child: const Text(
+                    'A troca entre aparelhos só funciona no Android. '
+                    'Neste aparelho o rádio não liga.',
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
-              
+
               // Área Preta do Terminal
               Expanded(
                 child: Container(

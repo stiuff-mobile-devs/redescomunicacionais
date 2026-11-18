@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -5,9 +7,7 @@ import 'package:redescomunicacionais/app/modules/user/data/repository/user_repos
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/key_storage_service.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/keys_service.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/signing_key_service.dart';
 import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
 import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
@@ -136,47 +136,9 @@ class LoginController extends GetxController {
     Get.offAllNamed(Routes.HOME);
   }
 
+  // Garante a chave de assinatura da conta em segundo plano (não trava o login).
+  // Sem internet, a privada não é salva e o app tenta de novo quando ela voltar.
   Future<void> _createKeys() async {
-    final storage = KeyStorageService();
-    String privateKey = '';
-    try {
-      privateKey = await _userRepository.getPrivateKeyInStorage() ?? '';
-    } catch (e) {
-      debugPrint("Erro ao buscar chave privada do usuario");
-    }
-
-    if (privateKey.isEmpty) {
-      try {
-        final user = await _userRepository.getCurrentUserFromHive();
-
-        final keys = KeysServices.generateKeyPair();
-
-        final privateKeyString = KeysServices.exportPrivateKey(keys.privateKey);
-        final publicKeyString = KeysServices.exportPublicKey(keys.publicKey);
-
-        final publicKeyModel =
-            await _createPublicKeyModel(publicKeyString, user);
-        await _userRepository.createPublicKey(publicKeyModel);
-
-        await storage.savePrivateKey(privateKeyString);
-      } catch (e) {
-        debugPrint("Erro ao criar e salvar chave privada do usuario");
-      }
-    }
-  }
-
-  Future<PublicKeyModel> _createPublicKeyModel(
-      String publicKeyString, UserModel user) async {
-    try {
-      return PublicKeyModel(
-        id: user.email,
-        email: user.email,
-        publicKey: publicKeyString,
-        createdAt: DateTime.now(),
-        lastUpdated: DateTime.now(),
-      );
-    } catch (e) {
-      throw Exception("Erro ao criar public Key Model");
-    }
+    unawaited(SigningKeyService().ensureKeyForCurrentUser());
   }
 }

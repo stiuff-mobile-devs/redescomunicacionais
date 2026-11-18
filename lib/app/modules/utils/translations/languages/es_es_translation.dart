@@ -249,6 +249,8 @@ final Map<String, String> esEsTranslation = {
   LocaleKeys.savedOnDeviceWillSync:
       'Guardado en el dispositivo. Se enviará cuando haya internet.',
   LocaleKeys.newsNotEditable: 'Este artículo no se puede editar.',
+  LocaleKeys.signatureNotActive:
+      'Conéctate a internet una vez para activar tu firma.',
   LocaleKeys.draftCopyHint:
       'Este artículo ya fue enviado. "Guardar borrador" guarda una copia solo en este dispositivo; la versión enviada solo cambia cuando lo envíes a revisión.',
   LocaleKeys.newsSentForReview: '¡Artículo enviado a revisión con éxito!',

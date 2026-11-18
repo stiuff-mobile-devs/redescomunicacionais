@@ -2,12 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:redescomunicacionais/app/modules/mesh/model/public_key_package.dart';
-import 'package:redescomunicacionais/app/modules/mesh/services/package_service.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/model/public_key_package.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
 import 'package:redescomunicacionais/app/modules/utils/news/news_states.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 
 class NewsProvider {
@@ -246,6 +247,8 @@ class NewsProvider {
         ..lastUpdated = now;
 
       await _signAndSave(package, changed);
+    } on FriendlyException {
+      rethrow; // ex.: assinatura ainda não ativada
     } catch (e) {
       debugPrint("Erro crítico ao atualizar Hive local: $e");
       throw Exception("Falha ao ocultar notícia.");
@@ -306,6 +309,8 @@ class NewsProvider {
       }
 
       await _signAndSave(package, changed);
+    } on FriendlyException {
+      rethrow; // ex.: assinatura ainda não ativada
     } catch (e) {
       debugPrint("Erro ao atualizar revisão no Hive: $e");
       throw Exception("Erro ao atualizar revisão no Hive");
@@ -351,6 +356,8 @@ class NewsProvider {
       if (localPackage == null ||
           apiPackage.timestamp.isAfter(localPackage.timestamp)) {
         await savePublicKeyPackage(apiPackage);
+        // Chaves novas podem validar matérias que estavam só na retransmissão
+        await offlinePackageService.revalidateRelayPackages();
       }
     } catch (e) {
       debugPrint("Erro ao sincronizar pacote de chaves públicas: $e");
