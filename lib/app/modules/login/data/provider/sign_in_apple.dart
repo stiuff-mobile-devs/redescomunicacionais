@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 
 class SignInApple {
   late FirebaseAuth _firebaseAuth;
@@ -59,6 +60,8 @@ class SignInApple {
         userCredential.uid,
         userCredential.photoURL ?? '',
       );
+    } on FriendlyException {
+      rethrow;
     } catch (err) {
       debugPrint("Erro ao criar documento do usuário: $err");
       throw Exception("Erro ao criar documento do usuário");

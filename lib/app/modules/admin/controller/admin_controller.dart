@@ -9,6 +9,8 @@ class AdminController extends GetxController {
   UserRepository userRepository = UserRepository();
   List<UserModel> users = [];
   UserModel user = UserModel.empty();
+  final RxnString selectedCity = RxnString(null);
+
 
   RxBool isLoading = false.obs;
 
@@ -22,14 +24,14 @@ class AdminController extends GetxController {
   }
 
   Future<void> _loadInitialData() async {
-    user = await userRepository.getCurrentUser();
+    user = await userRepository.getCurrentUserFromHive();
     await loadAllUsers();
   }
 
   Future<void> loadAllUsers() async {
     isLoading.value = true;
     try {
-      users = await userRepository.getAllUsers();
+      users = await userRepository.getAllUsersFromFirebase();
     } catch (e) {
       debugPrint("Erro ao carregar usuários: $e");
     } finally {

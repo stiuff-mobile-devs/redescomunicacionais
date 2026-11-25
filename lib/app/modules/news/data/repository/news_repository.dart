@@ -1,4 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart' show Inst;
+import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/model/public_key_package.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/package_service.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/provider/news_provider.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
@@ -6,67 +11,83 @@ import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart
 class NewsRepository {
   NewsRepository();
   final NewsProvider newsProvider = NewsProvider();
-
-  Future<void> saveNewsToHive(NewsModel news) async {
-    await newsProvider.saveNewsToHive(news);
-  }
+  OfflinePackageService get _offlinePackageService => Get.find<OfflinePackageService>();
 
   Future<void> syncNewsHiveAndFirebase(UserModel user) async {
     await newsProvider.syncNewsHiveAndFirebase(user);
   }
 
-  Future<List<NewsModel>> getPublicNewsFromHive() {
-    return newsProvider.getPublicNewsFromHive();
-  }
-
-  Future<List<NewsModel>> getOuthersNewsFromHive() {
-    return newsProvider.getOuthersNewsFromHive();
-  }
-
-  Future<QueryDocumentSnapshot<Map<String, dynamic>>?> getPublicNewsPaginated(
-      QueryDocumentSnapshot<Map<String, dynamic>>? lastDocument) async {
-    return await newsProvider.getPublicNewsPaginated(
+  Future<QueryDocumentSnapshot<Map<String, dynamic>>?>
+      getPublicNewsPaginatedFromFirebase(
+          QueryDocumentSnapshot<Map<String, dynamic>>? lastDocument) async {
+    return await newsProvider.getPublicNewsPaginatedFromFirebase(
         lastDocument: lastDocument);
   }
 
-  Future<void> getOuthersNews(UserModel user) async {
-    await newsProvider.getOuthersNews(user);
+  Future<void> getOuthersNewsFromFirebase(UserModel user) async {
+    await newsProvider.getOuthersNewsFromFirebase(user);
   }
 
   Future<void> hideNews(String newsId, String status, String userEmail) async {
     return await newsProvider.hideNews(newsId, status, userEmail);
   }
 
-  Future<String> updateNews(
-      String newsId, Map<String, dynamic> updatedData) async {
-    try {
-      await newsProvider.updateNews(newsId, updatedData);
-      return "success";
-    } catch (e) {
-      return "Erro ao atualizar notícia: $e";
-    }
-  }
+  // Grava uma nova versão assinada; lança erro se não conseguir
+  Future<void> updateNews(NewsModel updated) =>
+      newsProvider.updateNews(updated);
+
+  // Apaga do aparelho (só rascunho)
+  Future<void> deleteNewsFromHive(String newsId) =>
+      newsProvider.deleteNewsFromHive(newsId);
+
+  bool shouldUpload(NewsPackageModel package) =>
+      newsProvider.shouldUpload(package);
 
   Future<void> reviewNews(String newsId, bool isApproved, String reason,
-      String validator, String validatorName, String newsType) async {
+      String validator, String validatorName) async {
     await newsProvider.reviewNews(
       newsId: newsId,
       isApproved: isApproved,
       reason: reason,
       validator: validator,
       validatorName: validatorName,
-      newsType: newsType,
-    );
-
-  }
-  Future<void> savePublicationTerms({
-    required String newsId,
-    required Map<String, dynamic> terms,
-  }) async {
-    await newsProvider.savePublicationTerms(
-      newsId: newsId,
-      terms: terms,
     );
   }
 
+  // Pacotes de retransmissão da mesh (assinatura não verificada)
+  Future<void> saveRelayPackage(NewsPackageModel package) =>
+      newsProvider.saveRelayPackage(package);
+
+  Future<List<NewsPackageModel>> getAllRelayPackages() =>
+      newsProvider.getAllRelayPackages();
+
+  Future<void> removeRelayPackage(String id) =>
+      newsProvider.removeRelayPackage(id);
+
+  Future<void> saveNewsToPackage(NewsModel news, String email) async {
+    await _offlinePackageService.createNewsPackage(news, email);
+  }
+
+  Future<NewsPackageModel?> getPackageNews(String id) async {
+    return await newsProvider.getPackageNewsFromHive(id);
+  }
+
+  Future<List<NewsPackageModel>> getAllPackageNews() async {
+    return await newsProvider.getAllPackageNewsFromHive();
+  }
+
+  Future<void> saveNewsPackageInHive(NewsPackageModel package) async {
+    return await newsProvider.saveNewsPackageInHive(package);
+  }
+
+  Future<PublicKeyPackage?> getPublicKeyPackage() async {
+    return await newsProvider.getPublicKeyPackage();
+  }
+
+  Future<List<String>> getKeysListByEmail(String email) async {
+    return await  newsProvider.getKeysListByEmail(email);
+  }
+
+  Future<void> savePublicKeyPackage(PublicKeyPackage package) async {
+    return await newsProvider.savePublicKeyPackage(package);}
 }

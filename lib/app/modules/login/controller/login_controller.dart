@@ -1,17 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/login/data/repository/login_repository.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/utils/components/popups.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/signing_key_service.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginController extends GetxController {
   final LoginRepository _repository = LoginRepository();
   final UserRepository _userRepository = UserRepository();
-
-  final RxString appVersion = 'Carregando...'.obs;
+  final RxString appVersion = LocaleKeys.loading.tr.obs;
 
   @override
   void onInit() {
@@ -28,43 +33,47 @@ class LoginController extends GetxController {
     }
   }
 
-  void loginGoogle() async {
+  Future<void> loginGoogle() async {
     try {
       await _repository.logoutGoogle();
       await _repository.signInGoogle();
+      await _createKeys();
       Get.offAllNamed(Routes.HOME);
     } catch (e) {
       debugPrint("Erro de Login: $e");
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Get.context != null) {
-          PopUps.snackbar(
-            texto:
-                'Ocorreu um erro ao tentar fazer login com o Google. Por favor, tente novamente.'
-                    .tr,
-            cor: Colors.red,
-          );
-        }
-      });
+      await _showLoginError(e, LocaleKeys.loginGoogleError);
     }
+  }
+
+  // Mostra a mensagem específica (ex.: conta sem e-mail) ou a genérica.
+  // Com mensagem específica, a conta entrou no Firebase mas não pode ser usada:
+  // desloga para não ficar numa sessão pela metade.
+  Future<void> _showLoginError(Object error, String fallbackKey) async {
+    String messageKey = fallbackKey;
+    if (error is FriendlyException) {
+      messageKey = error.messageKey;
+      await _repository.logoutGoogle();
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.context != null) {
+        AppPopups.error(messageKey.tr);
+      }
+    });
   }
 
   void loginMicrosoft() async {
     try {
       await _repository.logoutGoogle();
       await _repository.logoutMicrosoft();
+      await _createKeys();
       Get.offAllNamed(Routes.HOME);
     } catch (e) {
       debugPrint("Erro de Login Microsoft: $e");
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.context != null) {
-          PopUps.snackbar(
-            texto:
-                "Ocorreu um erro ao tentar fazer login com o Microsoft. Por favor, tente novamente."
-                    .tr,
-            cor: Colors.red,
-          );
+          AppPopups.error(LocaleKeys.loginMicrosoftError.tr);
         }
       });
     }
@@ -75,22 +84,28 @@ class LoginController extends GetxController {
       await _repository.trySignInGoogle().timeout(const Duration(seconds: 10),
           onTimeout: () =>
               throw Exception("Tempo esgotado para login silencioso"));
-
-      Get.offAllNamed(Routes.HOME);
+      await _createKeys();
     } catch (e) {
-      debugPrint("Erro no tryLogin: $e");
-      loginAnonymous();
+      final user = await _userRepository.getCurrentUserFromHive();
+      if (user.role == UserRoles.guest) {
+        await loginAnonymous();
+      }
     }
+    Get.offAllNamed(Routes.HOME);
+
   }
 
   Future<void> tryLoginMicrosoft() async {
     try {
       await _repository.trySignInMicrosoft();
-      Get.offAllNamed(Routes.HOME);
+      await _createKeys();
     } catch (e) {
-      debugPrint("Erro no tryLoginMicrosoft: $e");
-      loginAnonymous();
+      final user = await _userRepository.getCurrentUserFromHive();
+      if (user.role == UserRoles.guest) {
+        await loginAnonymous();
+      }
     }
+    Get.offAllNamed(Routes.HOME);
   }
 
   void logout() async {
@@ -105,28 +120,25 @@ class LoginController extends GetxController {
       await _repository.logoutGoogle();
       await _repository.logoutMicrosoft();
       await _repository.signInAppleAuth();
+      await _createKeys();
       Get.offAllNamed(Routes.HOME);
     } catch (e) {
       debugPrint("Erro de Login Apple: $e");
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Get.context != null) {
-          PopUps.snackbar(
-            texto:
-                'Ocorreu um erro ao tentar fazer login com o Apple. Por favor, tente novamente.'
-                    .tr,
-            cor: Colors.red,
-          );
-        }
-      });
+      await _showLoginError(e, LocaleKeys.loginAppleError);
     }
   }
 
-  void loginAnonymous() async {
+  Future<void> loginAnonymous() async {
     await _repository.logoutGoogle();
     await _repository.logoutMicrosoft();
     UserModel anonymousUser = UserModel.empty();
     await _repository.createUserDocInHive(anonymousUser);
     Get.offAllNamed(Routes.HOME);
+  }
+
+  // Garante a chave de assinatura da conta em segundo plano (não trava o login).
+  // Sem internet, a privada não é salva e o app tenta de novo quando ela voltar.
+  Future<void> _createKeys() async {
+    unawaited(SigningKeyService().ensureKeyForCurrentUser());
   }
 }

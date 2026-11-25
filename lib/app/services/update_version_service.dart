@@ -3,8 +3,12 @@ import 'dart:io';
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/app_translations.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum UpdateStatus {
@@ -157,25 +161,20 @@ class UpdateVersionService {
   }
 
   void _showAndroidCompleteSnackbar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Atualização baixada com sucesso!',
-        ),
-        duration: const Duration(days: 1),
-        action: SnackBarAction(
-          label: 'REINICIAR',
-          onPressed: () async {
-            try {
-              await InAppUpdate.completeFlexibleUpdate();
-            } catch (e) {
-              debugPrint(
-                'Erro ao concluir atualização: $e',
-              );
-            }
-          },
-        ),
-      ),
+    AppPopups.show(
+      LocaleKeys.updateDownloaded.tr,
+      type: PopupType.success,
+      duration: const Duration(days: 1),
+      actionLabel: LocaleKeys.restart.tr.toUpperCase(),
+      onAction: () async {
+        try {
+          await InAppUpdate.completeFlexibleUpdate();
+        } catch (e) {
+          debugPrint(
+            'Erro ao concluir atualização: $e',
+          );
+        }
+      },
     );
   }
 
@@ -183,64 +182,51 @@ class UpdateVersionService {
       BuildContext context,
       bool isForceUpdate,
       ) async {
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: !isForceUpdate,
-      builder: (dialogContext) {
-        return PopScope(
-          canPop: !isForceUpdate,
-          child: AlertDialog(
-            title: const Text('Nova Versão Disponível'),
-            content: Text(
-              isForceUpdate
-                  ? 'Uma atualização obrigatória é necessária '
-                  'para continuar utilizando o aplicativo.'
-                  : 'Uma nova versão está disponível! '
-                  'Gostaria de atualizar agora?',
-            ),
-            actions: [
-              if (!isForceUpdate)
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
-                  child: const Text('Depois'),
-                ),
-              TextButton(
-                onPressed: () async {
-                  final Uri url = Uri.parse(
-                    Platform.isIOS
-                        ? 'https://apps.apple.com/br/app/'
-                        'redes-comunicacionais-locais/'
-                        'id6759577931'
-                        : 'https://play.google.com/store/apps/'
-                        'details?id=br.uff.redescomunicacionais'
-                        '&hl=pt_BR',
-                  );
+    // Na atualização obrigatória o aviso volta a aparecer até o usuário
+    // atualizar (não dá para fechar)
+    do {
+      final bool update = await AppPopups.alert(
+        title: LocaleKeys.newVersionAvailable.tr,
+        message: isForceUpdate
+            ? LocaleKeys.mandatoryUpdateMessage.tr
+            : LocaleKeys.optionalUpdateMessage.tr,
+        icon: Icons.system_update_outlined,
+        confirmText: LocaleKeys.update.tr,
+        cancelText: isForceUpdate ? null : LocaleKeys.later.tr,
+        dismissible: !isForceUpdate,
+      );
 
-                  try {
-                    final bool launched = await launchUrl(
-                      url,
-                      mode: LaunchMode.externalApplication,
-                    );
+      if (!update) return;
+      await _openStore();
+    } while (isForceUpdate);
+  }
 
-                    if (!launched) {
-                      debugPrint(
-                        'Não foi possível abrir a loja.',
-                      );
-                    }
-                  } catch (e) {
-                    debugPrint(
-                      'Erro ao abrir a loja: $e',
-                    );
-                  }
-                },
-                child: const Text('Atualizar'),
-              ),
-            ],
-          ),
-        );
-      },
+  Future<void> _openStore() async {
+    final Uri url = Uri.parse(
+      Platform.isIOS
+          ? 'https://apps.apple.com/br/app/'
+          'redes-comunicacionais-locais/'
+          'id6759577931'
+          : 'https://play.google.com/store/apps/'
+          'details?id=br.uff.redescomunicacionais'
+          '&hl=${AppTranslation.currentLocale}',
     );
+
+    try {
+      final bool launched = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched) {
+        debugPrint(
+          'Não foi possível abrir a loja.',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        'Erro ao abrir a loja: $e',
+      );
+    }
   }
 }

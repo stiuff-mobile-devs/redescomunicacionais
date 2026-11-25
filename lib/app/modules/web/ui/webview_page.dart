@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/web/controller/webview_controller.dart';
-import 'package:redescomunicacionais/app/utils/widgets/blinking_loading_icon.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
+import 'package:redescomunicacionais/app/modules/utils/widgets/blinking_loading_icon.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
 import 'package:flutter/foundation.dart'; // Adicionado para kIsWeb
 
 class WebViewPage extends StatelessWidget {
@@ -20,46 +22,32 @@ class WebViewPage extends StatelessWidget {
         return WillPopScope(
           onWillPop: () => onExit(controller),
           child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              automaticallyImplyLeading: false,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () async {
-                      if (!kIsWeb &&
-                          controller.wvc != null &&
-                          await controller.wvc!.canGoBack()) {
-                        controller.wvc!.goBack();
-                      } else {
-                        Get.back();
-                      }
-                    },
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-                  Expanded(child: Center(child: Text(controller.title))),
-                  IconButton(
-                      onPressed: () {
-                        Get.back();
-                      },
-                      icon: const Icon(Icons.close)),
-                  controller.interrogation
-                      ? IconButton(
-                          onPressed: () {
-                            controller.goDocPage();
-                          },
-                          icon: const Icon(
-                            Icons.question_mark,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const SizedBox(
-                          width: 0,
-                        ),
-                ],
+            appBar: AppBars.build(
+              title: controller.title,
+              // Voltar navega no histórico da página antes de sair
+              leading: IconButton(
+                onPressed: () async {
+                  if (!kIsWeb &&
+                      controller.wvc != null &&
+                      await controller.wvc!.canGoBack()) {
+                    controller.wvc!.goBack();
+                  } else {
+                    Get.back();
+                  }
+                },
+                icon: const Icon(Icons.arrow_back_rounded),
               ),
+              actions: [
+                if (controller.interrogation)
+                  IconButton(
+                    onPressed: controller.goDocPage,
+                    icon: const Icon(Icons.help_outline),
+                  ),
+                IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
             ),
             body: kIsWeb
                 ? Center(
@@ -69,7 +57,7 @@ class WebViewPage extends StatelessWidget {
                         const Icon(Icons.open_in_new,
                             size: 48, color: Colors.black54),
                         const SizedBox(height: 16),
-                        Text('opening_link_new_tab'.tr,
+                        Text(LocaleKeys.openingLinkNewTab.tr,
                             style: TextStyle(color: Colors.black54)),
                       ],
                     ),

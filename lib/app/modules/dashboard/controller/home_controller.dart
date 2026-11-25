@@ -2,12 +2,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/signing_key_service.dart';
 import 'package:redescomunicacionais/app/modules/news/controller/news_controller.dart';
-import 'package:redescomunicacionais/app/modules/news/data/repository/news_repository.dart';
+import 'package:redescomunicacionais/app/modules/user/controller/user_controller.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
 import 'package:redescomunicacionais/app/modules/connections/controller/connections_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/popups/app_popups.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class HomeController extends GetxController {
   NewsController? _newsController;
@@ -17,18 +22,17 @@ class HomeController extends GetxController {
   late ConnectionsController connectionsController;
 
   final UserRepository _userRepository = UserRepository();
-  final NewsRepository _newsRepository = NewsRepository();
 
   UserModel user = UserModel.empty();
 
-  final RxString appVersion = 'Carregando...'.obs;
+  final RxString appVersion = LocaleKeys.loading.tr.obs;
   final RxString connectionTypeLabel = 'Sem conexão'.obs;
+  final RxnString selectedCity = RxnString(null);
 
-  RxBool isRevisionMode = false.obs;
-  RxBool isDraftMode = false.obs;
-  RxBool isRejectedMode = false.obs;
-  RxBool isDeletedMode = false.obs;
-  RxBool isPublishedMode = true.obs;
+
+  // Filtro da Home editorial (aberta pela central da matéria).
+  // A Home do feed público usa sempre NewsListMode.published.
+  final Rx<NewsListMode> editorialMode = NewsListMode.revision.obs;
 
   bool isAnonymousUser = true;
 
@@ -40,14 +44,48 @@ class HomeController extends GetxController {
   @override
   Future<void> onInit() async {
     connectionsController = Get.find<ConnectionsController>();
-    user = await _userRepository.getCurrentUser();
-    if (user.status == 'anonymous') {
+    user = await _userRepository.getCurrentUserFromHive();
+    if (user.role == UserRoles.guest) {
       isAnonymousUser = true;
     } else {
       isAnonymousUser = false;
     }
     _loadPackageInfo();
+    _checkSavedCity();
+
+    // Quando a internet volta: baixa o perfil (cargo, nome...) da nuvem para o
+    // Hive e, se a chave de assinatura ainda não foi ativada, tenta de novo
+    ever<bool>(connectionsController.isInternetConnected, (connected) {
+      if (!connected) return;
+      _refreshUserFromCloud();
+      if (!isAnonymousUser) {
+        unawaited(SigningKeyService().ensureKeyForCurrentUser());
+      }
+    });
     super.onInit();
+  }
+
+  Future<void> _refreshUserFromCloud() async {
+    if (isAnonymousUser) return;
+
+    final UserModel? updated =
+        await _userRepository.refreshCurrentUserFromCloud();
+    if (updated == null) return;
+
+    final bool changed = updated.role != user.role ||
+        updated.name != user.name ||
+        updated.urlImage != user.urlImage;
+
+    user = updated;
+    if (Get.isRegistered<NewsController>()) newsController.user = updated;
+    if (Get.isRegistered<UserController>()) {
+      Get.find<UserController>().currentUser.value = updated;
+    }
+
+    if (changed) {
+      update();
+      forceRecreate();
+    }
   }
 
   Future<void> _loadPackageInfo() async {
@@ -65,26 +103,32 @@ class HomeController extends GetxController {
         .toList();
   }
 
+  // Pede o nome e filtra as notícias (usado pela AppBar e pelo menu lateral)
+  Future<void> openNewsFilter() async {
+    final name = await AppPopups.input(
+      title: LocaleKeys.filterNews.tr,
+      hint: LocaleKeys.enterNewsName.tr,
+      icon: Icons.search_rounded,
+      confirmText: LocaleKeys.filter.tr,
+    );
+    if (name != null) filterNewsByName(name);
+  }
+
   Future<void> refreshDashboardData() async {
     try {
-      await _newsRepository.syncNewsHiveAndFirebase(user);
-      await newsController.getPublicNewsFromHive(null);
-      await newsController.getOuthersNewsFromHive();
+      // Usa a mesma fila do NewsController (uma sincronização por vez)
+      await newsController.requestSync();
       forceRecreate();
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Não foi possível atualizar os dados. Verifique sua conexão.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      debugPrint('Erro ao atualizar os dados da Home: $e');
+      AppPopups.error(LocaleKeys.refreshDataError.tr);
     }
   }
 
   void goUserGuide() {
     Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url': 'https://redescomunicacionaislocais.uff.br/guia-do-usuario/',
-      'title': 'Guia do Usuário'
+      'title': LocaleKeys.userGuide.tr,
     });
   }
 
@@ -92,14 +136,38 @@ class HomeController extends GetxController {
     Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url':
           'https://github.com/Redes-Comunicacionais-Locais/redescomunicacionais/wiki/Perguntas-Frequentes',
-      'title': 'Perguntas Frequentes'
+      'title': LocaleKeys.faq.tr,
     });
   }
 
   void goAboutUs() {
     Get.toNamed(Routes.WEB_VIEW, arguments: {
       'url': 'https://redescomunicacionaislocais.uff.br/',
-      'title': 'Sobre Nós',
+      'title': LocaleKeys.aboutUs.tr,
     });
   }
+
+   // Busca no Hive se o usuário já escolheu a cidade anteriormente
+  Future<void> _checkSavedCity() async {
+    UserModel currentUser = await _userRepository.getCurrentUserFromHive();
+    
+    if (currentUser.selectedAppCity != null && currentUser.selectedAppCity!.isNotEmpty) {
+      selectedCity.value = currentUser.selectedAppCity;
+      debugPrint("Cidade carregada automaticamente do Hive: ${selectedCity.value}");
+    }
+  }
+
+  // Função para ser chamada pelos botões da interface (HomePage)
+  Future<void> updateSelectedCity(String? cityName) async {
+    selectedCity.value = cityName;
+    
+    if (cityName != null) {
+      // Salva a nova cidade no Hive
+      await _userRepository.saveLocalSelectedCity(cityName);
+    } else {
+      // Se passou null (clicou em voltar/alterar), limpa a cidade do Hive
+      await _userRepository.clearLocalSelectedCity();
+    }
+  }
+
 }

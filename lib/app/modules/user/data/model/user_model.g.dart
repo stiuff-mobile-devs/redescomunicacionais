@@ -17,26 +17,24 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return UserModel(
-      id: fields[0] as String,
+      id: fields[0] as String?,
       name: fields[1] as String?,
-      email: fields[2] as String,
+      email: fields[2] as String?,
       urlImage: fields[3] as String?,
-      role: fields[4] as String,
-      createdAt: fields[5] as DateTime,
+      role: fields[4] as String?,
+      createdAt: fields[5] as DateTime?,
       roleUpdatedAt: fields[6] as DateTime?,
       roleUpdatedBy: fields[7] as String?,
-      status: fields[8] as String,
-      statusUpdatedAt: fields[9] as DateTime?,
-      statusUpdatedBy: fields[10] as String?,
-      statusObservation: fields[11] as String?,
       lastUpdated: fields[12] as DateTime?,
+      operationsCities: (fields[13] as Map?)?.cast<String, String>(),
+      selectedAppCity: fields[14] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserModel obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,16 +51,12 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       ..write(obj.roleUpdatedAt)
       ..writeByte(7)
       ..write(obj.roleUpdatedBy)
-      ..writeByte(8)
-      ..write(obj.status)
-      ..writeByte(9)
-      ..write(obj.statusUpdatedAt)
-      ..writeByte(10)
-      ..write(obj.statusUpdatedBy)
-      ..writeByte(11)
-      ..write(obj.statusObservation)
       ..writeByte(12)
-      ..write(obj.lastUpdated);
+      ..write(obj.lastUpdated)
+      ..writeByte(13)
+      ..write(obj.operationsCities)
+      ..writeByte(14)
+      ..write(obj.selectedAppCity);
   }
 
   @override

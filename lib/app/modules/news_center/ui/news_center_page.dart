@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/news_center/controller/news_center_controller.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/utils/theme/color_pallete.dart';
-import 'package:redescomunicacionais/app/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/color_pallete.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_bars.dart';
+import 'package:redescomunicacionais/app/modules/utils/app_bar/app_tones.dart';
+import 'package:redescomunicacionais/app/modules/utils/news/news_list_mode.dart';
+import 'package:redescomunicacionais/app/modules/utils/theme/theme_controller.dart';
+import 'package:redescomunicacionais/app/modules/utils/translations/locale_keys.dart';
 
 class NewsCenterPage extends GetView<NewsCenterController> {
   const NewsCenterPage({super.key});
@@ -19,37 +23,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
           ? theme.scaffoldBackgroundColor
           : null,
 
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 2,
-
-        backgroundColor: themeController.isLight
-            ? theme.scaffoldBackgroundColor
-            : null,
-
-        foregroundColor: theme.colorScheme.onSurface,
-
-        flexibleSpace: themeController.isLight
-            ? null
-            : Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appBarBottomGradient(),
-          ),
-        ),
-
-        title: Text(
-          'central_da_materia'.tr,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
-          ),
-        ),
-      ),
+      appBar: AppBars.build(title: LocaleKeys.newsCenter.tr),
       body: Container(
         decoration: themeController.isLight
             ? BoxDecoration(
@@ -81,50 +55,25 @@ class NewsCenterPage extends GetView<NewsCenterController> {
                         childAspectRatio: 1,
                         children: [
                           _ActionCard(
-                            title: 'Criar nova matéria'.tr,
-                            subtitle: 'Comece a criar uma nova matéria'.tr,
+                            title: LocaleKeys.createNewNews.tr,
+                            subtitle: LocaleKeys.createNewNewsSubtitle.tr,
                             icon: Icons.create_rounded,
-                            accentColor: Colors.green,
+                            accentColor: AppTone.success.color,
                             onTap: () =>
                                 Get.toNamed(Routes.CREATE_NEWS),
                           ),
-                          _ActionCard(
-                            title: 'Revisar Matérias'.tr,
-                            subtitle:
-                            'Fila de avaliação e aprovação editorial'.tr,
-                            icon: Icons.fact_check_rounded,
-                            accentColor: Colors.lightBlue,
-                            onTap: () =>
-                                controller.openNewsMode('revision'),
-                          ),
-                          _ActionCard(
-                            title: 'Ver seus rascunhos'.tr,
-                            subtitle:
-                            'Acesse suas matérias salvas como rascunhos'
-                                .tr,
-                            icon: Icons.drafts_outlined,
-                            accentColor: Colors.amber.shade700,
-                            onTap: () =>
-                                controller.openNewsMode('drafts'),
-                          ),
-                          _ActionCard(
-                            title: 'Ver suas matérias rejeitadas'.tr,
-                            subtitle:
-                            'Acompanhe o que voltou para ajustes'.tr,
-                            icon: Icons.report_outlined,
-                            accentColor: Colors.redAccent,
-                            onTap: () =>
-                                controller.openNewsMode('rejected'),
-                          ),
-                          _ActionCard(
-                            title: 'Ver suas matérias excluídas'.tr,
-                            subtitle:
-                            'Confira o histórico de exclusões'.tr,
-                            icon: Icons.delete_outline_rounded,
-                            accentColor: Colors.deepOrange,
-                            onTap: () =>
-                                controller.openNewsMode('deleted'),
-                          ),
+                          _modeCard(NewsListMode.revision,
+                              LocaleKeys.reviewNews.tr,
+                              LocaleKeys.reviewNewsSubtitle.tr),
+                          _modeCard(NewsListMode.drafts,
+                              LocaleKeys.viewDrafts.tr,
+                              LocaleKeys.viewDraftsSubtitle.tr),
+                          _modeCard(NewsListMode.rejected,
+                              LocaleKeys.viewRejected.tr,
+                              LocaleKeys.viewRejectedSubtitle.tr),
+                          _modeCard(NewsListMode.deleted,
+                              LocaleKeys.viewDeleted.tr,
+                              LocaleKeys.viewDeletedSubtitle.tr),
                         ],
                       ),
                     ],
@@ -136,6 +85,20 @@ class NewsCenterPage extends GetView<NewsCenterController> {
         ),
       ),
     );
+  }
+
+  // Card que abre a Home já filtrada; ícone e cor vêm do modo, para combinar
+  // com a AppBar da lista
+  Widget _modeCard(NewsListMode mode, String title, String subtitle) {
+    // Contador reativo: vem das listas montadas a partir do Hive (funciona offline)
+    return Obx(() => _ActionCard(
+          title: title,
+          subtitle: subtitle,
+          icon: mode.icon,
+          accentColor: mode.tone.color,
+          count: controller.countFor(mode),
+          onTap: () => controller.openNewsMode(mode),
+        ));
   }
 
   Widget _buildHero(BuildContext context) {
@@ -182,7 +145,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Painel editorial'.tr,
+                  LocaleKeys.editorialPanel.tr,
                   style: TextStyle(
                     color: theme.colorScheme.onSurface,
                     fontSize: 28,
@@ -191,7 +154,7 @@ class NewsCenterPage extends GetView<NewsCenterController> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Crie e organize as matérias em um único lugar.'.tr,
+                  LocaleKeys.editorialPanelSubtitle.tr,
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 15,
@@ -215,6 +178,7 @@ class _ActionCard extends StatefulWidget {
     required this.icon,
     required this.accentColor,
     required this.onTap,
+    this.count,
   });
 
   final String title;
@@ -222,6 +186,8 @@ class _ActionCard extends StatefulWidget {
   final IconData icon;
   final Color accentColor;
   final VoidCallback onTap;
+  // Quantidade de matérias da lista (null = card sem contador)
+  final int? count;
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -338,6 +304,24 @@ class _ActionCardState extends State<_ActionCard> {
                                 color: widget.accentColor,
                               ),
                             ),
+                            if (widget.count != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: widget.accentColor
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${widget.count}',
+                                  style: TextStyle(
+                                    color: widget.accentColor,
+                                    fontSize: titleFontSize,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
 

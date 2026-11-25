@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:redescomunicacionais/app/modules/admin/bindings/admin_binding.dart';
+import 'package:redescomunicacionais/app/modules/admin/ui/admin_page.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/bindings/cdc_bindings.dart';
 import 'package:redescomunicacionais/app/modules/central_de_comunicacao/ui/cdc_page.dart';
 import 'package:redescomunicacionais/app/modules/connections/bindings/connections_bindings.dart';
@@ -13,16 +14,13 @@ import 'package:redescomunicacionais/app/modules/news_center/ui/news_center_page
 import 'package:redescomunicacionais/app/modules/splash/bindings/splash_bindings.dart';
 import 'package:redescomunicacionais/app/modules/user/bindings/user_bindings.dart';
 import 'package:redescomunicacionais/app/routes/app_routes.dart';
-import 'package:redescomunicacionais/app/modules/news/ui/create_news_form_page.dart';
-import 'package:redescomunicacionais/app/modules/admin/ui/admin_page.dart';
+import 'package:redescomunicacionais/app/modules/news/ui/news_form_page.dart';
 import 'package:redescomunicacionais/app/modules/dashboard/ui/home_page.dart';
 import 'package:redescomunicacionais/app/modules/splash/ui/splash_page.dart';
 import 'package:redescomunicacionais/app/modules/login/ui/login_page.dart';
-import 'package:redescomunicacionais/app/modules/news/ui/news_widgets.dart';
 import 'package:redescomunicacionais/app/modules/news/ui/news_page.dart';
 import 'package:redescomunicacionais/app/modules/user/ui/user_page.dart';
 import 'package:redescomunicacionais/app/modules/web/ui/webview_page.dart';
-import 'package:redescomunicacionais/app/modules/news/ui/edit_news_page.dart';
 import 'package:redescomunicacionais/app/modules/welcome/ui/welcome_page.dart';
 
 class AppPages {
@@ -60,16 +58,16 @@ class AppPages {
       page: () => const NewsPage(),
       binding: NewsBinding(),
     ),
+    // Criar e editar usam o mesmo formulário; a edição recebe {'newsId': id}
     GetPage(
         name: Routes.CREATE_NEWS,
-        page: () => const CreateNewsPage(),
-        bindings: [NewsBinding(), HomeBinding(), ImageBinding()]),
+        page: () => const NewsFormPage(),
+        bindings: [NewsBinding(), HomeBinding(), ImageBinding(), NewsFormBinding()]),
     GetPage(name: Routes.WEB_VIEW, page: () => const WebViewPage()),
     GetPage(
-      name: Routes.EDIT_NEWS,
-      page: () => const EditNewsPage(),
-      binding: NewsBinding(), // Usando o mesmo binding do módulo news
-    ),
+        name: Routes.EDIT_NEWS,
+        page: () => const NewsFormPage(),
+        bindings: [NewsBinding(), HomeBinding(), ImageBinding(), NewsFormBinding()]),
     GetPage(
       name: Routes.CENTRAL_DE_COMUNICACAO,
       page: () => CentralDeComunicacaoPage(),

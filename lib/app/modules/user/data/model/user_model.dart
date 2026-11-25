@@ -1,26 +1,34 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:redescomunicacionais/app/modules/utils/user/userRoles.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/date_parser.dart';
 part 'user_model.g.dart';
+
+// ÍNDICES OBSOLETOS - NÃO REUTILIZAR:
+// 8: status
+// 9: statusUpdatedAt
+// 10: statusUpdatedBy
+// 11: statusObservation
 
 @HiveType(typeId: 0)
 class UserModel extends HiveObject {
   @HiveField(0)
-  String id;
+  String? id;
 
   @HiveField(1)
   String? name;
 
   @HiveField(2)
-  String email;
+  String? email;
 
   @HiveField(3)
   String? urlImage;
 
   @HiveField(4)
-  String role;
+  String? role;
 
   @HiveField(5)
-  DateTime createdAt;
+  DateTime? createdAt;
 
   @HiveField(6)
   DateTime? roleUpdatedAt;
@@ -28,177 +36,139 @@ class UserModel extends HiveObject {
   @HiveField(7)
   String? roleUpdatedBy;
 
-  @HiveField(8)
-  String status;
-
-  @HiveField(9)
-  DateTime? statusUpdatedAt;
-
-  @HiveField(10)
-  String? statusUpdatedBy;
-
-  @HiveField(11)
-  String? statusObservation;
-
   @HiveField(12)
   DateTime? lastUpdated;
 
+  @HiveField(13)
+  Map<String, String>? operationsCities;
+
+  @HiveField(14)
+  String? selectedAppCity; 
+
   UserModel({
-    required this.id,
+    this.id,
     this.name,
-    required this.email,
+    this.email,
     this.urlImage,
-    required this.role,
-    required this.createdAt,
+    this.role,
+    this.createdAt,
     this.roleUpdatedAt,
     this.roleUpdatedBy,
-    required this.status,
-    this.statusUpdatedAt,
-    this.statusUpdatedBy,
-    this.statusObservation,
     this.lastUpdated,
+    this.operationsCities,
+    this.selectedAppCity,
   });
 
-  // Factory para criar um usuário vazio com campos required
   factory UserModel.empty() {
     return UserModel(
-      id: '',
-      email: '',
-      role: 'user',
-      createdAt: DateTime.now(),
-      status: 'anonymous',
-      lastUpdated: DateTime.now(),
+      name: 'Convidado',
+      email: 'Convidado',
+      role: UserRoles.guest,
     );
   }
 
-  static DateTime _readDateTime(dynamic value, {required DateTime fallback}) {
-    if (value == null) {
-      return fallback;
-    }
-
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-
-    if (value is DateTime) {
-      return value;
-    }
-
-    if (value is String) {
-      return DateTime.tryParse(value) ?? fallback;
-    }
-
-    return fallback;
-  }
-
-  // fromMap (do Firestore)
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  // Leitura tolerante: campo com tipo errado vira null (ou o padrão) em vez de
+  // lançar erro, para um documento ruim não derrubar o login nem a listagem.
+  // Campos a mais são ignorados. `selectedAppCity` é só local (não vem da nuvem).
+  factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: map['id'],
-      name: map['name'],
-      email: map['email'],
-      urlImage: map['urlImage'],
-      role: map['role'] ?? 'user',
-      createdAt: _readDateTime(
-        map['createdAt'],
-        fallback: DateTime.now(),
-      ),
-      roleUpdatedAt: map['roleUpdatedAt'] != null
-          ? _readDateTime(
-              map['roleUpdatedAt'],
-              fallback: DateTime.now(),
-            )
-          : null,
-      roleUpdatedBy: map['roleUpdatedBy'],
-      status: map['status'] ?? 'active',
-      statusUpdatedAt: map['statusUpdatedAt'] != null
-          ? _readDateTime(
-              map['statusUpdatedAt'],
-              fallback: DateTime.now(),
-            )
-          : null,
-      statusUpdatedBy: map['statusUpdatedBy'],
-      statusObservation: map['statusObservation'],
-      lastUpdated: map['lastUpdated'] != null
-          ? _readDateTime(
-              map['lastUpdated'],
-              fallback: DateTime.now(),
-            )
-          : null,
+      id: _readString(json, 'id'),
+      email: _readString(json, 'email'),
+      role: _readRole(json),
+      name: _readString(json, 'name'),
+      urlImage: _readString(json, 'urlImage'),
+      roleUpdatedBy: _readString(json, 'roleUpdatedBy'),
+      createdAt: DateParser.parse(json['createdAt']),
+      roleUpdatedAt: DateParser.parse(json['roleUpdatedAt']),
+      lastUpdated: DateParser.parse(json['lastUpdated']),
+      operationsCities: _readCities(json),
     );
   }
 
-  // toJson
-  Map<String, dynamic> toJson() {
-    final data = <String, dynamic>{};
+  static String? _readString(Map<String, dynamic> json, String key) {
+    final value = json[key];
+    if (value == null || value is String) return value as String?;
+    debugPrint('UserModel: campo "$key" ignorado (tipo ${value.runtimeType})');
+    return null;
+  }
 
-    void addIfNotEmpty(String key, dynamic value) {
-      if (value == null) return;
-      if (value is String && value.trim().isEmpty) return;
-      if (value is List && value.isEmpty) return;
-      data[key] = value;
+  // Só aceita os papéis conhecidos; ausente ou inválido vira 'user'
+  static String _readRole(Map<String, dynamic> json) {
+    const validRoles = [UserRoles.admin, UserRoles.editor, UserRoles.user];
+    final value = json['role'];
+    if (value is String && validRoles.contains(value)) return value;
+    if (value != null) {
+      debugPrint('UserModel: papel inválido "$value", usando "${UserRoles.user}"');
     }
+    return UserRoles.user;
+  }
 
-    addIfNotEmpty('id', id);
-    addIfNotEmpty('name', name);
-    addIfNotEmpty('email', email);
-    addIfNotEmpty('urlImage', urlImage);
-    addIfNotEmpty('role', role);
-    data['createdAt'] = Timestamp.fromDate(createdAt);
-    addIfNotEmpty(
-      'roleUpdatedAt',
-      roleUpdatedAt != null ? Timestamp.fromDate(roleUpdatedAt!) : null,
-    );
-    addIfNotEmpty('roleUpdatedBy', roleUpdatedBy);
-    addIfNotEmpty('status', status);
-    addIfNotEmpty(
-      'statusUpdatedAt',
-      statusUpdatedAt != null ? Timestamp.fromDate(statusUpdatedAt!) : null,
-    );
-    addIfNotEmpty('statusUpdatedBy', statusUpdatedBy);
-    addIfNotEmpty('statusObservation', statusObservation);
-    addIfNotEmpty(
-      'lastUpdated',
-      lastUpdated != null ? Timestamp.fromDate(lastUpdated!) : null,
-    );
+  // Mantém só os pares texto -> texto; qualquer outro formato é descartado
+  static Map<String, String>? _readCities(Map<String, dynamic> json) {
+    final value = json['operationsCities'];
+    if (value == null) return null;
+    if (value is! Map) {
+      debugPrint('UserModel: operationsCities ignorado (tipo ${value.runtimeType})');
+      return null;
+    }
+    final cities = <String, String>{};
+    value.forEach((key, city) {
+      if (key is String && city is String) cities[key] = city;
+    });
+    if (cities.length != value.length) {
+      debugPrint('UserModel: ${value.length - cities.length} cidade(s) inválida(s) ignorada(s)');
+    }
+    return cities;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'name': name,
+      'email': email,
+      'urlImage': urlImage,
+      'role': role,
+      'createdAt': createdAt?.toIso8601String(), // Converte para texto
+      'roleUpdatedAt': roleUpdatedAt?.toIso8601String(), // Converte para texto
+      'roleUpdatedBy': roleUpdatedBy,
+      'lastUpdated': lastUpdated?.toIso8601String(), // Converte para texto
+      'operationsCities': operationsCities,
+    };
+
+    // Remove os campos nulos para economizar banda na malha ad-hoc
+    data.removeWhere((key, value) => value == null);
 
     return data;
   }
 
-  // fromJson
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      urlImage: json['urlImage'],
-      role: json['role'] ?? 'user',
-      createdAt: _readDateTime(
-        json['createdAt'],
-        fallback: DateTime.now(),
-      ),
-      roleUpdatedAt: json['roleUpdatedAt'] != null
-          ? _readDateTime(
-              json['roleUpdatedAt'],
-              fallback: DateTime.now(),
-            )
-          : null,
-      roleUpdatedBy: json['roleUpdatedBy'],
-      status: json['status'] ?? 'active',
-      statusUpdatedAt: json['statusUpdatedAt'] != null
-          ? _readDateTime(
-              json['statusUpdatedAt'],
-              fallback: DateTime.now(),
-            )
-          : null,
-      statusUpdatedBy: json['statusUpdatedBy'],
-      statusObservation: json['statusObservation'],
-      lastUpdated: json['lastUpdated'] != null
-          ? _readDateTime(
-              json['lastUpdated'],
-              fallback: DateTime.now(),
-            )
-          : null,
-    );
+  Map<String, dynamic> toFirebase() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'name': name,
+      'email': email,
+      'urlImage': urlImage,
+      'role': role,
+      'createdAt': createdAt, // Envia o DateTime nativo (Firestore aceita)
+      'roleUpdatedAt': roleUpdatedAt,
+      'roleUpdatedBy': roleUpdatedBy,
+      'lastUpdated': lastUpdated,
+      'operationsCities': operationsCities,
+    };
+
+    // Remove os campos nulos
+    data.removeWhere((key, value) => value == null);
+
+    return data;
+  }
+
+  // Campos que o próprio usuário pode alterar (para update(), nunca set()):
+  // enviar campos do admin, mesmo nulos, faz a regra do Firestore negar.
+  Map<String, dynamic> toFirebaseProfile() {
+    final Map<String, dynamic> data = {
+      'name': name,
+      'urlImage': urlImage,
+    };
+    data.removeWhere((key, value) => value == null);
+    return data;
   }
 }

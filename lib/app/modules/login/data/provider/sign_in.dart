@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:redescomunicacionais/app/config/secrets.dart';
 import 'package:redescomunicacionais/app/modules/user/data/repository/user_repository.dart';
+import 'package:redescomunicacionais/app/modules/utils/components/friendly_exception.dart';
 
 class SignInService {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
@@ -21,7 +22,9 @@ class SignInService {
     try {
       await _init;
       var account = await _googleSignIn.authenticate();
-      return _signIn(account);
+      await _signIn(account);
+    } on FriendlyException {
+      rethrow;
     } catch (e) {
       debugPrint('Error initializing GoogleSignIn: $e');
       throw Exception("Erro ao fazer login com Google");
@@ -38,6 +41,8 @@ class SignInService {
 
       return await _createUserDoc(
           userCredential, account.displayName, account.photoUrl);
+    } on FriendlyException {
+      rethrow;
     } catch (e) {
       debugPrint('Error during Google sign-in: $e');
       throw Exception("Erro ao fazer login com Google");
@@ -56,6 +61,8 @@ class SignInService {
         userCredential.user!.uid,
         photoUrl ?? userCredential.user!.photoURL ?? '',
       );
+    } on FriendlyException {
+      rethrow;
     } catch (err) {
       debugPrint(err.toString());
       throw Exception("Erro ao criar documento do usuário");
@@ -63,55 +70,20 @@ class SignInService {
   }
 
   Future<void> trySignInGoogle() async {
-    final User? firebaseUser = FirebaseAuth.instance.currentUser;
-
-    if (firebaseUser != null) {
-      try {
-        // Busca o documento completo do usuário no Firestore
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(firebaseUser.uid)
-            .get();
-
-        if (userDoc.exists) {
-          return await _userRepository.createUserDoc(
-            firebaseUser.email ?? '',
-            userDoc.get('name') ?? '',
-            userDoc.get('id') ?? firebaseUser.uid,
-            userDoc.get('urlImage') ?? firebaseUser.photoURL ?? '',
-          );
-        }
-      } catch (err) {
-        debugPrint("Erro ao buscar dados do usuário: $err");
-      }
-    }
-
-    return await _trySignSilentlyInGoogle();
-  }
-
-  Future<void> _trySignSilentlyInGoogle() async {
     try {
-      final Future<GoogleSignInAccount?>? account =
-          _googleSignIn.attemptLightweightAuthentication();
-
-      if (account == null) {
-        throw Exception("Erro ao tentar fazer login silenciosamente");
-      }
-
-      final googleUser = await account;
+      final googleUser = await _googleSignIn.attemptLightweightAuthentication(); 
 
       if (googleUser == null) {
         debugPrint("Nenhum usuário encontrado durante login silencioso.");
-        throw Exception("Nenhum usuário encontrado durante login silencioso");
-      } else {
-        debugPrint(
-            "Usuário encontrado durante login silencioso: ${googleUser.email}");
-
-        return await _signIn(googleUser);
-      }
+        throw Exception("Nenhum usuário logado anteriormente");
+      } 
+        
+      debugPrint("Usuário encontrado durante login silencioso: ${googleUser.email}");
+      return await _signIn(googleUser);
+      
     } catch (e) {
       debugPrint('Error initializing GoogleSignIn: $e');
-      throw Exception("Erro ao tentar fazer login silenciosamente");
+      throw Exception("Erro ao tentar fazer login silenciosamente: $e");
     }
   }
 
@@ -128,13 +100,16 @@ class SignInService {
       final user = userCredential.user;
 
       if (user != null) {
+        // Contas Microsoft podem vir sem nome ou foto
         return await _userRepository.createUserDoc(
-          userCredential.user!.email!,
-          userCredential.user!.displayName!,
-          userCredential.user!.uid,
-          userCredential.user!.photoURL!,
+          user.email ?? '',
+          user.displayName ?? '',
+          user.uid,
+          user.photoURL ?? '',
         );
       }
+    } on FriendlyException {
+      rethrow;
     } on FirebaseAuthException catch (e) {
       debugPrint("Erro no login com Microsoft: ${e.message}");
     } catch (err) {
@@ -150,10 +125,10 @@ class SignInService {
       try {
         debugPrint("Usuário já estava logado: ${user.email}");
         return await _userRepository.createUserDoc(
-          user.email!,
-          user.displayName!,
+          user.email ?? '',
+          user.displayName ?? '',
           user.uid,
-          user.photoURL!,
+          user.photoURL ?? '',
         );
       } catch (err) {
         debugPrint("Erro ao verificar usuário silenciosamente: $err");

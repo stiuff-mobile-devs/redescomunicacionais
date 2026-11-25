@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:redescomunicacionais/app/modules/news/data/model/news_package_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/model/public_key_model.dart';
+import 'package:redescomunicacionais/app/modules/mesh/security/model/public_key_package.dart';
 import 'package:redescomunicacionais/app/modules/user/data/model/user_model.dart';
 import 'package:redescomunicacionais/app/modules/news/data/model/news_model.dart';
 
@@ -11,10 +14,18 @@ class HiveInitializer {
       // Registra os adaptadores
       Hive.registerAdapter(UserModelAdapter());
       Hive.registerAdapter(NewsModelAdapter());
+      Hive.registerAdapter(NewsPackageModelAdapter());
+      Hive.registerAdapter(PublicKeyModelAdapter());
+      Hive.registerAdapter(PublicKeyPackageAdapter());
 
       // Abre as caixas com proteção contra arquivos corrompidos
       await _openBoxSafe<UserModel>('users');
       await _openBoxSafe<NewsModel>('news');
+      await _openBoxSafe<NewsPackageModel>('news_packages');
+      // Pacotes da mesh com assinatura não verificada (só retransmissão)
+      await _openBoxSafe<NewsPackageModel>('news_relay_packages');
+      await _openBoxSafe<PublicKeyModel>('public_key_model');
+      await _openBoxSafe<PublicKeyPackage>('public_key_package');
     } catch (e) {
       rethrow;
     }
